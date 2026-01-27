@@ -10,12 +10,20 @@ import { useCart } from '../cart/CartContext';
 export default function MenuPage() {
 
     const [selectedCategory, setSelectedCategory] = useState('all');
+    const [selectedSauce, setSelectedSauce] = useState<'all' | 'rouge' | 'blanche'>('all');
 
     const { addToCart } = useCart();
 
-    const filteredItems = selectedCategory === 'all'
+    let filteredItems = selectedCategory === 'all'
         ? Object.values(menuItems).flat()
         : menuItems[selectedCategory as keyof typeof menuItems] || [];
+
+    // If pizza category is selected, filter by sauce
+    if (selectedCategory === 'pizza' && selectedSauce !== 'all') {
+        filteredItems = filteredItems.filter((item: MenuItem) =>
+            'sauce' in item && item.sauce === selectedSauce
+        );
+    }
 
     const renderPriceAndButton = (item: MenuItem) => {
         if (!item.price) {
@@ -113,6 +121,50 @@ export default function MenuPage() {
                     ))}
                 </div>
 
+                {/* Sauce Filter - Only show when Pizza category is selected */}
+                {selectedCategory === 'pizza' && (
+                    <div className="flex flex-wrap justify-center gap-3 mb-12 animate-slide-down">
+                        <div className="bg-gray-800 rounded-full p-1 flex gap-1">
+                            <button
+                                onClick={() => setSelectedSauce('all')}
+                                className={`px-5 py-2 rounded-full font-bold text-sm transition ${selectedSauce === 'all'
+                                    ? 'bg-yellow-400 text-gray-900'
+                                    : 'text-white hover:bg-gray-700'
+                                    }`}
+                            >
+                                Toutes
+                            </button>
+                            <button
+                                onClick={() => setSelectedSauce('rouge')}
+                                className={`px-5 py-2 rounded-full font-bold text-sm transition flex items-center gap-2 ${selectedSauce === 'rouge'
+                                    ? 'bg-red-600 text-white'
+                                    : 'text-white hover:bg-gray-700'
+                                    }`}
+                            >
+                                <span className="text-lg">🍅</span>
+                                Sauce Tomate
+                            </button>
+                            <button
+                                onClick={() => setSelectedSauce('blanche')}
+                                className={`px-5 py-2 rounded-full font-bold text-sm transition flex items-center gap-2 ${selectedSauce === 'blanche'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-white hover:bg-gray-700'
+                                    }`}
+                            >
+                                <span className="text-lg">🥛</span>
+                                Sauce Blanche
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Results Count */}
+                <div className="text-center mb-8">
+                    <p className="text-gray-400 text-sm">
+                        {filteredItems.length} {filteredItems.length === 1 ? 'article' : 'articles'}
+                    </p>
+                </div>
+
                 {/* Menu Items Grid */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredItems.map(item => (
@@ -131,6 +183,18 @@ export default function MenuPage() {
                                 ) : (
                                     <div className="text-8xl group-hover:scale-110 transition-transform duration-300">
                                         {item.image}
+                                    </div>
+                                )}
+
+                                {/* Sauce Badge for Pizzas */}
+                                {'sauce' in item && item.sauce && (
+                                    <div className="absolute top-3 left-3">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg ${item.sauce === 'rouge'
+                                            ? 'bg-red-600 text-white'
+                                            : 'bg-blue-600 text-white'
+                                            }`}>
+                                            {item.sauce === 'rouge' ? '🍅 Tomate' : '🥛 Blanche'}
+                                        </span>
                                     </div>
                                 )}
 
