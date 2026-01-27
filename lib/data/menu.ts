@@ -2,7 +2,7 @@ import { Category, MenuItem } from "@/types/menu";
 
 export const menuItems: Record<string, MenuItem[]> = {
     // PIZZAS - SAUCE TOMATE (Red Sauce)
-    pizzaSauceRouge: [
+    pizza: [
         {
             id: 'psr1',
             name: 'Pizza Margherita',
@@ -10,7 +10,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             ingredients: 'Sauce tomate, mozzarella, basilic, olives',
             popular: true,
             image: '/images/pizza/pizza_sr_margherita.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'rouge'
         },
         {
             id: 'psr2',
@@ -19,7 +20,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             ingredients: 'Sauce tomate, fromage mozzarella, thon, olives',
             bestseller: true,
             image: '/images/pizza/pizza_sr_neptune.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'rouge'
         },
         {
             id: 'psr3',
@@ -27,7 +29,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: { xl: 14, xxl: 19 },
             ingredients: 'Sauce tomate, mozzarella, charcuterie, champignons',
             image: '/images/pizza/pizza_sr_montagnarde.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'rouge'
         },
         {
             id: 'psr4',
@@ -36,7 +39,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             ingredients: 'Sauce tomate, mozzarella, basilic, anchois, câpres, olives',
             hot: true,
             image: '/images/pizza/pizza_sr_napolitaine.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'rouge'
         },
         {
             id: 'psr5',
@@ -44,7 +48,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: { xl: 18, xxl: 22 },
             ingredients: 'Sauce tomate, mozzarella, bœuf haché, poivrons, oignons',
             image: '/images/pizza/pizza_sr_armenienne.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'rouge'
         },
         {
             id: 'psr6',
@@ -52,7 +57,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: { xl: 20, xxl: 23 },
             ingredients: 'Sauce tomate, mozzarella, gruyère, cheddar, parmesan',
             image: '/images/pizza/pizza_sr_quatres_fromages.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'rouge'
         },
         {
             id: 'psr7',
@@ -60,7 +66,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: { xl: 19, xxl: 23 },
             ingredients: 'Sauce tomate, mozzarella, bœuf et filocher, pommes de terre, écrasées',
             image: '/images/pizza/pizza_sr_viking.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'rouge'
         },
         {
             id: 'psr8',
@@ -68,7 +75,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: { xl: 16, xxl: 20 },
             ingredients: 'Sauce tomate, mozzarella, poulet pané, croûton, parmesan balsamique',
             image: '/images/pizza/pizza_sr_caesar.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'rouge'
         },
         {
             id: 'psr9',
@@ -77,7 +85,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             ingredients: 'Sauce tomate, mozzarella, pepperoni, olives',
             popular: true,
             image: '/images/pizza/pizza_sr_peperoni.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'rouge'
         },
         {
             id: 'psr10',
@@ -85,7 +94,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: { xl: 23, xxl: 29 },
             ingredients: 'Sauce tomate, mozzarella, fruits de mer, olive, olives',
             image: '/images/pizza/pizza_sr_fruit_de_mer.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'rouge'
         },
         {
             id: 'psr11',
@@ -93,19 +103,21 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: { xl: 13, xxl: 17 },
             ingredients: 'Sauce tomate, mozzarella, légumes, champignons',
             image: '/images/pizza/pizza_sr_vegans.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'rouge'
         },
-    ],
 
-    // PIZZAS - SAUCE BLANCHE (White Sauce)
-    pizzaSauceBlanche: [
+
+        // PIZZAS - SAUCE BLANCHE (White Sauce)
+
         {
             id: 'psb1',
             name: 'Pizza Poulet',
             price: { xl: 15, xxl: 18 },
             ingredients: 'Sauce blanche, mozzarella, poulet, nature, olives',
             image: '/images/pizza/pizza_sb_poulet.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'blanche'
         },
         {
             id: 'psb2',
@@ -113,7 +125,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: { xl: 15, xxl: 19 },
             ingredients: 'Sauce blanche, mozzarella, pommes de terre écrasées, jambon, olives',
             image: '/images/pizza/pizza_sb_alpine.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'blanche'
         },
         {
             id: 'psb3',
@@ -122,7 +135,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             ingredients: 'Sauce blanche, mozzarella, poulet pané, miel',
             bestseller: true,
             image: '/images/pizza/pizza_sb_miel.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'blanche'
         },
         {
             id: 'psb4',
@@ -130,7 +144,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: { xl: 20, xxl: 24 },
             ingredients: 'Sauce blanche, mozzarella, gruyère, cheddar, fromage bleu',
             image: '/images/pizza/pizza_sb_fromaggi.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'blanche'
         },
         {
             id: 'psb5',
@@ -138,7 +153,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: { xl: 23, xxl: 29 },
             ingredients: 'Sauce blanche, mozzarella, saumon fumé, aneth',
             image: '/images/pizza/pizza_sb_norvegienne.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'blanche'
         },
         {
             id: 'psb6',
@@ -146,7 +162,8 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: { xl: 20, xxl: 25 },
             ingredients: 'Sauce blanche, mozzarella, goûta, épinard, viande, hachée, champignons',
             image: '/images/pizza/pizza_sb_texane.png',
-            category: 'pizza'
+            category: 'pizza',
+            sauce: 'blanche'
         },
     ],
 
@@ -203,7 +220,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Makloub Escalope Grillée',
             price: 10,
             ingredients: 'Sauces aux choix, garnitures aux choix, mozzarella, frites, escalope grillée',
-            image: '/images/makloub.png',
+            image: '/images/makloub/makloub_escalope_grillée.png',
             category: 'makloub'
         },
         {
@@ -211,7 +228,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Makloub Crispy Chicken',
             price: 11,
             ingredients: 'Sauces aux choix, garnitures aux choix, mozzarella, frites, crispy chicken',
-            image: '/images/makloub.png',
+            image: '/images/makloub/makloub_crispy_chicken.png',
             category: 'makloub'
         },
         {
@@ -220,7 +237,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: 12.5,
             ingredients: 'Sauces aux choix, garnitures aux choix, mozzarella, frites, cordon bleu',
             bestseller: true,
-            image: '/images/makloub.png',
+            image: '/images/makloub/makloub_cordon_bleu.png',
             category: 'makloub'
         },
         {
@@ -228,7 +245,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Makloub Viande Hachée',
             price: 14.5,
             ingredients: 'Sauces aux choix, garnitures aux choix, mozzarella, frites, viande hachée',
-            image: '/images/makloub.png',
+            image: '/images/makloub/makloub_viande_hachée.png',
             category: 'makloub'
         },
         {
@@ -236,7 +253,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Makloub Forestière',
             price: 15.5,
             ingredients: 'Sauces aux choix, garnitures aux choix, mozzarella, frites, escalope grillée, champignon',
-            image: '/images/makloub.png',
+            image: '/images/makloub/makloub_forestière.png',
             category: 'makloub'
         },
     ],
