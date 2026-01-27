@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useCart } from "./CartContext";
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function GlobalCart() {
+    const router = useRouter();
 
     const [cartOpen, setCartOpen] = useState(false);
 
@@ -154,8 +156,8 @@ export default function GlobalCart() {
                         <button
                             className="w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-4 rounded-xl font-black text-lg transition shadow-lg"
                             onClick={() => {
-                                // TODO: Implement order functionality
-                                alert('Commande à implémenter !');
+                                setCartOpen(false);
+                                router.push('/checkout');
                             }}
                         >
                             Commander Maintenant
