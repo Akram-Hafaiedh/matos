@@ -394,7 +394,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Tenders 6 Pcs',
             price: 5,
             ingredients: 'Poulet pané croustillant',
-            image: '/images/plats.png',
+            image: '/images/plat/plat_chicken_tenders_6_pcs.png',
             category: 'plat'
         },
         {
@@ -402,7 +402,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Tenders 8 Pcs',
             price: 8,
             ingredients: 'Poulet pané croustillant',
-            image: '/images/plats.png',
+            image: '/images/plat/plat_chicken_tenders_9_pcs.png',
             category: 'plat'
         },
         {
@@ -410,7 +410,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Chicken Wings 6 Pcs',
             price: 6,
             ingredients: 'Ailes de poulet épicées',
-            image: '/images/plats.png',
+            image: '/images/plat/plat_chicken_wings_6_pcs.png',
             category: 'plat'
         },
         {
@@ -418,7 +418,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Chicken Wings 9 Pcs',
             price: 9,
             ingredients: 'Ailes de poulet épicées',
-            image: '/images/plats.png',
+            image: '/images/plat/plat_chicken_wings_9_pcs.png',
             category: 'plat'
         },
         {
@@ -427,7 +427,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: 10,
             ingredients: 'Cuisse de poulet marinée et grillée',
             popular: true,
-            image: '/images/plats.png',
+            image: '/images/plat/plat_cuisse_de_poulet_braisé.png',
             category: 'plat'
         },
         {
@@ -435,7 +435,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Cordons Bleu Maison',
             price: 12,
             ingredients: 'Cordon bleu fait maison',
-            image: '/images/plats.png',
+            image: '/images/plat/plat_cordon_bleu_maison.png',
             category: 'plat'
         },
         {
@@ -443,7 +443,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Émincé De Bœuf, Sauce Blanche',
             price: 16,
             ingredients: 'Bœuf émincé avec sauce crémeuse',
-            image: '/images/plats.png',
+            image: '/images/plat/plat_emincé_boeuf_sauce_blanche.png',
             category: 'plat'
         },
         {
@@ -452,7 +452,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: 18,
             ingredients: 'Lasagne à la viande et béchamel',
             bestseller: true,
-            image: '/images/plats.png',
+            image: '/images/plat/plat_lasagne.png',
             category: 'plat'
         },
         {
@@ -460,7 +460,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Plat Escalope Grillée',
             price: 15,
             ingredients: 'Riz, salade verte, salade mechouia, harissa, sauce à l\'ail, frites, escalope grillée',
-            image: '/images/plats.png',
+            image: '/images/plat/plat_escalope_grillée.png',
             category: 'plat'
         },
         {
@@ -468,7 +468,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Plat Cuisse De Poulet Rôti',
             price: 17,
             ingredients: 'Riz, salade verte, salade mechouia, harissa, sauce à l\'ail, frites, cuisse de poulet rôti',
-            image: '/images/plats.png',
+            image: '/images/plat/plat_cuisse_de_poulet_rôti.png',
             category: 'plat'
         },
         {
@@ -476,7 +476,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Plat Escalope Panée',
             price: 17,
             ingredients: 'Riz, salade verte, salade mechouia, harissa, sauce à l\'ail, frites, escalope panée',
-            image: '/images/plats.png',
+            image: '/images/plat/plat_escalope_panée.png',
             category: 'plat'
         },
     ],
