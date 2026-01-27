@@ -1,0 +1,7 @@
+- [ ] Add real product images
+- [ ] Implement actual checkout/payment
+- [ ] Add user authentication
+- [ ] Order history
+- [ ] Favorites system
+- [ ] Real-time order tracking
+- [ ] Mobile app version
