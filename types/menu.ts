@@ -21,6 +21,7 @@ export interface MenuItem {
     | 'drinks'
     | 'dessert'
     | 'supplements';
+    sauce?: 'rouge' | 'blanche'; // For pizzas only
 }
 
 
