@@ -611,7 +611,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Canette',
             price: 2.5,
             ingredients: 'Coca, Fanta, Sprite, Boga Lim, Boga Cidre, Apla Pomme',
-            image: '/images/boisson.png',
+            image: '/images/drinks/soda.png',
             category: 'drinks'
         },
         {
@@ -619,7 +619,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Eau Minérale 0.5 L',
             price: 1.5,
             ingredients: 'Eau minérale',
-            image: '/images/boisson.png',
+            image: '/images/drinks/water_0.5L.png',
             category: 'drinks'
         },
         {
@@ -627,7 +627,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Eau 1L',
             price: 1,
             ingredients: 'Eau 1 litre',
-            image: '/images/boisson.png',
+            image: '/images/drinks/water_1L.png',
             category: 'drinks'
         },
         {
@@ -636,7 +636,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: 2,
             ingredients: 'Citronnade fraîche à la menthe',
             popular: true,
-            image: '/images/boisson.png',
+            image: '/images/drinks/citronnade.png',
             category: 'drinks'
         },
         {
@@ -644,7 +644,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Fraise',
             price: 2,
             ingredients: 'Jus de fraise frais',
-            image: '/images/boisson.png',
+            image: '/images/drinks/fraise.png',
             category: 'drinks'
         },
         {
@@ -652,7 +652,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Jus Carottes',
             price: 2,
             ingredients: 'Jus de carottes frais',
-            image: '/images/boisson.png',
+            image: '/images/drinks/carottes.png',
             category: 'drinks'
         },
         {
@@ -660,7 +660,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Café Capsule',
             price: 3.5,
             ingredients: 'Café en capsule',
-            image: '/images/boisson.png',
+            image: '/images/drinks/cafe.png',
             category: 'drinks'
         },
     ],
