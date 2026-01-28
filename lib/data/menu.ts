@@ -570,7 +570,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: 23,
             ingredients: 'Spécialité tunisienne traditionnelle',
             popular: true,
-            image: '🥙',
+            image: '/images/tunisian/madfouna.png',
             category: 'tunisian'
         },
         {
@@ -578,7 +578,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Pate Poulet A La Tunisienne',
             price: 14,
             ingredients: 'Pâtes au poulet à la tunisienne',
-            image: '🍝',
+            image: '/images/tunisian/pate_poulet_a_la_tunisienne.png',
             category: 'tunisian'
         },
     ],
@@ -732,6 +732,58 @@ export const menuItems: Record<string, MenuItem[]> = {
         },
     ],
 
+
+    // PROMO BOXES - Mix boxes and special deals
+    promos: [
+        {
+            id: 'promo1',
+            name: 'Family Box',
+            price: 68,
+            ingredients: '2 crispy burger • 2 cheese burger • 2 tacos poulet • Viande hachée • 8 wings • 8 tenders • Riz vermicelles • Frites • Salade • 2 boissons',
+            image: '👨‍👩‍👧‍👦',
+            category: 'promos',
+            bestseller: true,
+            originalPrice: 85,
+            savings: 17,
+            discount: 20
+        },
+        {
+            id: 'promo2',
+            name: 'Big Box',
+            price: 44,
+            ingredients: '1 crispy burger • 1 cheese burger • 1 tacos poulet pané • 1 tacos viande hachée • 4 wings • 4 tenders • Riz vermicelles • Frites • Salade • Coca 1L',
+            image: '🍔',
+            category: 'promos',
+            popular: true,
+            originalPrice: 55,
+            savings: 11,
+            discount: 20
+        },
+        {
+            id: 'promo3',
+            name: 'Double Box',
+            price: 32,
+            ingredients: '1 cheeseburger • 1 tacos poulet grillé • 3 wings • 3 tenders • Frites',
+            image: '🌮',
+            category: 'promos',
+            popular: true,
+            originalPrice: 40,
+            savings: 8,
+            discount: 20
+        },
+        {
+            id: 'promo4',
+            name: 'Menu Étudiant',
+            price: 14,
+            ingredients: '1 burger au choix • Frites • Boisson',
+            image: '🎓',
+            category: 'promos',
+            originalPrice: 18,
+            savings: 4,
+            discount: 22
+        }
+    ],
+
     // GARNITURES
     garnitures: [
         {
@@ -746,8 +798,10 @@ export const menuItems: Record<string, MenuItem[]> = {
 
 };
 
+// Updated categories with all menu sections
 export const categories: Category[] = [
     { id: 'all', name: 'Tout', emoji: '🍽️' },
+    { id: 'promos', name: 'Promos', emoji: '🎁' },
     { id: 'pizza', name: 'Pizzas', emoji: '🍕' },
     { id: 'burger', name: 'Burgers', emoji: '🍔' },
     { id: 'tacos', name: 'Tacos & Makloub', emoji: '🌮' },

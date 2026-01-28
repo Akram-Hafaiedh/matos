@@ -20,8 +20,12 @@ export interface MenuItem {
     | 'kids'
     | 'drinks'
     | 'dessert'
-    | 'supplements';
+    | 'supplements'
+    | 'promos';
     sauce?: 'rouge' | 'blanche'; // For pizzas only
+    originalPrice?: number;
+    savings?: number; // How much you save
+    discount?: number; // Percentage discount
 }
 
 

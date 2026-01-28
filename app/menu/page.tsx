@@ -1,7 +1,7 @@
 'use client';
 
 import { categories, menuItems } from '@/lib/data/menu';
-import { Flame, Minus, Plus, Star } from 'lucide-react';
+import { Flame, Minus, Plus, Star, Percent } from 'lucide-react';
 import { useState } from 'react';
 
 import { MenuItem } from '@/types/menu';
@@ -26,6 +26,43 @@ export default function MenuPage() {
     }
 
     const renderPriceAndButton = (item: MenuItem) => {
+
+        // NEW: Special rendering for promo items
+        if (item.category === 'promos' && item.originalPrice && item.price && typeof item.price === 'number') {
+            return (
+                <div className="space-y-3">
+                    {/* Savings Badge */}
+                    <div className="flex items-center justify-between">
+                        <div className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-black flex items-center gap-1">
+                            <Percent className="w-3 h-3" />
+                            -{item.discount}%
+                        </div>
+                        <span className="text-green-400 font-bold text-sm">
+                            Économisez {item.savings} DT
+                        </span>
+                    </div>
+
+                    {/* Prices */}
+                    <div className="flex items-center gap-3">
+                        <span className="text-xl text-gray-500 line-through">
+                            {item.originalPrice} DT
+                        </span>
+                        <span className="text-3xl font-black text-yellow-400">
+                            {item.price} DT
+                        </span>
+                    </div>
+
+                    {/* Add Button */}
+                    <button
+                        onClick={() => addToCart(item)}
+                        className="w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-3 rounded-full font-black text-base transition flex items-center justify-center gap-2"
+                    >
+                        <Plus className="w-5 h-5" />
+                        Ajouter au panier
+                    </button>
+                </div>
+            );
+        }
         if (!item.price) {
             return (
                 <div className="flex items-center justify-between">
@@ -170,7 +207,10 @@ export default function MenuPage() {
                     {filteredItems.map(item => (
                         <div
                             key={item.id}
-                            className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden border-2 border-gray-700 hover:border-yellow-400 transition transform hover:scale-105 shadow-xl group"
+                            className={`bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden border-2 transition transform hover:scale-105 shadow-xl group flex flex-col h-full ${item.category === 'promos'
+                                    ? 'border-yellow-400 shadow-yellow-400/20'
+                                    : 'border-gray-700 hover:border-yellow-400'
+                                }`}
                         >
                             {/* IMAGE SECTION - Big visual focal point */}
                             <div className="relative h-48 bg-gradient-to-br from-gray-800 to-gray-700 flex items-center justify-center overflow-hidden">
@@ -218,22 +258,37 @@ export default function MenuPage() {
                                 </div>
                             </div>
                             {/* CONTENT SECTION */}
-                            <div className="p-5">
+                            <div className="p-5 flex flex-col flex-1">
                                 <h3 className="text-xl font-black text-white mb-2 line-clamp-1">
                                     {item.name}
                                 </h3>
 
-                                {item.ingredients && (
-                                    <p className="text-gray-400 text-xs mb-4 line-clamp-1">
-                                        {item.ingredients}
-                                    </p>
-                                )}
+                                <div className="h-14 mb-4">
+                                    {item.ingredients && (
+                                        <p className={`text-gray-400 text-xs ${item.category === 'promos' ? 'line-clamp-3' : 'line-clamp-2'
+                                            }`}>
+                                            {item.ingredients}
+                                        </p>
+                                    )}
+                                </div>
 
-                                {renderPriceAndButton(item)}
+                                <div className="mt-auto">
+                                    {renderPriceAndButton(item)}
+                                </div>
                             </div>
                         </div>
                     ))}
                 </div>
+
+
+                {/* Empty State */}
+                {filteredItems.length === 0 && (
+                    <div className="text-center py-20">
+                        <div className="text-6xl mb-4">🍽️</div>
+                        <h3 className="text-2xl font-black text-white mb-2">Aucun article trouvé</h3>
+                        <p className="text-gray-400">Essayez de sélectionner une autre catégorie</p>
+                    </div>
+                )}
             </div>
         </div>
     )
