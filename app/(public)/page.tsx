@@ -5,40 +5,32 @@ import { ChevronRight, Clock, MapPin, Phone, Star, ArrowRight } from "lucide-rea
 import Link from "next/link";
 import Image from "next/image";
 
-import { menuItems } from '@/lib/data/menu';
+import { categories, menuItems } from '@/lib/data/menu';
 import { MenuItem } from '@/types/menu';
-import { useCart } from "./cart/CartContext";
+import { useCart } from "../cart/CartContext";
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { addToCart } = useCart();
 
-  const heroSlides = [
-    {
-      image: '/images/pizza_sauce_rouge.png',
-      fallbackEmoji: '🍕',
-      title: 'Pizzas Artisanales',
-      subtitle: 'Pâte fraîche • Ingrédients premium',
-      color: 'from-red-900/80 via-orange-900/80 to-red-800/80',
-      price: 'À partir de 10 DT'
-    },
-    {
-      image: '/images/tacos.png',
-      fallbackEmoji: '🌮',
-      title: 'Tacos & Makloub',
-      subtitle: 'Généreusement garnis • Sauces maison',
-      color: 'from-amber-900/80 via-yellow-900/80 to-orange-800/80',
-      price: 'À partir de 8 DT'
-    },
-    {
-      image: '/images/plats.png',
-      fallbackEmoji: '🍽️',
-      title: 'Plats Savoureux',
-      subtitle: 'Fait maison • Portions généreuses',
-      color: 'from-green-900/80 via-emerald-900/80 to-teal-800/80',
-      price: 'À partir de 5 DT'
-    }
-  ];
+  const heroSlides = categories
+    .filter(cat => cat.showInHero)
+    .map(cat => {
+      const items = menuItems[cat.id as keyof typeof menuItems] as MenuItem[];
+      const itemWithImage = items?.find(item => item.image.startsWith('/'));
+      const minPrice = items ? Math.min(...items.map(i =>
+        typeof i.price === 'number' ? i.price :
+          typeof i.price === 'object' && i.price?.xl ? i.price.xl : 999
+      )) : 0;
+
+      return {
+        image: itemWithImage?.image || '/images/default.png',
+        title: cat.heroTitle || cat.name,
+        subtitle: cat.heroSubtitle || '',
+        color: cat.heroColor || 'from-gray-900/80 to-gray-800/80',
+        price: `À partir de ${minPrice} DT`
+      };
+    });
 
   useEffect(() => {
     const timer = setInterval(() => {

@@ -6,7 +6,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 
 import { MenuItem } from '@/types/menu';
-import { useCart } from '../cart/CartContext';
+import { useCart } from '../../cart/CartContext';
 
 export default function MenuPage() {
 
