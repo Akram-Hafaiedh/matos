@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ChevronRight, Clock, MapPin, Phone, Star, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 import { menuItems } from '@/lib/data/menu';
 import { MenuItem } from '@/types/menu';
@@ -77,14 +78,13 @@ export default function HomePage() {
             >
               {/* Background Image */}
               <div className="absolute inset-0">
-                <img
+                <Image
                   src={slide.image}
                   alt={slide.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback to gradient if image fails
-                    e.currentTarget.style.display = 'none';
-                  }}
+                  fill
+                  className="object-cover"
+                  priority={index === 0}
+                  sizes="100vw"
                 />
                 {/* Dark overlay for text readability */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${slide.color}`}></div>
@@ -186,10 +186,12 @@ export default function HomePage() {
                 {/* Image */}
                 <div className="h-56 bg-gray-700 flex items-center justify-center overflow-hidden">
                   {item.image.startsWith('/') ? (
-                    <img
+                    <Image
                       src={item.image}
                       alt={item.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   ) : (
                     <span className="text-8xl group-hover:scale-110 transition-transform duration-300">

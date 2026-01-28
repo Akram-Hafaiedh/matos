@@ -3,6 +3,7 @@
 import { categories, menuItems } from '@/lib/data/menu';
 import { Flame, Minus, Plus, Star, Percent } from 'lucide-react';
 import { useState } from 'react';
+import Image from 'next/image';
 
 import { MenuItem } from '@/types/menu';
 import { useCart } from '../cart/CartContext';
@@ -208,17 +209,19 @@ export default function MenuPage() {
                         <div
                             key={item.id}
                             className={`bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden border-2 transition transform hover:scale-105 shadow-xl group flex flex-col h-full ${item.category === 'promos'
-                                    ? 'border-yellow-400 shadow-yellow-400/20'
-                                    : 'border-gray-700 hover:border-yellow-400'
+                                ? 'border-yellow-400 shadow-yellow-400/20'
+                                : 'border-gray-700 hover:border-yellow-400'
                                 }`}
                         >
                             {/* IMAGE SECTION - Big visual focal point */}
                             <div className="relative h-48 bg-gradient-to-br from-gray-800 to-gray-700 flex items-center justify-center overflow-hidden">
                                 {item.image.startsWith('/') ? (
-                                    <img
+                                    <Image
                                         src={item.image}
                                         alt={item.name}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        fill
+                                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                     />
                                 ) : (
                                     <div className="text-8xl group-hover:scale-110 transition-transform duration-300">
