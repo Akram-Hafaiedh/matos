@@ -43,3 +43,5 @@ next-env.d.ts
 /data/orders.json
 /data/admins.json
 .env.local
+
+/app/generated/prisma
