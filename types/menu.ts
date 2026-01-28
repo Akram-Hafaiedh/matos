@@ -33,4 +33,9 @@ export interface Category {
     id: string;
     name: string;
     emoji: string;
+
+    heroTitle?: string;
+    heroSubtitle?: string;
+    heroColor?: string;
+    showInHero?: boolean;
 }

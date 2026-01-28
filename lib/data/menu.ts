@@ -766,13 +766,21 @@ export const menuItems: Record<string, MenuItem[]> = {
             ingredients: '1 cheeseburger • 1 tacos poulet grillé • 3 wings • 3 tenders • Frites',
             image: '🌮',
             category: 'promos',
-            popular: true,
+            hot: true,
             originalPrice: 40,
             savings: 8,
             discount: 20
         },
         {
             id: 'promo4',
+            name: 'Pizza + Boisson Offerte',
+            price: null, // Special case - price depends on pizza chosen
+            ingredients: 'Toute pizza XL ou XXL + 1 boisson au choix offerte',
+            image: '🍕',
+            category: 'promos',
+        },
+        {
+            id: 'promo5',
             name: 'Menu Étudiant',
             price: 14,
             ingredients: '1 burger au choix • Frites • Boisson',
@@ -781,8 +789,20 @@ export const menuItems: Record<string, MenuItem[]> = {
             originalPrice: 18,
             savings: 4,
             discount: 22
+        },
+        {
+            id: 'promo6',
+            name: '2 Pizzas = -30%',
+            price: null, // Special case - discount on 2nd pizza
+            ingredients: 'Achetez 2 pizzas XL ou XXL et bénéficiez de -30% sur la 2ème',
+            image: '🍕🍕',
+            category: 'promos',
+            hot: true,
+            bestseller: true,
+            discount: 30
         }
     ],
+
 
     // GARNITURES
     garnitures: [
@@ -802,11 +822,35 @@ export const menuItems: Record<string, MenuItem[]> = {
 export const categories: Category[] = [
     { id: 'all', name: 'Tout', emoji: '🍽️' },
     { id: 'promos', name: 'Promos', emoji: '🎁' },
-    { id: 'pizza', name: 'Pizzas', emoji: '🍕' },
+    {
+        id: 'pizza',
+        name: 'Pizzas',
+        emoji: '🍕',
+        showInHero: true,
+        heroTitle: 'Pizzas Artisanales',
+        heroSubtitle: 'Pâte fraîche • Ingrédients premium',
+        heroColor: 'from-red-900/80 via-orange-900/80 to-red-800/80'
+    },
     { id: 'burger', name: 'Burgers', emoji: '🍔' },
-    { id: 'tacos', name: 'Tacos & Makloub', emoji: '🌮' },
+    {
+        id: 'tacos',
+        name: 'Tacos & Makloub',
+        emoji: '🌮',
+        showInHero: true,
+        heroTitle: 'Tacos & Makloub',
+        heroSubtitle: 'Généreusement garnis • Sauces maison',
+        heroColor: 'from-amber-900/80 via-yellow-900/80 to-orange-800/80'
+    },
     { id: 'sandwich', name: 'Sandwichs', emoji: '🥪' },
-    { id: 'plat', name: 'Plats', emoji: '🍽️' },
+    {
+        id: 'plat',
+        name: 'Plats',
+        emoji: '🍽️',
+        showInHero: true,
+        heroTitle: 'Plats Savoureux',
+        heroSubtitle: 'Fait maison • Portions généreuses',
+        heroColor: 'from-green-900/80 via-emerald-900/80 to-teal-800/80'
+    },
     { id: 'salade', name: 'Salades', emoji: '🥗' },
     { id: 'sides', name: 'Accompagnements', emoji: '🍟' },
     { id: 'tunisian', name: 'Coin Tunisien', emoji: '🥙' },
