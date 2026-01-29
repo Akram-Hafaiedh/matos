@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Pagination from '@/components/dashboard/Pagination';
 import { Plus, Search, Edit, Trash2, Tag, Filter } from 'lucide-react';
 import Image from 'next/image';
 
@@ -311,38 +312,11 @@ export default function AdminMenuPage() {
                     </div>
 
                     {/* Pagination */}
-                    {pagination.totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-6 pt-12">
-                            <button
-                                onClick={() => handlePageChange(pagination.currentPage - 1)}
-                                disabled={pagination.currentPage === 1}
-                                className="px-6 py-4 rounded-2xl bg-gray-900 border border-gray-800 text-[10px] font-black uppercase tracking-widest text-white hover:border-yellow-400/50 disabled:opacity-30 transition duration-500"
-                            >
-                                Précédent
-                            </button>
-                            <div className="flex gap-3">
-                                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => (
-                                    <button
-                                        key={page}
-                                        onClick={() => handlePageChange(page)}
-                                        className={`w-12 h-12 rounded-2xl font-black text-sm transition duration-500 ${pagination.currentPage === page
-                                            ? 'bg-yellow-400 text-gray-900 shadow-xl shadow-yellow-400/20'
-                                            : 'bg-gray-900 text-gray-500 hover:text-white border border-gray-800'
-                                            }`}
-                                    >
-                                        {page}
-                                    </button>
-                                ))}
-                            </div>
-                            <button
-                                onClick={() => handlePageChange(pagination.currentPage + 1)}
-                                disabled={pagination.currentPage === pagination.totalPages}
-                                className="px-6 py-4 rounded-2xl bg-gray-900 border border-gray-800 text-[10px] font-black uppercase tracking-widest text-white hover:border-yellow-400/50 disabled:opacity-30 transition duration-500"
-                            >
-                                Suivant
-                            </button>
-                        </div>
-                    )}
+                    <Pagination
+                        currentPage={pagination.currentPage}
+                        totalPages={pagination.totalPages}
+                        onPageChange={handlePageChange}
+                    />
 
                     {/* Empty State */}
                     {menuItems.length === 0 && (

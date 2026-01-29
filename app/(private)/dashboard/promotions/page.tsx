@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Pagination from '@/components/dashboard/Pagination';
 import { Plus, Edit, Trash2, Tag, Gift, Calendar, CheckCircle, XCircle, Search, Filter } from 'lucide-react';
 
 interface Promotion {
@@ -247,55 +248,11 @@ export default function PromotionsPage() {
             </div>
 
             {/* Pagination Controls */}
-            {!loading && pagination.totalPages > 1 && (
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-10 px-8">
-                    <div className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em]">
-                        Page {pagination.currentPage} / {pagination.totalPages}
-                    </div>
-
-                    <div className="flex items-center gap-6">
-                        <button
-                            disabled={pagination.currentPage === 1}
-                            onClick={() => setPagination(p => ({ ...p, currentPage: p.currentPage - 1 }))}
-                            className="px-6 py-4 rounded-2xl bg-gray-900 border border-gray-800 text-[10px] font-black uppercase tracking-widest text-white hover:border-yellow-400/50 disabled:opacity-30 transition duration-500"
-                        >
-                            Précédent
-                        </button>
-
-                        <div className="flex gap-3">
-                            {Array.from({ length: Math.min(3, pagination.totalPages) }, (_, i) => {
-                                let pageNum = pagination.currentPage;
-                                if (pagination.currentPage === pagination.totalPages) pageNum = pagination.totalPages - 2 + i;
-                                else if (pagination.currentPage > 1) pageNum = pagination.currentPage - 1 + i;
-                                else pageNum = i + 1;
-
-                                if (pageNum < 1 || pageNum > pagination.totalPages) return null;
-
-                                return (
-                                    <button
-                                        key={pageNum}
-                                        onClick={() => setPagination(p => ({ ...p, currentPage: pageNum }))}
-                                        className={`w-12 h-12 rounded-2xl font-black text-sm transition duration-500 ${pagination.currentPage === pageNum
-                                            ? 'bg-yellow-400 text-gray-900 shadow-xl shadow-yellow-400/20'
-                                            : 'bg-gray-900 text-gray-500 hover:text-white border border-gray-800'
-                                            }`}
-                                    >
-                                        {pageNum}
-                                    </button>
-                                );
-                            })}
-                        </div>
-
-                        <button
-                            disabled={pagination.currentPage === pagination.totalPages}
-                            onClick={() => setPagination(p => ({ ...p, currentPage: p.currentPage + 1 }))}
-                            className="px-6 py-4 rounded-2xl bg-gray-900 border border-gray-800 text-[10px] font-black uppercase tracking-widest text-white hover:border-yellow-400/50 disabled:opacity-30 transition duration-500"
-                        >
-                            Suivant
-                        </button>
-                    </div>
-                </div>
-            )}
+            <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                onPageChange={(page: number) => setPagination(p => ({ ...p, currentPage: page }))}
+            />
         </div>
     );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Pagination from '@/components/dashboard/Pagination';
 import { Plus, Edit, Trash2, Tag, Loader2, Search } from 'lucide-react';
 
 interface Category {
@@ -23,7 +24,7 @@ export default function CategoriesPage() {
         totalItems: 0,
         totalPages: 0,
         currentPage: 1,
-        limit: 20
+        limit: 10
     });
 
     // Debounce search
@@ -188,43 +189,11 @@ export default function CategoriesPage() {
             </div>
 
             {/* Pagination */}
-            {pagination.totalPages > 1 && (
-                <div className="flex items-center justify-center gap-6 pt-10">
-                    <button
-                        disabled={pagination.currentPage === 1}
-                        onClick={() => setPagination(p => ({ ...p, currentPage: p.currentPage - 1 }))}
-                        className="px-6 py-4 rounded-2xl bg-gray-900 border border-gray-800 text-[10px] font-black uppercase tracking-widest text-white hover:border-yellow-400/50 disabled:opacity-30 transition duration-500"
-                    >
-                        Précédent
-                    </button>
-                    <div className="flex gap-3">
-                        {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                            let pageNum = pagination.currentPage - 2 + i;
-                            if (pageNum < 1) pageNum = i + 1;
-                            if (pageNum > pagination.totalPages) return null;
-                            return (
-                                <button
-                                    key={pageNum}
-                                    onClick={() => setPagination(p => ({ ...p, currentPage: pageNum }))}
-                                    className={`w-12 h-12 rounded-2xl font-black text-sm transition duration-500 ${pagination.currentPage === pageNum
-                                        ? 'bg-yellow-400 text-gray-900 shadow-xl shadow-yellow-400/20'
-                                        : 'bg-gray-900 text-gray-500 hover:text-white border border-gray-800'
-                                        }`}
-                                >
-                                    {pageNum}
-                                </button>
-                            );
-                        })}
-                    </div>
-                    <button
-                        disabled={pagination.currentPage === pagination.totalPages}
-                        onClick={() => setPagination(p => ({ ...p, currentPage: p.currentPage + 1 }))}
-                        className="px-6 py-4 rounded-2xl bg-gray-900 border border-gray-800 text-[10px] font-black uppercase tracking-widest text-white hover:border-yellow-400/50 disabled:opacity-30 transition duration-500"
-                    >
-                        Suivant
-                    </button>
-                </div>
-            )}
+            <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                onPageChange={(page: number) => setPagination(p => ({ ...p, currentPage: page }))}
+            />
         </div>
     );
 }
