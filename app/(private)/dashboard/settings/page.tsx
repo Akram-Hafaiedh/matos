@@ -107,157 +107,183 @@ export default function AdminSettingsPage() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-12">
+        <div className="max-w-7xl mx-auto py-8 px-4 space-y-12">
             <div>
-                <h1 className="text-4xl font-black text-white mb-2">
-                    <span className="text-yellow-400">Paramètres</span> Généraux
+                <h1 className="text-4xl md:text-5xl font-black text-white italic tracking-tighter uppercase leading-none">
+                    Paramètres <span className="text-yellow-400">Généraux</span>
                 </h1>
-                <p className="text-gray-400">Gérez les informations de votre établissement et vos réseaux sociaux</p>
+                <p className="text-gray-500 font-bold mt-4 uppercase tracking-wider text-xs">Gérez les informations de votre établissement et vos réseaux sociaux.</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
                 {/* Contact Info Section */}
-                <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 space-y-6">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                        <MapPin className="text-yellow-400" />
-                        Coordonnées & Contact
-                    </h2>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-1 bg-yellow-400 rounded-full"></div>
+                        <h2 className="text-xl font-black text-white uppercase italic tracking-widest">Coordonnées & Contact</h2>
+                    </div>
 
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="col-span-2">
-                            <label className="block text-sm font-medium text-gray-400 mb-2">Adresse Complète</label>
-                            <input
-                                type="text"
-                                name="address"
-                                value={formData.address}
-                                onChange={handleChange}
-                                className="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
-                                placeholder="ex: 2015, 1 Rue Abderrazak Karabaka, Carthage"
-                            />
+                    <div className="bg-gray-900/40 p-8 rounded-[3rem] border border-gray-800 backdrop-blur-3xl space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-gray-600 text-[10px] font-black uppercase tracking-widest ml-4">Adresse Complète</label>
+                            <div className="relative group">
+                                <MapPin className="absolute left-6 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-yellow-400 transition-colors" />
+                                <input
+                                    type="text"
+                                    name="address"
+                                    value={formData.address}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-14 pr-6 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
+                                    placeholder="ex: 2015, 1 Rue Abderrazak Karabaka, Carthage"
+                                />
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-2">Téléphone</label>
-                            <input
-                                type="text"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                className="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
-                                placeholder="ex: 99 956 608"
-                            />
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-gray-600 text-[10px] font-black uppercase tracking-widest ml-4">Téléphone</label>
+                                <div className="relative group">
+                                    <Phone className="absolute left-6 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-yellow-400 transition-colors" />
+                                    <input
+                                        type="text"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-14 pr-6 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm font-mono"
+                                        placeholder="ex: 99 956 608"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-gray-600 text-[10px] font-black uppercase tracking-widest ml-4">WhatsApp</label>
+                                <div className="relative group">
+                                    <MessageCircle className="absolute left-6 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-yellow-400 transition-colors" />
+                                    <input
+                                        type="text"
+                                        name="whatsapp"
+                                        value={formData.whatsapp}
+                                        onChange={handleChange}
+                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-14 pr-6 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm font-mono"
+                                        placeholder="ex: 21699956608"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-2">WhatsApp (ex: 21699956608)</label>
-                            <input
-                                type="text"
-                                name="whatsapp"
-                                value={formData.whatsapp}
-                                onChange={handleChange}
-                                className="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
-                                placeholder="ex: 21699956608"
-                            />
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-gray-600 text-[10px] font-black uppercase tracking-widest ml-4">Latitude</label>
+                                <input
+                                    type="number"
+                                    step="any"
+                                    name="lat"
+                                    value={formData.lat}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-950 border-2 border-gray-800 text-white px-6 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-gray-600 text-[10px] font-black uppercase tracking-widest ml-4">Longitude</label>
+                                <input
+                                    type="number"
+                                    step="any"
+                                    name="lng"
+                                    value={formData.lng}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-950 border-2 border-gray-800 text-white px-6 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
+                                />
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-2">Latitude</label>
-                            <input
-                                type="number"
-                                step="any"
-                                name="lat"
-                                value={formData.lat}
-                                onChange={handleChange}
-                                className="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-2">Longitude</label>
-                            <input
-                                type="number"
-                                step="any"
-                                name="lng"
-                                value={formData.lng}
-                                onChange={handleChange}
-                                className="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
-                            />
+                        <div className="pt-4">
+                            <button
+                                type="submit"
+                                disabled={saving}
+                                className="w-full bg-yellow-400 hover:bg-yellow-300 disabled:bg-gray-800 disabled:text-gray-600 text-gray-900 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3"
+                            >
+                                {saving ? (
+                                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-900"></div>
+                                ) : (
+                                    <Save className="w-4 h-4" />
+                                )}
+                                Enregistrer les coordonnées
+                            </button>
                         </div>
                     </div>
-                </div>
+                </form>
 
                 {/* Social Media Section */}
-                <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 space-y-6">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                        <Globe className="text-yellow-400" />
-                        Réseaux Sociaux
-                    </h2>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-1 bg-yellow-400 rounded-full"></div>
+                        <h2 className="text-xl font-black text-white uppercase italic tracking-widest">Réseaux Sociaux</h2>
+                    </div>
 
-                    <div className="site-input-group space-y-4">
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Facebook className="h-5 w-5 text-gray-500" />
+                    <div className="bg-gray-900/40 p-8 rounded-[3rem] border border-gray-800 backdrop-blur-3xl space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-gray-600 text-[10px] font-black uppercase tracking-widest ml-4">Facebook</label>
+                            <div className="relative group">
+                                <Facebook className="absolute left-6 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-blue-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    name="facebook"
+                                    value={formData.facebook}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-14 pr-6 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
+                                    placeholder="Lien Facebook"
+                                />
                             </div>
-                            <input
-                                type="text"
-                                name="facebook"
-                                value={formData.facebook}
-                                onChange={handleChange}
-                                className="w-full bg-gray-950 border border-gray-800 rounded-xl pl-12 pr-4 py-3 text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
-                                placeholder="Lien Facebook"
-                            />
                         </div>
 
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Instagram className="h-5 w-5 text-gray-500" />
+                        <div className="space-y-2">
+                            <label className="text-gray-600 text-[10px] font-black uppercase tracking-widest ml-4">Instagram</label>
+                            <div className="relative group">
+                                <Instagram className="absolute left-6 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-pink-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    name="instagram"
+                                    value={formData.instagram}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-14 pr-6 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
+                                    placeholder="Lien Instagram"
+                                />
                             </div>
-                            <input
-                                type="text"
-                                name="instagram"
-                                value={formData.instagram}
-                                onChange={handleChange}
-                                className="w-full bg-gray-950 border border-gray-800 rounded-xl pl-12 pr-4 py-3 text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
-                                placeholder="Lien Instagram"
-                            />
                         </div>
 
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Video className="h-5 w-5 text-gray-500" />
+                        <div className="space-y-2">
+                            <label className="text-gray-600 text-[10px] font-black uppercase tracking-widest ml-4">TikTok</label>
+                            <div className="relative group">
+                                <Video className="absolute left-6 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-white transition-colors" />
+                                <input
+                                    type="text"
+                                    name="tiktok"
+                                    value={formData.tiktok}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-14 pr-6 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
+                                    placeholder="Lien TikTok"
+                                />
                             </div>
-                            <input
-                                type="text"
-                                name="tiktok"
-                                value={formData.tiktok}
-                                onChange={handleChange}
-                                className="w-full bg-gray-950 border border-gray-800 rounded-xl pl-12 pr-4 py-3 text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
-                                placeholder="Lien TikTok"
-                            />
+                        </div>
+
+                        <div className="pt-4">
+                            <button
+                                type="submit"
+                                disabled={saving}
+                                className="w-full bg-yellow-400 hover:bg-yellow-300 disabled:bg-gray-800 disabled:text-gray-600 text-gray-900 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3"
+                            >
+                                {saving ? (
+                                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-900"></div>
+                                ) : (
+                                    <Save className="w-4 h-4" />
+                                )}
+                                Enregistrer les réseaux
+                            </button>
                         </div>
                     </div>
-                </div>
-
-                <div className="flex justify-end pt-4">
-                    <button
-                        type="submit"
-                        disabled={saving}
-                        className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-8 py-4 rounded-xl font-black text-lg transition-all shadow-xl shadow-yellow-400/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {saving ? (
-                            <>
-                                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-gray-900"></div>
-                                Sauvegarde...
-                            </>
-                        ) : (
-                            <>
-                                <Save className="w-5 h-5" />
-                                Enregistrer les modifications
-                            </>
-                        )}
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     );
 }
