@@ -32,10 +32,12 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     }
 
     return (
-        <>
+        <div className="min-h-screen bg-black flex flex-col">
             <Navigation />
-            <main>{children}</main>
+            <main className="flex-1 w-full max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12 py-8">
+                {children}
+            </main>
             <Footer />
-        </>
+        </div>
     );
 }

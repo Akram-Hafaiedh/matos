@@ -69,15 +69,20 @@ export async function POST(request: NextRequest) {
             }
         });
 
-        // Grant loyalty points if user is logged in
-        if (userId) {
-            const pointsToGrant = Math.floor(finalTotal);
-            await prisma.user.update({
-                where: { id: userId },
+        // Create notification for all admins
+        const admins = await prisma.user.findMany({
+            where: { role: 'admin' },
+            select: { id: true }
+        });
+
+        for (const admin of admins) {
+            await prisma.notification.create({
                 data: {
-                    loyaltyPoints: {
-                        increment: pointsToGrant
-                    }
+                    userId: admin.id,
+                    title: 'Nouvelle commande',
+                    message: `La commande #${orderNumber} a été passée par ${deliveryInfo.fullName}`,
+                    type: 'order_update',
+                    link: `/dashboard/orders`,
                 }
             });
         }

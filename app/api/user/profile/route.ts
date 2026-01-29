@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
                 phone: true,
                 address: true,
                 role: true,
+                image: true,
                 createdAt: true
             }
         });
@@ -44,6 +45,50 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
             success: false,
             error: 'Erreur lors de la récupération du profil'
+        }, { status: 500 });
+    }
+}
+
+export async function PATCH(request: NextRequest) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({
+                success: false,
+                error: 'Non autorisé'
+            }, { status: 401 });
+        }
+
+        const body = await request.json();
+        const { name, phone, address, image } = body;
+
+        const updatedUser = await prisma.user.update({
+            where: { id: (session.user as any).id },
+            data: {
+                name,
+                phone,
+                address,
+                image
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                address: true,
+                image: true
+            }
+        });
+
+        return NextResponse.json({
+            success: true,
+            user: updatedUser
+        });
+    } catch (error) {
+        console.error('Error updating user profile:', error);
+        return NextResponse.json({
+            success: false,
+            error: 'Erreur lors de la mise à jour du profil'
         }, { status: 500 });
     }
 }
