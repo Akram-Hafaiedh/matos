@@ -46,12 +46,12 @@ model Session {
   @@map("sessions") // Maps to your existing table name
 }
 
-// UPDATE your existing User model. Do not duplicate it.
 model User {
   id            String        @id @default(cuid()) // Ensure this matches your auth model
   name          String?
   email         String?       @unique
   emailVerified DateTime?     @map("email_verified")
+  password      String?       @db.VarChar(255)
   image         String?
   phone         String?       @db.VarChar(20) // Your custom field
   address       String? // Your custom field
@@ -165,6 +165,7 @@ model Order {
   orderDate       DateTime  @default(now()) @map("order_date")
   deliveredAt     DateTime? @map("delivered_at")
   createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   // Relations
   user       User?       @relation(fields: [userId], references: [id])

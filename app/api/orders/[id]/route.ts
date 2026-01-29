@@ -1,22 +1,8 @@
 // app/api/orders/[id]/route.ts
+import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
-
-const ORDERS_FILE = path.join(process.cwd(), 'data', 'orders.json');
-
-async function getOrders() {
-    try {
-        const data = await fs.readFile(ORDERS_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        return [];
-    }
-}
-
-async function saveOrders(orders: any[]) {
-    await fs.writeFile(ORDERS_FILE, JSON.stringify(orders, null, 2));
-}
+import { authOptions } from '../../auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
 
 // GET - Fetch single order
 export async function GET(
@@ -24,8 +10,33 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
-        const orders = await getOrders();
-        const order = orders.find((o: any) => o.id === params.id);
+
+        const session = await getServerSession(authOptions);
+
+        if (!session) {
+            return NextResponse.json({
+                success: false,
+                error: 'Non autorisé'
+            }, { status: 401 });
+        }
+
+        const order = await prisma.order.findUnique({
+            where: { id: parseInt(params.id) },
+            include: {
+                orderItems: {
+                    include: {
+                        menuItem: true
+                    }
+                },
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
+                }
+            }
+        });
 
         if (!order) {
             return NextResponse.json({
@@ -54,38 +65,52 @@ export async function PATCH(
     { params }: { params: { id: string } }
 ) {
     try {
+
+        const session = await getServerSession(authOptions);
+
+        // Check if user is admin
+        if (!session || (session.user as any)?.role !== 'admin') {
+            return NextResponse.json({
+                success: false,
+                error: 'Non autorisé'
+            }, { status: 401 });
+        }
+
         const body = await request.json();
         const { status } = body;
 
-        const orders = await getOrders();
-        const orderIndex = orders.findIndex((o: any) => o.id === params.id);
-
-        if (orderIndex === -1) {
+        // Validate status
+        const validStatuses = ['pending', 'confirmed', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'];
+        if (!validStatuses.includes(status)) {
             return NextResponse.json({
                 success: false,
-                error: 'Commande introuvable'
-            }, { status: 404 });
+                error: 'Statut invalide'
+            }, { status: 400 });
         }
 
         // Update order
-        orders[orderIndex].status = status;
-        orders[orderIndex].updatedAt = new Date().toISOString();
+        const updateData: any = {
+            status,
+            updatedAt: new Date()
+        };
 
-        // Add timestamps for specific statuses
-        if (status === 'confirmed') {
-            orders[orderIndex].confirmedAt = new Date().toISOString();
-        } else if (status === 'delivered') {
-            orders[orderIndex].deliveredAt = new Date().toISOString();
-        }
 
-        await saveOrders(orders);
+        const order = await prisma.order.update({
+            where: { id: parseInt(params.id) },
+            data: updateData,
+            include: {
+                orderItems: true,
+                user: true
+            }
+        });
+
 
         // TODO: Send SMS to customer about status update
-        // await sendStatusUpdateSMS(orders[orderIndex]);
+        // await sendStatusUpdateSMS(order);
 
         return NextResponse.json({
             success: true,
-            order: orders[orderIndex],
+            order,
             message: 'Statut mis à jour avec succès'
         });
 
@@ -104,17 +129,20 @@ export async function DELETE(
     { params }: { params: { id: string } }
 ) {
     try {
-        const orders = await getOrders();
-        const filteredOrders = orders.filter((o: any) => o.id !== params.id);
 
-        if (orders.length === filteredOrders.length) {
+        const session = await getServerSession(authOptions);
+
+        // Check if user is admin
+        if (!session || (session.user as any)?.role !== 'admin') {
             return NextResponse.json({
                 success: false,
-                error: 'Commande introuvable'
-            }, { status: 404 });
+                error: 'Non autorisé'
+            }, { status: 401 });
         }
 
-        await saveOrders(filteredOrders);
+        await prisma.order.delete({
+            where: { id: parseInt(params.id) }
+        });
 
         return NextResponse.json({
             success: true,

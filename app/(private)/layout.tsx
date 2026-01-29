@@ -1,16 +1,13 @@
-// app/admin/layout.tsx
-'use client';
+// app/(private)/layout.tsx
+import { Providers } from '@/app/providers';
+import AdminLayoutContent from './AdminLayoutContent';
 
-import { SessionProvider } from 'next-auth/react';
-
-export default function AdminLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
     return (
-        <SessionProvider>
-            {children}
-        </SessionProvider>
+        <Providers>
+            <AdminLayoutContent>
+                {children}
+            </AdminLayoutContent>
+        </Providers>
     );
 }

@@ -1,68 +1,67 @@
+// app/api/orders/route.ts
+import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
-
-const ORDERS_FILE = path.join(process.cwd(), 'data', 'orders.json');
-
-
-// Ensure data directory exists
-async function ensureDataDirectory() {
-    const dataDir = path.join(process.cwd(), 'data');
-    try {
-        await fs.access(dataDir);
-    } catch {
-        await fs.mkdir(dataDir, { recursive: true });
-    }
-}
-
-// Read orders from file
-async function getOrders() {
-    try {
-        await ensureDataDirectory();
-        const data = await fs.readFile(ORDERS_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        // If file doesn't exist, return empty array
-        return [];
-    }
-}
-async function saveOrders(orders: any[]) {
-    await ensureDataDirectory();
-    await fs.writeFile(ORDERS_FILE, JSON.stringify(orders, null, 2));
-}
+import { authOptions } from '../auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
+        const { cart, deliveryInfo, paymentMethod, totalPrice, deliveryFee, finalTotal } = body;
 
-        // Generate unique order ID and number
-        const orderId = `order_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        // Generate unique order number
         const orderNumber = `MAT${Date.now().toString().slice(-6)}`;
 
-        // Create order object
-        const order = {
-            id: orderId,
-            orderNumber,
-            cart: body.cart,
-            deliveryInfo: body.deliveryInfo,
-            paymentMethod: body.paymentMethod,
-            totalPrice: body.totalPrice,
-            deliveryFee: body.deliveryFee,
-            finalTotal: body.finalTotal,
-            status: 'pending',
-            orderDate: body.orderDate,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
+        const session = await getServerSession(authOptions);
+        const userId = session?.user ? (session.user as any).id : null;
 
-        // Read existing orders
-        const orders = await getOrders();
+        // Prepare order items from cart
+        const orderItems = Object.entries(cart).map(([key, cartItem]: [string, any]) => {
+            const { item, quantity, selectedSize } = cartItem;
+            let itemPrice = 0;
 
-        // Add new order
-        orders.push(order);
+            if (typeof item.price === 'number') {
+                itemPrice = item.price;
+            } else if (item.price && selectedSize) {
+                itemPrice = item.price[selectedSize] || 0;
+            }
 
-        // Save to file
-        await saveOrders(orders);
+            return {
+                menuItemId: item.id,
+                itemName: item.name,
+                itemPrice,
+                quantity,
+                selectedSize: selectedSize || null,
+                notes: null
+            };
+        });
+
+        // Create order in database
+        const order = await prisma.order.create({
+            data: {
+                orderNumber,
+                userId,
+                customerName: deliveryInfo.fullName,
+                customerPhone: deliveryInfo.phone,
+                customerEmail: deliveryInfo.email || null,
+                deliveryAddress: deliveryInfo.address,
+                city: deliveryInfo.city,
+                notes: deliveryInfo.notes || null,
+                deliveryTime: deliveryInfo.deliveryTime,
+                scheduledTime: deliveryInfo.scheduledTime ? new Date(deliveryInfo.scheduledTime) : null,
+                paymentMethod,
+                subtotal: totalPrice,
+                deliveryFee,
+                totalAmount: finalTotal,
+                status: 'pending',
+                orderItems: {
+                    create: orderItems
+                }
+            },
+            include: {
+                orderItems: true
+            }
+        });
 
         // TODO: Send SMS notification to restaurant
         // await sendSMSToRestaurant(order);
@@ -89,31 +88,78 @@ export async function POST(request: NextRequest) {
 // GET - Fetch all orders (with optional filtering)
 export async function GET(request: NextRequest) {
     try {
+
+        const session = await getServerSession(authOptions);
+
+        // Check if user is admin
+        if (!session || (session.user as any)?.role !== 'admin') {
+            return NextResponse.json({
+                success: false,
+                error: 'Non autorisé'
+            }, { status: 401 });
+        }
+
         const { searchParams } = new URL(request.url);
         const status = searchParams.get('status');
         const limit = searchParams.get('limit');
 
-        let orders = await getOrders();
-
-        // Filter by status if provided
-        if (status) {
-            orders = orders.filter((order: any) => order.status === status);
+        const where: any = {};
+        if (status && status !== 'all') {
+            where.status = status;
         }
 
-        // Sort by date (newest first)
-        orders.sort((a: any, b: any) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
+        const orders = await prisma.order.findMany({
+            where,
+            include: {
+                orderItems: {
+                    include: {
+                        menuItem: true
+                    }
+                },
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            },
+            take: limit ? parseInt(limit) : undefined
+        });
 
-        // Limit results if specified
-        if (limit) {
-            orders = orders.slice(0, parseInt(limit));
-        }
+
+        // Transform orders to match frontend expectations
+        const transformedOrders = orders.map(order => ({
+            id: order.id.toString(),
+            orderNumber: order.orderNumber,
+            deliveryInfo: {
+                fullName: order.customerName,
+                phone: order.customerPhone,
+                email: order.customerEmail,
+                address: order.deliveryAddress,
+                city: order.city,
+                notes: order.notes
+            },
+            cart: order.orderItems,
+            paymentMethod: order.paymentMethod,
+            totalPrice: order.subtotal,
+            deliveryFee: order.deliveryFee,
+            finalTotal: order.totalAmount,
+            status: order.status,
+            deliveryTime: order.deliveryTime,
+            scheduledTime: order.scheduledTime,
+            createdAt: order.createdAt.toISOString(),
+            updatedAt: order.updatedAt.toISOString(),
+            user: order.user
+        }));
 
         return NextResponse.json({
             success: true,
-            orders,
-            count: orders.length
+            orders: transformedOrders,
+            count: transformedOrders.length
         });
 
     } catch (error) {

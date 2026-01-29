@@ -1,7 +1,15 @@
-- [ ] Add real product images
+- [x] Add real product images
+- [ ] Add loyalty system for the online clients
+- [ ] add the client management into the dashboard with the possibility to add/edit/delete clients and view their orders
+- [ ] add the possibility to add/edit/delete promotions
+- [ ] add the possibility to add/edit/delete categories
+- [ ] add the possibility to add/edit/delete menu items
+- [ ] add the possibility to add/edit/delete orders
+- [ ] Create a client dashboard
+- [ ] Add sms notifications
 - [ ] Implement actual checkout/payment
-- [ ] Add user authentication
-- [ ] Order history
+- [x] Add user authentication
+- [x] Order history
 - [ ] Favorites system
 - [ ] Real-time order tracking
 - [ ] Mobile app version
