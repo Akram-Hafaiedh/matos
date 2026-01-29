@@ -1,12 +1,12 @@
 'use client';
 
 import { CartItem } from "@/types/cart";
-import { MenuItem } from "@/types/menu";
+import { MenuItem, Promotion } from "@/types/menu";
 import { createContext, ReactNode, useContext, useState } from "react";
 
 interface CartContextType {
     cart: { [key: string]: CartItem };
-    addToCart: (item: MenuItem, size?: string) => void;
+    addToCart: (item: MenuItem | Promotion, type: 'menuItem' | 'promotion', size?: string, choices?: any) => void;
     removeFromCart: (cartKey: string) => void;
     clearCart: () => void;
     getTotalPrice: () => number;
@@ -18,16 +18,20 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
     const [cart, setCart] = useState<{ [key: string]: CartItem }>({});
 
-    const addToCart = (item: MenuItem, size?: string) => {
-        // Create unique key: if size is provided, use "id-size", otherwise just "id"
-        const cartKey = size ? `${item.id}-${size}` : item.id;
+    const addToCart = (item: any, type: 'menuItem' | 'promotion', size?: string, choices?: any) => {
+        // Create unique key
+        const cartKey = type === 'promotion'
+            ? `promo-${item.id}${choices ? `-${JSON.stringify(choices)}` : ''}`
+            : (size ? `${item.id}-${size}` : `${item.id}`);
 
         setCart(prev => ({
             ...prev,
             [cartKey]: {
                 item,
+                type,
                 quantity: (prev[cartKey]?.quantity || 0) + 1,
-                selectedSize: size
+                selectedSize: size,
+                choices
             }
         }));
     }
@@ -62,19 +66,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
     // Calculate total price
     const getTotalPrice = () => {
         return Object.values(cart).reduce((total, cartItem) => {
-            const { item, quantity, selectedSize } = cartItem;
+            const { item, quantity, selectedSize, type } = cartItem;
             let itemPrice = 0;
 
-            if (typeof item.price === 'number') {
-                // Simple numeric price
-                itemPrice = item.price;
-            } else if (item.price && typeof item.price === 'object') {
-                // Object price (xl/xxl or multiple sizes)
-                if (selectedSize && item.price[selectedSize]) {
-                    itemPrice = item.price[selectedSize];
-                } else if ('xl' in item.price) {
-                    // Default to XL if no size selected
-                    itemPrice = item.price.xl;
+            if (type === 'promotion') {
+                itemPrice = (item as Promotion).price || 0;
+            } else {
+                const menuItem = item as MenuItem;
+                if (typeof menuItem.price === 'number') {
+                    itemPrice = menuItem.price;
+                } else if (menuItem.price && typeof menuItem.price === 'object') {
+                    if (selectedSize && (menuItem.price as any)[selectedSize]) {
+                        itemPrice = (menuItem.price as any)[selectedSize];
+                    } else if ('xl' in menuItem.price) {
+                        itemPrice = (menuItem.price as any).xl;
+                    }
                 }
             }
 

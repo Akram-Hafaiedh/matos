@@ -122,21 +122,25 @@ model MenuItem {
 }
 
 model Promotion {
-  id            Int       @id @default(autoincrement())
-  name          String    @db.VarChar(255)
-  description   String?
-  price         Float?
-  originalPrice Float?    @map("original_price")
-  discount      Int?
-  imageUrl      String?   @map("image_url") @db.VarChar(500)
-  emoji         String?   @db.VarChar(10)
-  badgeText     String?   @map("badge_text") @db.VarChar(50)
-  badgeColor    String?   @map("badge_color") @db.VarChar(50)
-  isActive      Boolean   @default(true) @map("is_active")
-  startDate     DateTime? @map("start_date")
-  endDate       DateTime? @map("end_date")
-  conditions    String?
-  createdAt     DateTime  @default(now()) @map("created_at")
+  id             Int       @id @default(autoincrement())
+  name           String    @db.VarChar(255)
+  description    String?
+  price          Float?
+  originalPrice  Float?    @map("original_price")
+  discount       Int?
+  imageUrl       String?   @map("image_url") @db.VarChar(500)
+  emoji          String?   @db.VarChar(10)
+  badgeText      String?   @map("badge_text") @db.VarChar(50)
+  badgeColor     String?   @map("badge_color") @db.VarChar(50)
+  isActive       Boolean   @default(true) @map("is_active")
+  startDate      DateTime? @map("start_date")
+  endDate        DateTime? @map("end_date")
+  conditions     String?
+  selectionRules Json?     @map("selection_rules")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  orderItems OrderItem[]
 
   @@map("promotions")
 }
@@ -183,11 +187,14 @@ model OrderItem {
   quantity     Int      @default(1)
   selectedSize String?  @map("selected_size") @db.VarChar(50)
   notes        String?
+  promotionId  Int?     @map("promotion_id")
+  choices      Json?    @map("choices")
   createdAt    DateTime @default(now()) @map("created_at")
 
   // Relations
-  order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  menuItem MenuItem? @relation(fields: [menuItemId], references: [id])
+  order     Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem  MenuItem?  @relation(fields: [menuItemId], references: [id])
+  promotion Promotion? @relation(fields: [promotionId], references: [id])
 
   @@map("order_items")
 }

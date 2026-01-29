@@ -1,7 +1,9 @@
-import { MenuItem } from "./menu";
+import { MenuItem, Promotion } from "./menu";
 
 export interface CartItem {
-    item: MenuItem;
+    item: MenuItem | Promotion;
+    type: 'menuItem' | 'promotion';
     quantity: number;
-    selectedSize?: string; // For pizzas (xl/xxl) and tacos
+    selectedSize?: string;
+    choices?: any;
 }

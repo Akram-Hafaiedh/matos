@@ -1,5 +1,5 @@
 export interface MenuItem {
-    id: string;
+    id: number | string;
     name: string;
     price?: number | Record<string, number> | null;
     ingredients?: string;
@@ -38,4 +38,21 @@ export interface Category {
     heroSubtitle?: string;
     heroColor?: string;
     showInHero?: boolean;
+}
+
+export interface Promotion {
+    id: number;
+    name: string;
+    description: string;
+    price: number | null;
+    originalPrice: number | null;
+    discount: number | null;
+    imageUrl: string | null;
+    emoji: string | null;
+    badgeText: string | null;
+    badgeColor: string | null;
+    isActive: boolean;
+    startDate: Date | string | null;
+    endDate: Date | string | null;
+    selectionRules?: any;
 }

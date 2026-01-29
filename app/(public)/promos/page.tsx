@@ -1,49 +1,125 @@
+// app/(public)/promos/page.tsx
 'use client';
 
 import { Flame, Percent, Gift, Clock, Star, ShoppingCart, Users, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useCart } from '../../cart/CartContext';
-import { menuItems } from '@/lib/data/menu';
-import Loyalty from '../../components/Loyalty';
+import { useEffect, useState } from 'react';
+import PromotionConfigModal from '@/app/components/PromotionConfigModal';
+
+interface PromoItem {
+    id: number;
+    name: string;
+    description: string;
+    description_long?: string;
+    price: any;
+    originalPrice?: number;
+    imageUrl: string;
+    emoji: string;
+    popular: boolean;
+    bestseller: boolean;
+    hot: boolean;
+    discount: number;
+    badgeText?: string;
+    badgeColor?: string;
+}
 
 export default function PromosPage() {
     const { addToCart } = useCart();
+    const [promos, setPromos] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [configPromo, setConfigPromo] = useState<any>(null); // Promotion being configured
 
-    const promos = (menuItems.promos || []).map((promo, index) => {
-        // Assign UI properties based on promo characteristics
-        const getColor = () => {
-            if (promo.bestseller) return 'from-yellow-600 to-amber-600';
-            if (promo.hot) return 'from-red-600 to-orange-600';
-            if (promo.popular) return 'from-orange-600 to-red-600';
-            return ['from-purple-600 to-pink-600', 'from-green-600 to-teal-600', 'from-blue-600 to-cyan-600'][index % 3];
+    useEffect(() => {
+        const fetchPromos = async () => {
+            try {
+                const res = await fetch('/api/promotions?active=true');
+                const data = await res.json();
+                if (data.success) {
+                    setPromos(processPromos(data.promotions));
+                }
+            } catch (error) {
+                console.error("Failed to fetch promos", error);
+            } finally {
+                setLoading(false);
+            }
         };
+        fetchPromos();
+    }, []);
 
-        const getBadge = () => {
-            if (promo.bestseller) return 'BEST DEAL';
-            if (promo.popular) return 'POPULAIRE';
-            if (promo.hot) return 'DUO';
-            if (promo.name.includes('Pizza')) return 'CADEAU';
-            if (promo.name.includes('Étudiant')) return 'ÉTUDIANT';
-            return 'PROMO';
-        };
+    const processPromos = (items: any[]) => {
+        return items.map((promo, index) => {
+            // Assign UI properties based on promo characteristics
+            const getColor = () => {
+                if (promo.bestseller) return 'from-yellow-600 to-amber-600';
+                if (promo.hot) return 'from-red-600 to-orange-600';
+                if (promo.popular) return 'from-orange-600 to-red-600';
+                return ['from-purple-600 to-pink-600', 'from-green-600 to-teal-600', 'from-blue-600 to-cyan-600'][index % 3];
+            };
 
-        const getIcon = () => {
-            if (promo.name.includes('Family')) return Users;
-            if (promo.name.includes('Pizza')) return Gift;
-            if (promo.name.includes('Étudiant')) return Zap;
-            return Flame;
-        };
+            const getBadge = () => {
+                if (promo.bestseller) return 'BEST DEAL';
+                if (promo.popular) return 'POPULAIRE';
+                if (promo.hot) return 'DUO';
+                if (promo.name.includes('Pizza')) return 'CADEAU';
+                if (promo.name.includes('Étudiant')) return 'ÉTUDIANT';
+                return 'PROMO';
+            };
 
-        return {
-            ...promo,
-            color: getColor(),
-            badge: getBadge(),
-            icon: getIcon(),
-            // Add flags for UI
-            limitedTime: promo.name.includes('Pizza + Boisson'),
-            weekdaysOnly: promo.name.includes('Étudiant')
-        };
-    });
+            const getIcon = () => {
+                if (promo.name.includes('Family')) return Users;
+                if (promo.name.includes('Pizza')) return Gift;
+                if (promo.name.includes('Étudiant')) return Zap;
+                return Flame;
+            };
+
+            return {
+                ...promo,
+                color: getColor(),
+                badge: promo.badgeText || getBadge(),
+                icon: getIcon(),
+                limitedTime: promo.name.includes('Pizza + Boisson'),
+                weekdaysOnly: promo.name.includes('Étudiant'),
+                // Use description directly as it's already a string from seed
+                displayDescription: promo.description
+            };
+        });
+    }
+
+    const handleAddToCart = (promo: any) => {
+        console.log('Checking promo for rules:', promo.name, promo.selectionRules);
+
+        // Handle case where selectionRules might be a string (defense-in-depth)
+        let rules = promo.selectionRules;
+        if (typeof rules === 'string') {
+            try {
+                rules = JSON.parse(rules);
+            } catch (e) {
+                rules = [];
+            }
+        }
+
+        if (rules && Array.isArray(rules) && rules.length > 0) {
+            console.log('Opening modal for:', promo.name);
+            setConfigPromo({ ...promo, selectionRules: rules });
+        } else {
+            console.log('Adding directly to cart (no rules):', promo.name);
+            addToCart(promo, 'promotion');
+        }
+    };
+
+    const confirmPromotion = (choices: any) => {
+        addToCart(configPromo, 'promotion', undefined, choices);
+        setConfigPromo(null);
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-yellow-400"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-900 py-20">
@@ -69,7 +145,7 @@ export default function PromosPage() {
                     <div className="bg-gradient-to-br from-red-600 to-orange-600 rounded-2xl p-6 text-center">
                         <Percent className="w-12 h-12 text-white mx-auto mb-3" />
                         <div className="text-4xl font-black text-white mb-2">
-                            -{Math.max(...promos.filter(p => p.discount).map(p => p.discount || 0))}%
+                            -{Math.max(...promos.map(p => p.discount || 0))}%
                         </div>
                         <p className="text-white font-bold">Économie maximale</p>
                     </div>
@@ -118,8 +194,15 @@ export default function PromosPage() {
 
                                 {/* Content */}
                                 <div className="relative p-8 pt-20">
-                                    {/* Emoji */}
-                                    <div className="text-7xl mb-6 text-center">{promo.image}</div>
+                                    {/* Emoji/Image */}
+                                    <div className="text-7xl mb-6 text-center">
+                                        {promo.imageUrl && (promo.imageUrl.startsWith('http') || promo.imageUrl.startsWith('/')) ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img src={promo.imageUrl} alt={promo.name} className="h-24 w-24 object-contain mx-auto" />
+                                        ) : (
+                                            promo.emoji || promo.imageUrl || '🎁'
+                                        )}
+                                    </div>
 
                                     {/* Title */}
                                     <h3 className="text-4xl font-black text-white mb-4 text-center">
@@ -128,7 +211,7 @@ export default function PromosPage() {
 
                                     {/* Ingredients/Description */}
                                     <p className="text-gray-300 text-lg mb-6 text-center leading-relaxed min-h-[4rem]">
-                                        {promo.ingredients}
+                                        {promo.displayDescription}
                                     </p>
 
                                     {/* Price Section */}
@@ -142,11 +225,11 @@ export default function PromosPage() {
 
                                         {/* Current Price or Discount */}
                                         <span className="text-5xl font-black text-yellow-400">
-                                            {promo.price !== null
-                                                ? `${promo.price} DT`  // Fixed price (e.g., 68 DT)
+                                            {promo.price && promo.price !== 0
+                                                ? `${typeof promo.price === 'number' ? promo.price : 'Sur Mesure'} DT`
                                                 : promo.discount
-                                                    ? `-${promo.discount}%`  // Just discount (e.g., -30%)
-                                                    : 'Prix Pizza'  // Variable price
+                                                    ? `-${promo.discount}%`
+                                                    : 'Voir Offre'
                                             }
                                         </span>
                                     </div>
@@ -166,22 +249,20 @@ export default function PromosPage() {
                                     </div>
 
                                     {/* CTA Button */}
-                                    <Link
-                                        href="/menu"
+                                    <button
+                                        onClick={() => handleAddToCart(promo)}
                                         className="block w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-4 rounded-full font-black text-xl transition shadow-xl text-center group-hover:scale-105 transform duration-200"
                                     >
                                         <span className="flex items-center justify-center gap-2">
                                             <ShoppingCart className="w-6 h-6" />
-                                            Commander Maintenant
+                                            Ajouter au Panier
                                         </span>
-                                    </Link>
+                                    </button>
                                 </div>
                             </div>
                         );
                     })}
                 </div>
-
-                {/* <Loyalty /> */}
 
                 {/* How It Works */}
                 <div className="mt-16 bg-gray-800 rounded-3xl p-12">
@@ -225,6 +306,15 @@ export default function PromosPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Selection Modal */}
+            {configPromo && (
+                <PromotionConfigModal
+                    promotion={configPromo}
+                    onClose={() => setConfigPromo(null)}
+                    onConfirm={confirmPromotion}
+                />
+            )}
         </div>
     );
 }

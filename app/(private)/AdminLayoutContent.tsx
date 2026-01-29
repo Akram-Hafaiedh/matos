@@ -11,7 +11,9 @@ import {
     Settings,
     LogOut,
     Menu as MenuIcon,
-    X
+    X,
+    Tag,
+    Gift
 } from 'lucide-react';
 
 export default function AdminLayoutContent({ children }: { children: React.ReactNode }) {
@@ -53,6 +55,9 @@ export default function AdminLayoutContent({ children }: { children: React.React
     const navigation = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'Commandes', href: '/dashboard/orders', icon: ShoppingBag },
+        { name: 'Menu', href: '/dashboard/menu', icon: MenuIcon },
+        { name: 'Catégories', href: '/dashboard/categories', icon: Tag },
+        { name: 'Promotions', href: '/dashboard/promotions', icon: Gift },
         { name: 'Clients', href: '/dashboard/customers', icon: Users },
         { name: 'Paramètres', href: '/dashboard/settings', icon: Settings },
     ];
@@ -102,8 +107,8 @@ export default function AdminLayoutContent({ children }: { children: React.React
                                     setSidebarOpen(false);
                                 }}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition ${isActive
-                                        ? 'bg-yellow-400 text-gray-900'
-                                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                                    ? 'bg-yellow-400 text-gray-900'
+                                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                                     }`}
                             >
                                 <item.icon className="w-5 h-5" />

@@ -55,7 +55,7 @@ export default function MenuPage() {
 
                     {/* Add Button */}
                     <button
-                        onClick={() => addToCart(item)}
+                        onClick={() => addToCart(item, 'menuItem')}
                         className="w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-3 rounded-full font-black text-base transition flex items-center justify-center gap-2"
                     >
                         <Plus className="w-5 h-5" />
@@ -69,7 +69,7 @@ export default function MenuPage() {
                 <div className="flex items-center justify-between">
                     <span className="text-yellow-400 font-bold text-sm">Prix variable</span>
                     <button
-                        onClick={() => addToCart(item)}
+                        onClick={() => addToCart(item, 'menuItem')}
                         className="bg-yellow-400 text-gray-900 p-2 rounded-full hover:bg-yellow-300 transition shrink-0"
                     >
                         <Plus className="w-4 h-4" />
@@ -83,7 +83,7 @@ export default function MenuPage() {
                 <div className="flex items-center justify-between">
                     <span className="text-3xl font-black text-yellow-400">{item.price} DT</span>
                     <button
-                        onClick={() => addToCart(item)}
+                        onClick={() => addToCart(item, 'menuItem')}
                         className="bg-yellow-400 text-gray-900 p-2 rounded-full hover:bg-yellow-300 transition shrink-0"
                     >
                         <Plus className="w-4 h-4" />
@@ -98,14 +98,14 @@ export default function MenuPage() {
                 return (
                     <div className="space-y-2">
                         <button
-                            onClick={() => addToCart(item, 'xl')}
+                            onClick={() => addToCart(item, 'menuItem', 'xl')}
                             className="w-full bg-gray-800 hover:bg-yellow-400 hover:text-gray-900 text-white px-4 py-2 rounded-lg font-bold text-sm transition flex items-center justify-between"
                         >
                             <span>XL</span>
                             <span>{item.price.xl} DT</span>
                         </button>
                         <button
-                            onClick={() => addToCart(item, 'xxl')}
+                            onClick={() => addToCart(item, 'menuItem', 'xxl')}
                             className="w-full bg-gray-800 hover:bg-yellow-400 hover:text-gray-900 text-white px-4 py-2 rounded-lg font-bold text-sm transition flex items-center justify-between"
                         >
                             <span>XXL</span>
@@ -119,7 +119,7 @@ export default function MenuPage() {
                 <div className="flex items-center justify-between">
                     <span className="text-yellow-400 font-bold text-sm">Tailles multiples</span>
                     <button
-                        onClick={() => addToCart(item)}
+                        onClick={() => addToCart(item, 'menuItem')}
                         className="bg-yellow-400 text-gray-900 p-2 rounded-full hover:bg-yellow-300 transition shrink-0"
                     >
                         <Plus className="w-4 h-4" />
@@ -215,7 +215,7 @@ export default function MenuPage() {
                         >
                             {/* IMAGE SECTION - Big visual focal point */}
                             <div className="relative h-48 bg-gradient-to-br from-gray-800 to-gray-700 flex items-center justify-center overflow-hidden">
-                                {item.image.startsWith('/') ? (
+                                {item.image && (item.image.startsWith('/') || item.image.startsWith('http')) ? (
                                     <Image
                                         src={item.image}
                                         alt={item.name}
@@ -225,7 +225,7 @@ export default function MenuPage() {
                                     />
                                 ) : (
                                     <div className="text-8xl group-hover:scale-110 transition-transform duration-300">
-                                        {item.image}
+                                        {item.image || '🍽️'}
                                     </div>
                                 )}
 

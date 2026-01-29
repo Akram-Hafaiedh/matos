@@ -17,21 +17,27 @@ export async function POST(request: NextRequest) {
 
         // Prepare order items from cart
         const orderItems = Object.entries(cart).map(([key, cartItem]: [string, any]) => {
-            const { item, quantity, selectedSize } = cartItem;
+            const { item, quantity, selectedSize, type, choices } = cartItem;
             let itemPrice = 0;
 
-            if (typeof item.price === 'number') {
-                itemPrice = item.price;
-            } else if (item.price && selectedSize) {
-                itemPrice = item.price[selectedSize] || 0;
+            if (type === 'promotion') {
+                itemPrice = item.price || 0;
+            } else {
+                if (typeof item.price === 'number') {
+                    itemPrice = item.price;
+                } else if (item.price && selectedSize) {
+                    itemPrice = item.price[selectedSize] || 0;
+                }
             }
 
             return {
-                menuItemId: item.id,
+                menuItemId: type === 'menuItem' ? item.id : null,
+                promotionId: type === 'promotion' ? item.id : null,
                 itemName: item.name,
                 itemPrice,
                 quantity,
                 selectedSize: selectedSize || null,
+                choices: choices || null,
                 notes: null
             };
         });
@@ -113,7 +119,8 @@ export async function GET(request: NextRequest) {
             include: {
                 orderItems: {
                     include: {
-                        menuItem: true
+                        menuItem: true,
+                        promotion: true
                     }
                 },
                 user: {

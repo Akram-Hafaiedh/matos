@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useCart } from "./CartContext";
-import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { Minus, Plus, ShoppingBag, Trash2, X, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function GlobalCart() {
@@ -10,7 +10,7 @@ export default function GlobalCart() {
 
     const [cartOpen, setCartOpen] = useState(false);
 
-    const { cart, removeFromCart, addToCart, clearCart, getTotalPrice, getTotalItems } = useCart();
+    const { cart, removeFromCart, addToCart, clearCart, getTotalPrice, getTotalItems } = useCart() as any;
 
     const totalItems = getTotalItems();
 
@@ -55,15 +55,24 @@ export default function GlobalCart() {
                     {/* Cart Items - Scrollable */}
                     <div className="flex-1 overflow-y-auto p-6 space-y-4">
                         {Object.entries(cart).map(([key, cartItem]) => {
-                            const { item, quantity, selectedSize } = cartItem;
+                            const { item, quantity, selectedSize, type } = cartItem as any;
 
                             // Calculate price for this item
                             let itemPrice = 0;
-                            if (typeof item.price === 'number') {
-                                itemPrice = item.price;
-                            } else if (item.price && typeof item.price === 'object' && selectedSize) {
-                                itemPrice = item.price[selectedSize] || 0;
+                            if (type === 'promotion') {
+                                itemPrice = (item as any).price || 0;
+                            } else {
+                                const menuItem = item as any;
+                                if (typeof menuItem.price === 'number') {
+                                    itemPrice = menuItem.price;
+                                } else if (menuItem.price && typeof menuItem.price === 'object' && selectedSize) {
+                                    itemPrice = menuItem.price[selectedSize] || 0;
+                                }
                             }
+
+                            const itemImage = type === 'promotion'
+                                ? ((item as any).imageUrl || (item as any).emoji || '🎁')
+                                : ((item as any).image || '🍕');
 
                             return (
                                 <div
@@ -74,14 +83,14 @@ export default function GlobalCart() {
 
                                         {/* Item Image */}
                                         <div className="w-12 h-12 flex-shrink-0 bg-gray-700 rounded-lg overflow-hidden flex items-center justify-center">
-                                            {item.image.startsWith('/') ? (
+                                            {itemImage.startsWith('/') || itemImage.startsWith('http') ? (
                                                 <img
-                                                    src={item.image}
+                                                    src={itemImage}
                                                     alt={item.name}
                                                     className="w-full h-full object-cover"
                                                 />
                                             ) : (
-                                                <span className="text-2xl">{item.image}</span>
+                                                <span className="text-2xl">{itemImage}</span>
                                             )}
                                         </div>
 
@@ -97,10 +106,23 @@ export default function GlobalCart() {
                                             </h3>
 
                                             {/* Show ingredients if available */}
-                                            {item.ingredients && (
+                                            {type === 'menuItem' && (item as any).ingredients && (
                                                 <p className="text-gray-400 text-xs mt-1 line-clamp-1">
-                                                    {item.ingredients}
+                                                    {Array.isArray((item as any).ingredients) ? (item as any).ingredients.join(', ') : (item as any).ingredients}
                                                 </p>
+                                            )}
+
+                                            {/* Choices Display */}
+                                            {(cartItem as any).choices && typeof (cartItem as any).choices === 'object' && (
+                                                <div className="mt-2 space-y-1">
+                                                    {Object.entries((cartItem as any).choices).map(([choiceId, choiceItem]: [string, any]) => (
+                                                        <div key={choiceId} className="flex items-center gap-2 text-[10px] bg-gray-700/50 px-2 py-0.5 rounded text-gray-300">
+                                                            <Check className="w-3 h-3 text-green-400" />
+                                                            <span className="font-bold text-gray-400">{choiceId}:</span>
+                                                            {choiceItem.name}
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             )}
 
                                             {/* Price */}
@@ -127,7 +149,7 @@ export default function GlobalCart() {
                                                 </span>
 
                                                 <button
-                                                    onClick={() => addToCart(item, selectedSize)}
+                                                    onClick={() => addToCart(item, type, selectedSize, (cartItem as any).choices)}
                                                     className="bg-gray-600 hover:bg-yellow-400 hover:text-gray-900 text-white p-1.5 rounded-lg transition"
                                                     aria-label="Augmenter la quantité"
                                                 >
