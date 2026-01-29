@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Send, ChevronLeft, Loader2, MessageSquare, ShieldCheck, User, Package, AlertTriangle } from 'lucide-react';
+import { Send, ChevronLeft, Loader2, MessageSquare, ShieldCheck, User, Package, AlertTriangle, Paperclip, X, FileIcon, ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -12,6 +12,7 @@ interface Message {
     isAdmin: boolean;
     createdAt: string;
     user: { name: string; image: string | null; };
+    attachments?: any[];
 }
 
 interface Ticket {
@@ -34,34 +35,134 @@ export default function AdminTicketDetailsPage() {
     const [newMessage, setNewMessage] = useState('');
     const [sending, setSending] = useState(false);
     const [updatingStatus, setUpdatingStatus] = useState(false);
+    const [attachments, setAttachments] = useState<File[]>([]);
+    const [uploading, setUploading] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
+    const [otheruserTyping, setOtherUserTyping] = useState(false);
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => { fetchTicket(); }, [id]);
-    useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [ticket?.messages]);
+    // Polling for real-time updates
+    useEffect(() => {
+        fetchTicket();
+        const interval = setInterval(() => {
+            fetchTicket(true);
+        }, 3000); // 3s for polling
 
-    const fetchTicket = async () => {
+        return () => clearInterval(interval);
+    }, [id]);
+
+    useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [ticket?.messages, otheruserTyping]);
+
+    const fetchTicket = async (isPolling = false) => {
         try {
             const res = await fetch(`/api/support/${id}`);
             const data = await res.json();
-            if (data.success) setTicket(data.ticket);
-            else router.push('/dashboard/support');
-        } catch (error) { console.error(error); } finally { setLoading(false); }
+            if (data.success) {
+                const t = data.ticket;
+
+                // Init typing check
+                if (t.lastUserTypingAt) {
+                    const lastType = new Date(t.lastUserTypingAt).getTime();
+                    const now = new Date().getTime();
+                    setOtherUserTyping(now - lastType < 5000);
+                } else {
+                    setOtherUserTyping(false);
+                }
+
+                // Only update if there are changes or it's the first load
+                setTicket(prev => {
+                    if (!prev) return t;
+                    if (JSON.stringify(prev.messages) !== JSON.stringify(t.messages) || prev.status !== t.status) {
+                        return t;
+                    }
+                    return prev;
+                });
+            }
+            else if (!isPolling) router.push('/dashboard/support');
+        } catch (error) { console.error(error); } finally { if (!isPolling) setLoading(false); }
+    };
+
+    const handleTyping = () => {
+        if (!isTyping) {
+            setIsTyping(true);
+            fetch(`/api/support/${id}/typing`, { method: 'POST' });
+        }
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000);
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const newFiles = Array.from(e.target.files);
+            // Simple size validation (e.g. 2MB limit per file)
+            const validFiles = newFiles.filter(file => file.size <= 2 * 1024 * 1024);
+
+            if (validFiles.length !== newFiles.length) {
+                alert("Certains fichiers sont trop volumineux (max 2MB).");
+            }
+
+            setAttachments(prev => [...prev, ...validFiles]);
+        }
+    };
+
+    const removeAttachment = (index: number) => {
+        setAttachments(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const uploadFiles = async () => {
+        if (attachments.length === 0) return [];
+        setUploading(true);
+        const uploadedUrls = [];
+
+        for (const file of attachments) {
+            try {
+                const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+                    method: 'POST',
+                    body: file,
+                });
+                const data = await res.json();
+                if (data.url) {
+                    uploadedUrls.push({
+                        name: file.name,
+                        type: file.type,
+                        url: data.url
+                    });
+                }
+            } catch (error) {
+                console.error("Upload failed for", file.name, error);
+            }
+        }
+        setUploading(false);
+        return uploadedUrls;
     };
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim() || sending) return;
+        if ((!newMessage.trim() && attachments.length === 0) || sending) return;
+
         setSending(true);
         try {
+            let uploadedAttachments: any[] = [];
+            if (attachments.length > 0) {
+                uploadedAttachments = await uploadFiles();
+            }
+
             const res = await fetch(`/api/support/${id}/messages`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: newMessage, isAdmin: true })
+                body: JSON.stringify({
+                    message: newMessage,
+                    isAdmin: true,
+                    attachments: uploadedAttachments
+                })
             });
             const data = await res.json();
             if (data.success) {
                 setTicket(prev => prev ? { ...prev, messages: [...prev.messages, data.message] } : null);
                 setNewMessage('');
+                setAttachments([]);
             }
         } catch (error) { console.error(error); } finally { setSending(false); }
     };
@@ -82,7 +183,7 @@ export default function AdminTicketDetailsPage() {
     };
 
     if (loading) return (
-        <div className="min-h-[60vh] flex items-center justify-center bg-black">
+        <div className="min-h-[60vh] flex items-center justify-center">
             <Loader2 className="w-12 h-12 text-yellow-400 animate-spin" />
         </div>
     );
@@ -167,6 +268,7 @@ export default function AdminTicketDetailsPage() {
                         <div className="flex items-center gap-4 flex-1">
                             <ShieldCheck className="w-5 h-5 text-yellow-400" />
                             <h4 className="text-white font-black uppercase text-sm tracking-widest italic">Interface Admin Support</h4>
+                            {uploading && <span className="text-xs text-yellow-400 animate-pulse ml-auto">Envoi des fichiers...</span>}
                         </div>
                     </div>
 
@@ -211,11 +313,40 @@ export default function AdminTicketDetailsPage() {
                                     )}
                                 </div>
                                 <div className={`space-y-2 max-w-[85%] ${msg.isAdmin ? 'items-end flex flex-col' : ''}`}>
-                                    <div className={`p-6 rounded-[2.5rem] border shadow-lg backdrop-blur-sm ${msg.isAdmin
+                                    <div className={`p-6 rounded-[2.5rem] border shadow-lg backdrop-blur-sm space-y-3 ${msg.isAdmin
                                         ? 'bg-yellow-400/20 border-yellow-400/30 text-white rounded-tr-none'
                                         : 'bg-gray-950 border-gray-800 text-white rounded-tl-none'
                                         }`}>
-                                        <p className="font-bold text-sm leading-relaxed">{msg.message}</p>
+                                        {msg.message && <p className="font-bold text-sm leading-relaxed">{msg.message}</p>}
+
+                                        {/* Attachments */}
+                                        {msg.attachments && Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {msg.attachments.map((att: any, idx: number) => (
+                                                    <a
+                                                        key={idx}
+                                                        href={att.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className={`flex items-center gap-2 p-3 rounded-xl border transition-colors ${msg.isAdmin
+                                                            ? 'bg-yellow-400/10 border-yellow-400/30 hover:bg-yellow-400/20'
+                                                            : 'bg-gray-800 border-gray-700 hover:bg-gray-700'}`}
+                                                    >
+                                                        {att.type?.startsWith('image/') ? (
+                                                            <div className="w-8 h-8 rounded-lg overflow-hidden relative">
+                                                                <Image src={att.url} alt={att.name} fill className="object-cover" />
+                                                            </div>
+                                                        ) : (
+                                                            <FileIcon size={20} className={msg.isAdmin ? 'text-yellow-400' : 'text-gray-400'} />
+                                                        )}
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] font-bold truncate max-w-[100px]">{att.name}</span>
+                                                            <span className="text-[8px] opacity-70 uppercase">Fichier</span>
+                                                        </div>
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                     <span className={`text-[10px] font-bold text-gray-600 uppercase tracking-widest ${msg.isAdmin ? 'mr-2' : 'ml-2'}`}>
                                         {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -227,20 +358,63 @@ export default function AdminTicketDetailsPage() {
                     </div>
 
                     <div className="p-8 bg-gray-950/40 border-t border-gray-800">
-                        <form onSubmit={handleSendMessage} className="relative">
-                            <input
-                                type="text"
-                                placeholder="Écrire une réponse officielle..."
-                                value={newMessage}
-                                onChange={(e) => setNewMessage(e.target.value)}
-                                className="w-full bg-gray-900/50 border-2 border-gray-800 text-white pl-8 pr-16 py-6 rounded-[2.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm shadow-inner"
-                            />
+                        {/* Attachment Preview */}
+                        {attachments.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {attachments.map((file, idx) => (
+                                    <div key={idx} className="relative group">
+                                        <div className="p-2 bg-gray-800 rounded-xl border border-gray-700 flex items-center gap-2">
+                                            <div className="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center">
+                                                {file.type.startsWith('image/') ? <ImageIcon size={16} /> : <FileIcon size={16} />}
+                                            </div>
+                                            <span className="text-xs text-white max-w-[100px] truncate">{file.name}</span>
+                                            <button
+                                                onClick={() => removeAttachment(idx)}
+                                                className="p-1 hover:bg-red-500/20 text-red-500 rounded-full transition"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSendMessage} className="relative flex items-center gap-3">
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    placeholder="Écrire une réponse officielle..."
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    className="w-full bg-gray-900/50 border-2 border-gray-800 text-white pl-8 pr-24 py-6 rounded-[2.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm shadow-inner"
+                                />
+
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        className="hidden"
+                                        multiple
+                                        onChange={handleFileSelect}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="p-2 hover:bg-gray-800 text-gray-400 hover:text-white rounded-full transition"
+                                        title="Joindre un fichier"
+                                    >
+                                        <Paperclip size={20} />
+                                    </button>
+                                </div>
+                            </div>
+
                             <button
                                 type="submit"
-                                disabled={!newMessage.trim() || sending}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 w-14 h-14 bg-yellow-400 text-gray-900 rounded-[2rem] flex items-center justify-center transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shadow-xl"
+                                disabled={(!newMessage.trim() && attachments.length === 0) || sending || uploading}
+                                className="w-14 h-14 bg-yellow-400 text-gray-900 rounded-[2rem] flex items-center justify-center transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shadow-xl flex-shrink-0"
                             >
-                                {sending ? <Loader2 size={24} className="animate-spin" /> : <Send size={24} />}
+                                {sending || uploading ? <Loader2 size={24} className="animate-spin" /> : <Send size={24} />}
                             </button>
                         </form>
                         <div className="mt-4 flex items-center gap-2 justify-center">

@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useCart } from "./CartContext";
-import { Minus, Plus, ShoppingBag, Trash2, X, Check } from "lucide-react";
+import { Minus, Plus, ShoppingBag, Trash2, X, Check, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function GlobalCart() {
     const router = useRouter();
@@ -23,29 +24,34 @@ export default function GlobalCart() {
             {/* Floating Cart Button - Bottom Right */}
             <button
                 onClick={() => setCartOpen(true)}
-                className="fixed bottom-8 right-8 bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-6 py-4 rounded-full shadow-2xl font-black text-lg z-40 flex items-center gap-3 transition transform hover:scale-105 animate-bounce-in"
+                className="fixed bottom-8 right-8 bg-yellow-400 hover:bg-yellow-300 text-gray-900 pr-6 pl-4 py-4 rounded-full shadow-2xl shadow-yellow-400/20 font-black text-lg z-[60] flex items-center gap-3 transition-all transform hover:scale-110 active:scale-95 animate-bounce-in group"
             >
-                <ShoppingBag className="w-6 h-6" />
-                <span>{totalItems}</span>
-                <span className="hidden sm:inline">{getTotalPrice().toFixed(1)} DT</span>
+                <div className="bg-gray-900 text-yellow-400 w-10 h-10 rounded-full flex items-center justify-center font-black text-sm group-hover:rotate-12 transition-transform">
+                    {totalItems}
+                </div>
+                <span className="uppercase tracking-tighter italic mr-1">Mon Panier</span>
             </button>
 
-            {/* Cart Sidebar - Slides from right */}
+            {/* Cart Sidebar - Slides from right - Premium Glassmorphism */}
             <div
-                className={`fixed inset-y-0 right-0 w-full sm:w-96 bg-gray-900 shadow-2xl z-50 transform transition-transform duration-300 ${cartOpen ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed inset-y-0 right-0 w-full sm:w-[450px] bg-black/60 backdrop-blur-3xl border-l border-white/10 shadow-3xl z-[70] transform transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${cartOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}
             >
                 <div className="h-full flex flex-col">
 
                     {/* Header */}
-                    <div className="bg-gray-800 p-6 flex items-center justify-between border-b border-gray-700">
-                        <h2 className="text-2xl font-black text-white flex items-center gap-2">
-                            <ShoppingBag className="w-6 h-6" />
-                            Votre Panier
-                        </h2>
+                    <div className="p-8 pb-4 flex items-center justify-between">
+                        <div>
+                            <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">
+                                Votre <span className="text-yellow-400">Panier</span>
+                            </h2>
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-2">
+                                {totalItems} {totalItems === 1 ? 'article' : 'articles'}
+                            </p>
+                        </div>
                         <button
                             onClick={() => setCartOpen(false)}
-                            className="text-gray-400 hover:text-white transition"
+                            className="w-12 h-12 rounded-full bg-gray-800/50 hover:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-white transition-all transform hover:rotate-90"
                             aria-label="Fermer le panier"
                         >
                             <X className="w-6 h-6" />
@@ -53,8 +59,8 @@ export default function GlobalCart() {
                     </div>
 
                     {/* Cart Items - Scrollable */}
-                    <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                        {Object.entries(cart).map(([key, cartItem]) => {
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+                        {Object.entries(cart).map(([key, cartItem], index) => {
                             const { item, quantity, selectedSize, type } = cartItem as any;
 
                             // Calculate price for this item
@@ -72,17 +78,18 @@ export default function GlobalCart() {
 
                             const itemImage = type === 'promotion'
                                 ? ((item as any).imageUrl || (item as any).emoji || '🎁')
-                                : ((item as any).image || '🍕');
+                                : ((item as any).imageUrl || (item as any).image || (item as any).emoji || '🍕');
 
                             return (
                                 <div
                                     key={key}
-                                    className="bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-gray-600 transition"
+                                    className="group relative bg-gray-800/40 hover:bg-gray-800/60 rounded-[2rem] p-4 border border-white/5 hover:border-yellow-400/30 transition-all duration-300 animate-slide-up"
+                                    style={{ animationDelay: `${index * 50}ms` }}
                                 >
-                                    <div className="flex items-start gap-3">
+                                    <div className="flex items-start gap-4">
 
                                         {/* Item Image */}
-                                        <div className="w-12 h-12 flex-shrink-0 bg-gray-700 rounded-lg overflow-hidden flex items-center justify-center">
+                                        <div className="w-20 h-20 flex-shrink-0 bg-gray-900 rounded-2xl overflow-hidden shadow-lg border border-white/5 group-hover:scale-105 transition-transform duration-500">
                                             {itemImage.startsWith('/') || itemImage.startsWith('http') ? (
                                                 <img
                                                     src={itemImage}
@@ -90,72 +97,82 @@ export default function GlobalCart() {
                                                     className="w-full h-full object-cover"
                                                 />
                                             ) : (
-                                                <span className="text-2xl">{itemImage}</span>
+                                                <div className="w-full h-full flex items-center justify-center text-3xl bg-gray-800">
+                                                    {itemImage}
+                                                </div>
                                             )}
                                         </div>
 
                                         {/* Item Details */}
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-bold text-white text-sm">
-                                                {item.name}
-                                                {selectedSize && (
-                                                    <span className="ml-2 text-yellow-400 text-xs">
-                                                        ({selectedSize.toUpperCase()})
-                                                    </span>
+                                        <div className="flex-1 min-w-0 py-1">
+                                            <div className="flex justify-between items-start">
+                                                <h3 className="font-black text-white text-lg uppercase leading-tight italic tracking-tight">
+                                                    {item.name}
+                                                </h3>
+                                                {itemPrice > 0 && (
+                                                    <p className="text-yellow-400 font-black text-lg">
+                                                        {(itemPrice * quantity).toFixed(1)}
+                                                    </p>
                                                 )}
-                                            </h3>
+                                            </div>
+
+                                            {selectedSize && (
+                                                <div className="inline-block bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-2 py-0.5 mt-2">
+                                                    <span className="text-yellow-400 text-[10px] font-black uppercase tracking-widest leading-none">
+                                                        TAILLE {selectedSize}
+                                                    </span>
+                                                </div>
+                                            )}
 
                                             {/* Show ingredients if available */}
                                             {type === 'menuItem' && (item as any).ingredients && (
-                                                <p className="text-gray-400 text-xs mt-1 line-clamp-1">
+                                                <p className="text-gray-500 text-xs mt-2 font-medium line-clamp-1">
                                                     {Array.isArray((item as any).ingredients) ? (item as any).ingredients.join(', ') : (item as any).ingredients}
                                                 </p>
                                             )}
 
                                             {/* Choices Display */}
                                             {(cartItem as any).choices && typeof (cartItem as any).choices === 'object' && (
-                                                <div className="mt-2 space-y-1">
+                                                <div className="mt-3 flex flex-wrap gap-1.5">
                                                     {Object.entries((cartItem as any).choices).map(([choiceId, choiceItem]: [string, any]) => (
-                                                        <div key={choiceId} className="flex items-center gap-2 text-[10px] bg-gray-700/50 px-2 py-0.5 rounded text-gray-300">
-                                                            <Check className="w-3 h-3 text-green-400" />
-                                                            <span className="font-bold text-gray-400">{choiceId}:</span>
+                                                        <div key={choiceId} className="flex items-center gap-1.5 text-[10px] bg-gray-900/50 border border-white/5 px-2 py-1 rounded-lg text-gray-300">
+                                                            <Check className="w-3 h-3 text-yellow-400" />
+                                                            <span className="font-bold text-gray-500 uppercase tracking-wider">{choiceId}:</span>
                                                             {choiceItem.name}
                                                         </div>
                                                     ))}
                                                 </div>
                                             )}
-
-                                            {/* Price */}
-                                            {itemPrice > 0 && (
-                                                <p className="text-yellow-400 font-bold text-lg mt-2">
-                                                    {(itemPrice * quantity).toFixed(1)} DT
-                                                </p>
-                                            )}
                                         </div>
+                                    </div>
 
-                                        {/* Quantity Controls */}
-                                        <div className="flex flex-col items-center gap-2">
-                                            <div className="flex items-center gap-2 bg-gray-700 rounded-lg p-1">
-                                                <button
-                                                    onClick={() => removeFromCart(key)}
-                                                    className="bg-gray-600 hover:bg-red-600 text-white p-1.5 rounded-lg transition"
-                                                    aria-label="Diminuer la quantité"
-                                                >
-                                                    <Minus className="w-4 h-4" />
-                                                </button>
+                                    {/* Controls Footer */}
+                                    <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
+                                        <button
+                                            onClick={() => removeFromCart(key)}
+                                            className="text-[10px] font-bold text-red-500 hover:text-red-400 uppercase tracking-widest flex items-center gap-1 opacity-60 hover:opacity-100 transition"
+                                        >
+                                            <Trash2 className="w-3 h-3" /> Supprimer
+                                        </button>
 
-                                                <span className="text-white font-bold w-8 text-center">
-                                                    {quantity}
-                                                </span>
+                                        <div className="flex items-center gap-3 bg-gray-900 rounded-full p-1 border border-white/5 shadow-inner">
+                                            <button
+                                                onClick={() => removeFromCart(key)}
+                                                className="w-7 h-7 bg-gray-800 hover:bg-gray-700 text-white rounded-full flex items-center justify-center transition"
+                                            >
+                                                <Minus className="w-3 h-3" />
+                                            </button>
 
-                                                <button
-                                                    onClick={() => addToCart(item, type, selectedSize, (cartItem as any).choices)}
-                                                    className="bg-gray-600 hover:bg-yellow-400 hover:text-gray-900 text-white p-1.5 rounded-lg transition"
-                                                    aria-label="Augmenter la quantité"
-                                                >
-                                                    <Plus className="w-4 h-4" />
-                                                </button>
-                                            </div>
+                                            <span className="text-white font-black w-4 text-center text-sm">
+                                                {quantity}
+                                            </span>
+
+                                            <button
+                                                onClick={() => addToCart(item, type, selectedSize, (cartItem as any).choices)}
+                                                className="w-7 h-7 bg-yellow-400 hover:bg-yellow-300 text-gray-900 rounded-full flex items-center justify-center transition shadow-lg shadow-yellow-400/20"
+                                            >
+                                                <Plus className="w-3 h-3" />
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -164,25 +181,28 @@ export default function GlobalCart() {
                     </div>
 
                     {/* Footer - Total & Actions */}
-                    <div className="bg-gray-800 p-6 border-t border-gray-700 space-y-4">
+                    <div className="p-8 bg-gray-900/80 backdrop-blur-xl border-t border-white/10 space-y-6 z-10">
 
                         {/* Total Price */}
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xl font-bold text-white">Total</span>
-                            <span className="text-3xl font-black text-yellow-400">
-                                {getTotalPrice().toFixed(1)} DT
+                        <div className="flex items-center justify-between">
+                            <span className="text-gray-400 font-bold uppercase tracking-widest text-sm">Total à payer</span>
+                            <span className="text-4xl font-black text-white italic tracking-tighter">
+                                {getTotalPrice().toFixed(1)} <span className="text-yellow-400 text-2xl not-italic">DT</span>
                             </span>
                         </div>
 
                         {/* Order Button */}
                         <button
-                            className="w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-4 rounded-xl font-black text-lg transition shadow-lg"
+                            className="group w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-5 rounded-2xl font-black text-xl uppercase tracking-widest transition-all shadow-lg shadow-yellow-400/20 hover:shadow-yellow-400/40 relative overflow-hidden"
                             onClick={() => {
                                 setCartOpen(false);
                                 router.push('/checkout');
                             }}
                         >
-                            Commander Maintenant
+                            <span className="relative z-10 flex items-center justify-center gap-3">
+                                Commander
+                                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                            </span>
                         </button>
 
                         {/* Clear Cart Button */}
@@ -193,9 +213,8 @@ export default function GlobalCart() {
                                     setCartOpen(false);
                                 }
                             }}
-                            className="w-full bg-gray-700 hover:bg-red-600 text-white py-3 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2"
+                            className="w-full text-gray-500 hover:text-white py-2 font-bold text-xs uppercase tracking-[0.2em] transition-colors"
                         >
-                            <Trash2 className="w-4 h-4" />
                             Vider le panier
                         </button>
                     </div>
@@ -205,7 +224,7 @@ export default function GlobalCart() {
             {/* Overlay - Dark background when cart is open */}
             {cartOpen && (
                 <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-slide-down"
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] animate-fade-in"
                     onClick={() => setCartOpen(false)}
                 />
             )}

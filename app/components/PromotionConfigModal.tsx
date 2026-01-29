@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Check, Loader2, Info } from 'lucide-react';
+import { X, Check, Loader2, Info, ArrowRight } from 'lucide-react';
 import { MenuItem } from '@/types/menu';
+import Image from 'next/image';
 
 interface PromotionConfigModalProps {
     promotion: any;
@@ -65,34 +66,48 @@ export default function PromotionConfigModal({ promotion, onClose, onConfirm }: 
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="bg-gray-900 border-2 border-gray-700 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl animate-scale-up">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+            <div className="bg-gray-900 border border-gray-700 w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-3xl animate-scale-up relative">
+
+                {/* Decorative background glow */}
+                <div className="absolute -top-20 -right-20 w-64 h-64 bg-yellow-400/10 blur-[100px] rounded-full pointer-events-none"></div>
+                <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full pointer-events-none"></div>
+
                 {/* Header */}
-                <div className="p-6 bg-gray-800 border-b border-gray-700 flex items-center justify-between">
+                <div className="p-8 pb-4 relative z-10 flex items-start justify-between">
                     <div>
-                        <h2 className="text-2xl font-black text-white">Configurer votre offre</h2>
-                        <p className="text-yellow-400 font-bold">{promotion.name}</p>
+                        <p className="text-yellow-400 font-black uppercase tracking-widest text-[10px] mb-2">Configuration requise</p>
+                        <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">
+                            Personnalisez <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">votre offre</span>
+                        </h2>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded-full text-gray-400 transition">
-                        <X className="w-6 h-6" />
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-gray-800 rounded-full text-gray-500 hover:text-white transition-all transform hover:rotate-90"
+                    >
+                        <X className="w-8 h-8" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto max-h-[70vh] space-y-8">
+                <div className="p-8 overflow-y-auto max-h-[60vh] space-y-10 scrollbar-hide relative z-10">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-12">
-                            <Loader2 className="w-10 h-10 text-yellow-400 animate-spin mb-4" />
-                            <p className="text-gray-400">Chargement des options...</p>
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-yellow-400 blur-xl opacity-20 animate-pulse"></div>
+                                <Loader2 className="w-12 h-12 text-yellow-400 animate-spin relative z-10" />
+                            </div>
+                            <p className="text-gray-400 mt-4 text-sm font-bold uppercase tracking-widest">Chargement des options...</p>
                         </div>
                     ) : (
-                        rules.map((rule: any) => (
-                            <div key={rule.id} className="space-y-4">
-                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-full bg-yellow-400 text-gray-900 flex items-center justify-center text-sm font-black">
-                                        {rules.indexOf(rule) + 1}
+                        rules.map((rule: any, index: number) => (
+                            <div key={rule.id} className="space-y-6 animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+                                <h3 className="text-lg font-black text-white flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-xl bg-yellow-400 text-gray-900 flex items-center justify-center text-sm font-black shadow-lg shadow-yellow-400/20">
+                                        {index + 1}
                                     </div>
-                                    {rule.label}
+                                    <span className="uppercase tracking-tight">{rule.label}</span>
                                 </h3>
 
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -100,21 +115,26 @@ export default function PromotionConfigModal({ promotion, onClose, onConfirm }: 
                                         <button
                                             key={item.id}
                                             onClick={() => handleSelect(rule.id, item)}
-                                            className={`relative p-3 rounded-2xl border-2 transition text-left group ${choices[rule.id]?.id === item.id
-                                                ? 'bg-yellow-400/10 border-yellow-400'
-                                                : 'bg-gray-800 border-gray-700 hover:border-gray-600'
+                                            className={`group relative p-3 rounded-2xl border transition-all duration-300 text-left overflow-hidden ${choices[rule.id]?.id === item.id
+                                                ? 'bg-yellow-400 border-yellow-400 shadow-xl shadow-yellow-400/20 scale-[1.02]'
+                                                : 'bg-gray-800/50 border-gray-700 hover:border-gray-500 hover:bg-gray-800'
                                                 }`}
                                         >
                                             {choices[rule.id]?.id === item.id && (
-                                                <div className="absolute top-2 right-2 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
-                                                    <Check className="w-3 h-3 text-gray-900" />
+                                                <div className="absolute top-2 right-2 z-20 w-5 h-5 bg-black rounded-full flex items-center justify-center">
+                                                    <Check className="w-3 h-3 text-yellow-400" />
                                                 </div>
                                             )}
-                                            <div className="text-sm font-bold text-white line-clamp-1 group-hover:text-yellow-400 transition">
-                                                {item.name}
-                                            </div>
-                                            <div className="text-[10px] text-gray-500 line-clamp-2 mt-1">
-                                                {Array.isArray(item.ingredients) ? item.ingredients.join(', ') : (item.ingredients || '')}
+
+                                            <div className="relative z-10">
+                                                <div className="text-sm font-black uppercase leading-tight mb-1 truncate transition-colors duration-300 ${choices[rule.id]?.id === item.id ? 'text-gray-900' : 'text-white'}`">
+                                                    <span className={choices[rule.id]?.id === item.id ? 'text-gray-900' : 'text-white'}>
+                                                        {item.name}
+                                                    </span>
+                                                </div>
+                                                <div className={`text-[10px] line-clamp-2 ${choices[rule.id]?.id === item.id ? 'text-gray-800 font-bold' : 'text-gray-500'}`}>
+                                                    {Array.isArray(item.ingredients) ? item.ingredients.join(', ') : (item.ingredients || '')}
+                                                </div>
                                             </div>
                                         </button>
                                     ))}
@@ -124,30 +144,32 @@ export default function PromotionConfigModal({ promotion, onClose, onConfirm }: 
                     )}
 
                     {rules.length === 0 && !loading && (
-                        <div className="text-center py-8">
-                            <Info className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                            <p className="text-gray-400 text-lg">Aucune configuration requise pour cette offre.</p>
+                        <div className="text-center py-12 bg-gray-800/30 rounded-3xl border border-dashed border-gray-700">
+                            <Info className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                            <p className="text-gray-300 font-bold text-lg">Aucune configuration requise.</p>
+                            <p className="text-gray-500 text-sm mt-1">Vous pouvez ajouter cette offre directement.</p>
                         </div>
                     )}
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 bg-gray-800 border-t border-gray-700 flex gap-4">
+                <div className="p-8 bg-gray-900/80 backdrop-blur-xl border-t border-gray-800 flex gap-4 relative z-20">
                     <button
                         onClick={onClose}
-                        className="flex-1 py-4 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-2xl transition"
+                        className="flex-1 py-4 bg-gray-800 hover:bg-gray-700 text-white font-bold rounded-2xl transition uppercase tracking-widest text-xs"
                     >
                         Annuler
                     </button>
                     <button
                         onClick={handleConfirm}
                         disabled={!isComplete || loading}
-                        className={`flex-1 py-4 font-black rounded-2xl transition shadow-lg ${isComplete
-                            ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300 shadow-yellow-400/20'
-                            : 'bg-gray-800 text-gray-500 cursor-not-allowed border-2 border-gray-700'
+                        className={`flex-[2] py-4 font-black rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2 uppercase tracking-wide text-xs ${isComplete
+                            ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300 hover:scale-[1.02] shadow-yellow-400/20'
+                            : 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700'
                             }`}
                     >
-                        Confirmer & Ajouter
+                        <span>Confirmer & Ajouter</span>
+                        {isComplete && <ArrowRight className="w-4 h-4" />}
                     </button>
                 </div>
             </div>

@@ -79,15 +79,12 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, session, han
                         Retour au site public
                     </button>
 
-                    <div className="pt-2 border-t border-gray-700/50">
-                        <p className="text-gray-400 text-xs font-bold line-clamp-1">
-                            Connecté en tant que: <span className="text-white">{session?.user?.name}</span>
-                        </p>
-                    </div>
+                    {/* User info moved to header */}
                 </div>
 
+                {/* Logout Button (Removed - Moved to Header) */}
                 {/* Navigation */}
-                <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-280px)]">
+                <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
                     {navigation.map((item) => {
                         const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
                         return (
@@ -108,17 +105,6 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, session, han
                         );
                     })}
                 </nav>
-
-                {/* Logout Button */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 border-t-2 border-gray-700 bg-gray-800">
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-red-400 hover:bg-red-500/10 hover:text-red-500 transition text-sm"
-                    >
-                        <LogOut className="w-5 h-5" />
-                        Déconnexion
-                    </button>
-                </div>
             </aside>
         </>
     );

@@ -56,7 +56,7 @@ export default function AdminLayoutContent({ children }: { children: React.React
             {/* Main Content */}
             <div className="lg:ml-64">
                 {/* Global Header */}
-                <header className="bg-gray-800 border-b-2 border-gray-700 p-4 sticky top-0 z-30">
+                <header className="bg-gray-800/80 backdrop-blur-xl border-b-2 border-gray-700/50 p-4 sticky top-0 z-30 transition-all duration-300">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button
@@ -72,6 +72,34 @@ export default function AdminLayoutContent({ children }: { children: React.React
 
                         <div className="flex items-center gap-4">
                             <NotificationsDropdown />
+
+                            {/* User Dropdown */}
+                            <div className="relative group/menu">
+                                <button className="flex items-center gap-3 bg-gray-900 border border-gray-800 hover:border-yellow-400/50 rounded-2xl p-2 pr-4 transition-all duration-300 hover:shadow-lg hover:shadow-yellow-400/10">
+                                    <div className="w-8 h-8 bg-yellow-400 rounded-xl flex items-center justify-center text-gray-900 font-black uppercase text-sm">
+                                        {(session?.user?.name?.[0] || 'A').toUpperCase()}
+                                    </div>
+                                    <div className="text-left hidden md:block">
+                                        <p className="text-xs font-black text-white uppercase tracking-wider">{session?.user?.name}</p>
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Admin</p>
+                                    </div>
+                                </button>
+
+                                <div className="absolute right-0 mt-2 w-48 bg-gray-950 border border-gray-800 rounded-2xl shadow-xl opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-300 transform origin-top-right overflow-hidden">
+                                    <button
+                                        onClick={() => router.push('/dashboard/account')}
+                                        className="w-full text-left px-5 py-3 text-xs font-bold text-gray-400 hover:text-white hover:bg-white/5 transition uppercase tracking-wider flex items-center gap-2"
+                                    >
+                                        ⚙️ Mon Compte
+                                    </button>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full text-left px-5 py-3 text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 transition uppercase tracking-wider flex items-center gap-2 border-t border-gray-900"
+                                    >
+                                        🚪 Déconnexion
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </header>

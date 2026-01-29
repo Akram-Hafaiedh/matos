@@ -10,7 +10,8 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
 
     // Protect upload endpoint
-    if (!session || (session.user as any)?.role !== 'admin') {
+    // Protect upload endpoint - allow any authenticated user (needed for support tickets)
+    if (!session) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

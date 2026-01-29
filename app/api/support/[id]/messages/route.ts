@@ -19,12 +19,12 @@ export async function POST(
 
         const ticketId = parseInt(id);
         const body = await request.json();
-        const { message } = body;
+        const { message, attachments } = body;
 
-        if (!message) {
+        if (!message && (!attachments || attachments.length === 0)) {
             return NextResponse.json({
                 success: false,
-                error: 'Le message est requis'
+                error: 'Le message ou une pièce jointe est requis'
             }, { status: 400 });
         }
 
@@ -51,7 +51,8 @@ export async function POST(
 
         const newMessage = await prisma.ticketMessage.create({
             data: {
-                message,
+                message: message || '',
+                attachments: attachments || [],
                 ticketId,
                 userId: (session.user as any).id,
                 isAdmin: isAdmin

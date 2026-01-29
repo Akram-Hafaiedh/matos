@@ -247,6 +247,9 @@ model SupportTicket {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  lastAdminTypingAt DateTime? @map("last_admin_typing_at")
+  lastUserTypingAt  DateTime? @map("last_user_typing_at")
+
   // Relations
   user     User?           @relation(fields: [userId], references: [id])
   order    Order?          @relation(fields: [orderId], references: [id])
@@ -256,12 +259,13 @@ model SupportTicket {
 }
 
 model TicketMessage {
-  id        Int      @id @default(autoincrement())
-  ticketId  Int      @map("ticket_id")
-  userId    String   @map("user_id")
-  message   String   @db.Text
-  isAdmin   Boolean  @default(false) @map("is_admin")
-  createdAt DateTime @default(now()) @map("created_at")
+  id          Int      @id @default(autoincrement())
+  ticketId    Int      @map("ticket_id")
+  userId      String   @map("user_id")
+  message     String   @db.Text
+  attachments Json?    @map("attachments") // Array of { name: string, url: string, type: string }
+  isAdmin     Boolean  @default(false) @map("is_admin")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   // Relations
   ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
@@ -299,4 +303,22 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+model GlobalSettings {
+  id      Int    @id @default(1)
+  address String @default("2015, 1 Rue Abderrazak Karabaka, Carthage") @db.VarChar(255)
+  phone   String @default("99 956 608") @db.VarChar(50)
+  lat     Float  @default(36.8391)
+  lng     Float  @default(10.3200)
+
+  // Social Links
+  facebook  String? @db.VarChar(255)
+  instagram String? @db.VarChar(255)
+  tiktok    String? @db.VarChar(255)
+  whatsapp  String? @db.VarChar(50)
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("global_settings")
 }

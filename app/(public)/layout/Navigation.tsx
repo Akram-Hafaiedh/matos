@@ -72,12 +72,13 @@ export default function Navbar() {
 
                         {/* Cart Indicator */}
                         {totalItems > 0 && (
-                            <div className="flex items-center gap-2 bg-yellow-400 text-gray-900 px-4 py-2 rounded-xl font-black text-xs shadow-lg shadow-yellow-400/20">
-                                <ShoppingBag className="w-4 h-4" />
-                                <span>{totalItems}</span>
-                            </div>
+                            <Link href="/cart" className="relative p-2 bg-gray-900 border border-gray-800 rounded-xl hover:border-yellow-400/50 transition">
+                                <ShoppingBag className="w-5 h-5 text-gray-400" />
+                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 text-gray-900 rounded-full flex items-center justify-center text-xs font-black">
+                                    {totalItems}
+                                </span>
+                            </Link>
                         )}
-
                         {/* User Access */}
                         <div className="hidden md:block relative">
                             {status === 'authenticated' ? (
