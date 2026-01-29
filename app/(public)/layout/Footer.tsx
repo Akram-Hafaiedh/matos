@@ -1,11 +1,11 @@
 'use client';
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
     Facebook,
     Instagram,
-    Twitter,
     Phone,
     Mail,
     MapPin,
@@ -14,11 +14,26 @@ import {
     ExternalLink,
     UtensilsCrossed,
     Heart,
-    Star
+    Star,
+    Video
 } from "lucide-react";
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
+    const [settings, setSettings] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data) setSettings(data);
+            } catch (error) {
+                console.error("Error loading settings in footer:", error);
+            }
+        };
+        fetchSettings();
+    }, []);
 
     return (
         <footer className="relative bg-black pt-24 pb-12 overflow-hidden border-t border-white/5">
@@ -47,15 +62,21 @@ export default function Footer() {
                             L'excellence de la gastronomie rapide. Découvrez nos pizzas artisanales, burgers gourmets et tacos généreux, préparés avec passion et fraîcheur.
                         </p>
                         <div className="flex items-center gap-4">
-                            <a href="#" className="w-12 h-12 rounded-xl bg-gray-900/50 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-yellow-400 hover:text-gray-900 hover:border-yellow-400 transition-all duration-300">
-                                <Facebook className="w-5 h-5" />
-                            </a>
-                            <a href="#" className="w-12 h-12 rounded-xl bg-gray-900/50 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-pink-600 hover:text-white hover:border-pink-600 transition-all duration-300">
-                                <Instagram className="w-5 h-5" />
-                            </a>
-                            <a href="#" className="w-12 h-12 rounded-xl bg-gray-900/50 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-blue-400 hover:text-white hover:border-blue-400 transition-all duration-300">
-                                <Twitter className="w-5 h-5" />
-                            </a>
+                            {settings?.facebook && (
+                                <a href={settings.facebook} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-900/50 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-yellow-400 hover:text-gray-900 hover:border-yellow-400 transition-all duration-300">
+                                    <Facebook className="w-5 h-5" />
+                                </a>
+                            )}
+                            {settings?.instagram && (
+                                <a href={settings.instagram} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-900/50 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-pink-600 hover:text-white hover:border-pink-600 transition-all duration-300">
+                                    <Instagram className="w-5 h-5" />
+                                </a>
+                            )}
+                            {settings?.tiktok && (
+                                <a href={settings.tiktok} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-900/50 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-black hover:text-white hover:border-white transition-all duration-300">
+                                    <Video className="w-5 h-5" />
+                                </a>
+                            )}
                         </div>
                     </div>
 
@@ -93,14 +114,14 @@ export default function Footer() {
                                 <MapPin className="w-5 h-5 text-gray-700 mt-1" />
                                 <div>
                                     <p className="text-white font-black text-sm uppercase">Adresse</p>
-                                    <p className="text-gray-500 text-sm font-bold">123 Rue de la Gastronomie, Tunis</p>
+                                    <p className="text-gray-500 text-sm font-bold">{settings?.address || 'Chargement...'}</p>
                                 </div>
                             </li>
                             <li className="flex gap-4">
                                 <Phone className="w-5 h-5 text-gray-700 mt-1" />
                                 <div>
                                     <p className="text-white font-black text-sm uppercase">Réservation</p>
-                                    <p className="text-gray-500 text-sm font-bold">+216 71 000 000</p>
+                                    <p className="text-gray-500 text-sm font-bold">{settings?.phone || 'Chargement...'}</p>
                                 </div>
                             </li>
                             <li className="flex gap-4">

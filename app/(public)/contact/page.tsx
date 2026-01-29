@@ -1,7 +1,6 @@
-// app/(public)/contact/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     MapPin,
     Phone,
@@ -15,11 +14,13 @@ import {
     ExternalLink,
     ChevronRight,
     Sparkles,
-    ShieldCheck
+    ShieldCheck,
+    Video
 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ContactPage() {
+    const [settings, setSettings] = useState<any>(null);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -29,6 +30,19 @@ export default function ContactPage() {
     });
 
     const [submitted, setSubmitted] = useState(false);
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data) setSettings(data);
+            } catch (error) {
+                console.error("Error loading settings in contact page:", error);
+            }
+        };
+        fetchSettings();
+    }, []);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -99,7 +113,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Téléphone</p>
-                                        <p className="text-lg font-black">+216 71 000 000</p>
+                                        <p className="text-lg font-black">{settings?.phone || 'Loading...'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -123,7 +137,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Localisation</p>
-                                        <p className="text-lg font-black">Avenue Bourguiba, Tunis</p>
+                                        <p className="text-lg font-black">{settings?.address || 'Loading...'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -224,12 +238,21 @@ export default function ContactPage() {
                 <div className="bg-gray-900/20 border border-gray-800/50 p-12 rounded-[3.5rem] text-center space-y-8">
                     <h3 className="text-3xl font-black">Suivez l'aventure sur les réseaux</h3>
                     <div className="flex justify-center gap-6">
-                        <Link href="#" className="w-16 h-16 bg-gray-900 border border-gray-800 rounded-3xl flex items-center justify-center hover:bg-yellow-400 hover:text-gray-900 hover:border-yellow-400 transition-all duration-500 group">
-                            <Instagram className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                        </Link>
-                        <Link href="#" className="w-16 h-16 bg-gray-900 border border-gray-800 rounded-3xl flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-500 group">
-                            <Facebook className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                        </Link>
+                        {settings?.instagram && (
+                            <Link href={settings.instagram} target="_blank" className="w-16 h-16 bg-gray-900 border border-gray-800 rounded-3xl flex items-center justify-center hover:bg-yellow-400 hover:text-gray-900 hover:border-yellow-400 transition-all duration-500 group">
+                                <Instagram className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                            </Link>
+                        )}
+                        {settings?.facebook && (
+                            <Link href={settings.facebook} target="_blank" className="w-16 h-16 bg-gray-900 border border-gray-800 rounded-3xl flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-500 group">
+                                <Facebook className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                            </Link>
+                        )}
+                        {settings?.tiktok && (
+                            <Link href={settings.tiktok} target="_blank" className="w-16 h-16 bg-gray-900 border border-gray-800 rounded-3xl flex items-center justify-center hover:bg-black hover:text-white hover:border-white transition-all duration-500 group">
+                                <Video className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>

@@ -2,6 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { ChevronRight, Clock, MapPin, Phone, Star, ArrowRight, Gift } from "lucide-react";
+import dynamic from 'next/dynamic';
+
+const InteractiveMap = dynamic(() => import('@/components/Map'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[500px] bg-gray-900/50 rounded-[3rem] border border-gray-800 animate-pulse flex items-center justify-center">
+      <div className="text-gray-700 font-black uppercase tracking-widest italic">Chargement de la Map...</div>
+    </div>
+  )
+});
 import Link from "next/link";
 import Image from "next/image";
 
@@ -80,7 +90,7 @@ export default function HomePage() {
   const featuredItems = getFeaturedItems();
 
   return (
-    <>
+    <main>
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-black">
         <div className="relative h-screen">
@@ -419,32 +429,31 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Simple Map/Visit Section */}
-      <section className="py-32 px-4 bg-black">
-        <div className="max-w-7xl mx-auto flex flex-col items-center space-y-16">
-          <div className="text-center space-y-4">
-            <h2 className="text-5xl font-black text-white italic tracking-tighter">Venez <span className="text-yellow-400">Nous Voir</span></h2>
-            <p className="text-gray-500 font-bold">Le temple de la gourmandise vous attend.</p>
+      {/* Interactive Map Section */}
+      <section className="py-32 px-4 bg-black relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-yellow-400/5 blur-[150px] pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto space-y-20 relative z-10">
+          <div className="text-center space-y-6">
+            <div className="flex items-center justify-center gap-4">
+              <div className="w-12 h-1 bg-yellow-400 rounded-full"></div>
+              <span className="text-yellow-400 font-black uppercase text-xs tracking-[0.4em]">Localisation</span>
+              <div className="w-12 h-1 bg-yellow-400 rounded-full"></div>
+            </div>
+            <h2 className="text-6xl md:text-8xl font-black text-white italic tracking-tighter uppercase leading-none">
+              Venez <span className="text-yellow-400">Nous Voir</span>
+            </h2>
+            <p className="text-gray-500 font-bold max-w-2xl mx-auto uppercase text-xs tracking-widest leading-relaxed">
+              Le temple de la gourmandise vous attend à Carthage. <br className="hidden md:block" />
+              Une ambiance unique pour une expérience culinaire inoubliable.
+            </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 w-full">
-            <div className="bg-gray-900/40 p-10 rounded-[3rem] border border-gray-800 text-center space-y-4 backdrop-blur-xl">
-              <MapPin className="w-10 h-10 text-yellow-400 mx-auto" />
-              <h3 className="text-xl font-black text-white">Tunis, Ariana</h3>
-              <p className="text-gray-500 font-bold text-sm">Avenue Hédi Nouira, Ennasr II</p>
-            </div>
-            <div className="bg-gray-900/40 p-10 rounded-[3rem] border border-gray-800 text-center space-y-4 backdrop-blur-xl">
-              <Phone className="w-10 h-10 text-yellow-400 mx-auto" />
-              <h3 className="text-xl font-black text-white">+216 71 000 000</h3>
-              <p className="text-gray-500 font-bold text-sm">Service Clientèle & Commandes</p>
-            </div>
-            <div className="bg-gray-900/40 p-10 rounded-[3rem] border border-gray-800 text-center space-y-4 backdrop-blur-xl">
-              <Clock className="w-10 h-10 text-yellow-400 mx-auto" />
-              <h3 className="text-xl font-black text-white">12h - 23h30</h3>
-              <p className="text-gray-500 font-bold text-sm">Ouvert 7 jours sur 7</p>
-            </div>
+
+          <div className="w-full">
+            <InteractiveMap />
           </div>
         </div>
       </section>
-    </>
+    </main>
   );
 }
