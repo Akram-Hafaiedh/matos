@@ -11,9 +11,11 @@ import {
     X,
     Tag,
     Gift,
-    LifeBuoy
+    LifeBuoy,
+    Home
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface AdminSidebarProps {
     sidebarOpen: boolean;
@@ -52,12 +54,15 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, session, han
                 className={`fixed top-0 left-0 h-full w-64 bg-gray-800 border-r-2 border-gray-700 z-50 transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
                     } lg:translate-x-0`}
             >
-                {/* Logo */}
-                <div className="p-6 border-b-2 border-gray-700">
+                {/* Logo & Public Link */}
+                <div className="p-6 border-b-2 border-gray-700 space-y-4">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-black text-white">
-                            🍕 <span className="text-yellow-400">Admin</span>
-                        </h1>
+                        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                            <span className="text-2xl">🍕</span>
+                            <h1 className="text-2xl font-black text-white">
+                                <span className="text-yellow-400">Admin</span>
+                            </h1>
+                        </Link>
                         <button
                             onClick={() => setSidebarOpen(false)}
                             className="lg:hidden text-gray-400 hover:text-white"
@@ -65,13 +70,24 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, session, han
                             <X className="w-6 h-6" />
                         </button>
                     </div>
-                    <p className="text-gray-400 text-sm mt-2 font-bold line-clamp-1">
-                        {session?.user?.name}
-                    </p>
+
+                    <button
+                        onClick={() => router.push('/')}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-black transition text-xs text-yellow-400 border-2 border-yellow-400/20 hover:border-yellow-400/50 hover:bg-yellow-400/5"
+                    >
+                        <Home className="w-4 h-4" />
+                        Retour au site public
+                    </button>
+
+                    <div className="pt-2 border-t border-gray-700/50">
+                        <p className="text-gray-400 text-xs font-bold line-clamp-1">
+                            Connecté en tant que: <span className="text-white">{session?.user?.name}</span>
+                        </p>
+                    </div>
                 </div>
 
                 {/* Navigation */}
-                <nav className="p-4 space-y-2 overflow-y-auto max-h-[calc(100vh-200px)]">
+                <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-280px)]">
                     {navigation.map((item) => {
                         const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
                         return (

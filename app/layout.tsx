@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Pizza, Burgers, Tacos et plus encore!",
 };
 
+import { Providers } from "./providers";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +29,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <main>{children}</main>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

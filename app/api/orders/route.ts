@@ -69,6 +69,19 @@ export async function POST(request: NextRequest) {
             }
         });
 
+        // Grant loyalty points if user is logged in
+        if (userId) {
+            const pointsToGrant = Math.floor(finalTotal);
+            await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    loyaltyPoints: {
+                        increment: pointsToGrant
+                    }
+                }
+            });
+        }
+
         // TODO: Send SMS notification to restaurant
         // await sendSMSToRestaurant(order);
 
@@ -94,22 +107,31 @@ export async function POST(request: NextRequest) {
 // GET - Fetch all orders (with optional filtering)
 export async function GET(request: NextRequest) {
     try {
-
         const session = await getServerSession(authOptions);
 
-        // Check if user is admin
-        if (!session || (session.user as any)?.role !== 'admin') {
+        if (!session) {
             return NextResponse.json({
                 success: false,
                 error: 'Non autorisé'
             }, { status: 401 });
         }
 
+        const isAdmin = (session.user as any)?.role === 'admin';
         const { searchParams } = new URL(request.url);
         const status = searchParams.get('status');
         const limit = searchParams.get('limit');
+        const userId = searchParams.get('userId'); // Admin can filter by userId
 
         const where: any = {};
+
+        // If not admin, FORCE filter by own userId
+        if (!isAdmin) {
+            where.userId = (session.user as any).id;
+        } else if (userId) {
+            // Admin can specifically filter by userId if provided
+            where.userId = userId;
+        }
+
         if (status && status !== 'all') {
             where.status = status;
         }

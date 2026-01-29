@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { ChevronRight, Clock, MapPin, Phone, Star, ArrowRight } from "lucide-react";
+import { ChevronRight, Clock, MapPin, Phone, Star, ArrowRight, Gift } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -11,7 +11,20 @@ import { useCart } from "../cart/CartContext";
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [promoSlide, setPromoSlide] = useState(0);
+  const [promos, setPromos] = useState<any[]>([]);
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    const fetchPromos = async () => {
+      try {
+        const res = await fetch('/api/promotions?active=true');
+        const data = await res.json();
+        if (data.success) setPromos(data.promotions);
+      } catch (e) { console.error(e); }
+    };
+    fetchPromos();
+  }, []);
 
   const heroSlides = categories
     .filter(cat => cat.showInHero)
@@ -37,7 +50,16 @@ export default function HomePage() {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [heroSlides.length]);
+
+  useEffect(() => {
+    if (promos.length > 1) {
+      const timer = setInterval(() => {
+        setPromoSlide((prev) => (prev + 1) % promos.length);
+      }, 6000);
+      return () => clearInterval(timer);
+    }
+  }, [promos.length]);
 
   // Get actual bestsellers from menu data
   const getBestsellers = (): MenuItem[] => {
@@ -60,12 +82,12 @@ export default function HomePage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gray-950">
+      <section className="relative overflow-hidden bg-black">
         <div className="relative h-screen">
           {heroSlides.map((slide, index) => (
             <div
               key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
+              className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                 }`}
             >
               {/* Background Image */}
@@ -78,35 +100,35 @@ export default function HomePage() {
                   priority={index === 0}
                   sizes="100vw"
                 />
-                {/* Dark overlay for text readability */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${slide.color}`}></div>
+                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent"></div>
               </div>
 
               {/* Content */}
-              <div className="relative h-full flex items-center justify-center z-10">
-                <div className="text-center px-4 max-w-4xl">
-                  <h1 className="text-6xl md:text-8xl font-black text-white mb-6 drop-shadow-2xl tracking-tight">
-                    {slide.title}
-                  </h1>
-                  <p className="text-2xl md:text-3xl text-white/90 mb-8 font-bold drop-shadow-lg">
-                    {slide.subtitle}
-                  </p>
-                  <div className="inline-block bg-yellow-400 text-gray-900 px-8 py-4 rounded-full font-black text-2xl mb-10 shadow-2xl">
+              <div className="relative h-full flex items-center justify-center z-10 px-4">
+                <div className="text-center space-y-8 max-w-5xl">
+                  <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-yellow-400 text-gray-900 font-black text-sm uppercase tracking-widest shadow-2xl animate-bounce-slow">
                     {slide.price}
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <h1 className="text-6xl md:text-[10rem] font-black text-white leading-none tracking-tighter drop-shadow-2xl italic">
+                    {slide.title}
+                  </h1>
+                  <p className="text-2xl md:text-3xl text-white/70 font-bold max-w-2xl mx-auto line-clamp-2">
+                    {slide.subtitle}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
                     <Link
                       href="/menu"
-                      className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-10 py-5 rounded-full font-black text-xl transition transform hover:scale-105 shadow-2xl flex items-center justify-center gap-2 group"
+                      className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-12 py-6 rounded-2xl font-black text-xl transition-all shadow-2xl shadow-yellow-400/20 flex items-center justify-center gap-3 group active:scale-95"
                     >
                       Commander Maintenant
                       <ChevronRight className="group-hover:translate-x-1 transition-transform" />
                     </Link>
                     <Link
                       href="/promos"
-                      className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white px-10 py-5 rounded-full font-black text-xl transition transform hover:scale-105 shadow-2xl border-2 border-white"
+                      className="bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 text-white px-12 py-6 rounded-2xl font-black text-xl transition-all shadow-2xl active:scale-95"
                     >
-                      Voir les Promos
+                      Nos Offres
                     </Link>
                   </div>
                 </div>
@@ -116,12 +138,12 @@ export default function HomePage() {
         </div>
 
         {/* Slide indicators */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
+        <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 flex gap-4 z-20">
           {heroSlides.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`h-3 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-yellow-400 w-12' : 'bg-white/50 w-3'
+              className={`h-2 rounded-full transition-all duration-500 ${index === currentSlide ? 'bg-yellow-400 w-16' : 'bg-white/20 w-4'
                 }`}
               aria-label={`Go to slide ${index + 1}`}
             />
@@ -129,95 +151,71 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Promo Banner */}
-      <section className="bg-gradient-to-r from-red-600 to-orange-500 py-4">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-center gap-3 text-white flex-wrap">
-            <span className="text-2xl">🔥</span>
-            <p className="text-lg md:text-2xl font-black text-center">
-              FAMILY BOX à 68 DT • Économisez 17 DT!
-            </p>
-            <span className="text-2xl">🔥</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Items - Using Real Menu Data */}
-      <section className="py-20 px-4 bg-gray-900">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="inline-block bg-yellow-400/20 text-yellow-400 px-6 py-2 rounded-full font-bold text-sm mb-6 border border-yellow-400/30">
-              ⭐ NOS BEST-SELLERS
-            </div>
-            <h2 className="text-5xl md:text-6xl font-black text-white mb-4">
+      {/* Featured Items */}
+      <section className="py-32 px-4 bg-black relative">
+        <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-yellow-400/5 blur-[120px] pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto space-y-16">
+          <div className="text-center space-y-4">
+            <div className="text-yellow-400 font-black uppercase text-sm tracking-[0.3em]">Menu Sélection</div>
+            <h2 className="text-5xl md:text-7xl font-black text-white italic tracking-tighter">
               Les <span className="text-yellow-400">Favoris</span>
             </h2>
-            <p className="text-xl text-gray-400">Les choix préférés de nos clients</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
+          <div className="grid md:grid-cols-3 gap-10">
             {featuredItems.map((item) => (
               <div
                 key={item.id}
-                className="group relative bg-gray-800 rounded-2xl overflow-hidden shadow-xl hover:shadow-yellow-400/20 transition transform hover:scale-105 border-2 border-gray-700 hover:border-yellow-400"
+                className="group relative bg-gray-900/40 border-2 border-gray-800 rounded-[3rem] overflow-hidden backdrop-blur-3xl hover:border-yellow-400/30 transition-all duration-500 shadow-3xl"
               >
-                {/* Badges */}
-                <div className="absolute top-4 right-4 z-10 flex gap-2">
+                <div className="absolute top-6 right-6 z-10">
                   {item.bestseller && (
-                    <span className="bg-red-600 text-white px-3 py-1 rounded-full font-black text-xs flex items-center gap-1 shadow-lg">
-                      <Star className="w-3 h-3 fill-current" /> TOP
-                    </span>
-                  )}
-                  {item.popular && (
-                    <span className="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full font-black text-xs">
-                      🔥
+                    <span className="bg-yellow-400 text-gray-900 px-4 py-1.5 rounded-full font-black text-[10px] uppercase shadow-xl ring-4 ring-black/20 tracking-widest">
+                      TOP VENTE
                     </span>
                   )}
                 </div>
 
-                {/* Image */}
-                <div className="h-56 bg-gray-700 flex items-center justify-center overflow-hidden">
+                <div className="h-72 bg-gray-800 flex items-center justify-center overflow-hidden border-b-2 border-gray-800">
                   {item.image.startsWith('/') ? (
                     <Image
                       src={item.image}
                       alt={item.name}
                       fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="object-cover group-hover:scale-110 transition-transform duration-700"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   ) : (
-                    <span className="text-8xl group-hover:scale-110 transition-transform duration-300">
+                    <span className="text-9xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 filter drop-shadow-2xl">
                       {item.image}
                     </span>
                   )}
                 </div>
 
-                {/* Content */}
-                <div className="p-6">
-                  <h3 className="text-2xl font-black text-white mb-2">{item.name}</h3>
-                  {item.ingredients && (
-                    <p className="text-gray-400 mb-4 text-sm line-clamp-2">{item.ingredients}</p>
-                  )}
+                <div className="p-10 space-y-6">
+                  <div className="space-y-2">
+                    <h3 className="text-3xl font-black text-white italic group-hover:text-yellow-400 transition-colors">
+                      {item.name}
+                    </h3>
+                    {item.ingredients && (
+                      <p className="text-gray-500 font-bold text-sm line-clamp-2 leading-relaxed">{item.ingredients}</p>
+                    )}
+                  </div>
 
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">
-                        {item.price && typeof item.price === 'object' && 'xl' in item.price ? 'À partir de' : 'Prix'}
-                      </div>
-                      <span className="text-2xl font-black text-yellow-400">
-                        {item.price && typeof item.price === 'object' && 'xl' in item.price
-                          ? `${item.price.xl} DT`
-                          : typeof item.price === 'number'
-                            ? `${item.price} DT`
-                            : 'Voir menu'}
-                      </span>
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-800">
+                    <div className="text-3xl font-black text-white">
+                      {item.price && typeof item.price === 'object' && 'xl' in item.price
+                        ? item.price.xl
+                        : typeof item.price === 'number'
+                          ? item.price
+                          : '8'}
+                      <span className="text-sm text-yellow-400 ml-1">DT</span>
                     </div>
                     <Link
                       href="/menu"
-                      className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-5 py-3 rounded-full font-black transition flex items-center gap-2 group"
+                      className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-xl shadow-yellow-400/10 group-active:scale-95"
                     >
-                      Voir
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-6 h-6" />
                     </Link>
                   </div>
                 </div>
@@ -225,58 +223,171 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="text-center">
+          <div className="text-center pt-8">
             <Link
               href="/menu"
-              className="inline-flex items-center gap-3 bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-10 py-5 rounded-full font-black text-xl transition transform hover:scale-105 shadow-xl"
+              className="inline-flex items-center gap-3 text-yellow-400 font-black uppercase text-sm tracking-[0.3em] hover:text-yellow-300 transition group"
             >
-              Voir tout le menu
-              <ArrowRight className="w-6 h-6" />
+              Consulter le menu complet
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Promo Section */}
-      <section className="py-20 px-4 bg-gray-950">
+      {/* Refined Promos Slider Section */}
+      <section className="py-24 px-4 bg-gray-950 relative overflow-hidden">
+        {/* Glow Effects */}
+        <div className="absolute top-1/2 left-0 w-[600px] h-[600px] bg-purple-600/10 blur-[150px] -translate-y-1/2 -px-64 pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-pink-600/5 blur-[120px] pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="bg-gradient-to-br from-gray-900 to-black p-1 md:p-1.5 rounded-[4rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5">
+            <div className="bg-gradient-to-br from-purple-900/40 via-pink-900/20 to-gray-900/40 rounded-[3.8rem] overflow-hidden min-h-[500px] relative">
+
+              {/* Slider Content */}
+              {promos.length > 0 ? (
+                promos.map((promo, index) => (
+                  <div
+                    key={promo.id}
+                    className={`grid lg:grid-cols-2 lg:items-center transition-all duration-1000 absolute inset-0 ${index === promoSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                  >
+                    {/* Visual Side */}
+                    <div className="relative h-[300px] md:h-[400px] lg:h-full flex items-center justify-center group">
+                      <div className="text-[9rem] md:text-[12rem] lg:text-[14rem] filter drop-shadow-[0_0_30px_rgba(250,204,21,0.3)] animate-float transform group-hover:scale-110 transition-transform duration-700">
+                        {promo.emoji || (promo.name.includes('Burger') ? '🍔' : '🍕')}
+                      </div>
+                      <div className="absolute top-1/4 right-1/4 bg-yellow-400 text-gray-900 px-4 py-1.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-black text-lg md:text-xl shadow-2xl rotate-12">
+                        -{promo.discount || 20}%
+                      </div>
+                    </div>
+
+                    {/* Content Side */}
+                    <div className="p-8 md:p-12 lg:p-20 flex flex-col justify-center space-y-4 md:space-y-6 lg:space-y-8 overflow-hidden">
+                      <div className="flex items-center gap-3">
+                        <span className="w-10 h-1 bg-yellow-400 rounded-full"></span>
+                        <span className="text-yellow-400 font-black tracking-widest uppercase text-[10px] md:text-xs">Exclusivité Mato's</span>
+                      </div>
+
+                      <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-none italic">
+                        {promo.name.split(' ').slice(0, -1).join(' ')} <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 uppercase not-italic font-[1000]">
+                          {promo.name.split(' ').slice(-1)}
+                        </span>
+                      </h2>
+
+                      <div className="max-w-xl">
+                        <p className="text-sm md:text-base lg:text-lg text-gray-400 font-bold leading-relaxed line-clamp-3 md:line-clamp-4">
+                          {promo.description}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-6 md:gap-8 py-2">
+                        <div className="text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tighter">
+                          {promo.price || 68} <span className="text-lg text-yellow-400 uppercase">DT</span>
+                        </div>
+                        <div className="hidden sm:block h-10 w-1 bg-white/10 rounded-full"></div>
+                        <Link
+                          href="/promos"
+                          className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-6 py-3 md:px-8 md:py-4 rounded-xl font-black text-base md:text-lg transition-all shadow-xl shadow-yellow-400/20 active:scale-95 flex items-center gap-2"
+                        >
+                          En profiter
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500 font-bold">Chargement des offres...</div>
+              )}
+
+              {/* Slider Dots */}
+              {promos.length > 1 && (
+                <div className="absolute bottom-10 right-10 lg:right-20 flex gap-2">
+                  {promos.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setPromoSlide(i)}
+                      className={`h-2 rounded-full transition-all ${i === promoSlide ? 'bg-yellow-400 w-8' : 'bg-white/20 w-2'}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Loyalty System Section */}
+      <section className="py-32 px-4 bg-black relative">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-gradient-to-br from-purple-900 to-pink-900 rounded-3xl overflow-hidden shadow-2xl">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="p-12">
-                <div className="inline-flex items-center gap-2 bg-yellow-400 text-gray-900 px-5 py-2 rounded-full font-black text-sm mb-6">
-                  🔥 OFFRE SPÉCIALE
+          <div className="flex flex-col lg:flex-row items-center gap-20">
+            <div className="lg:w-1/2 space-y-10">
+              <div className="inline-flex items-center gap-3 bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 px-6 py-2 rounded-full font-black text-xs uppercase tracking-[0.2em]">
+                Fidélité & Récompenses
+              </div>
+              <h2 className="text-6xl md:text-8xl font-black text-white leading-[0.9] italic tracking-tight">
+                Gagnez du <br />
+                <span className="text-yellow-400">Plaisir.</span>
+              </h2>
+              <p className="text-xl text-gray-500 font-bold leading-relaxed max-w-xl">
+                Parce que vous méritez le meilleur, nous récompensons chaque dinar dépensé chez nous. Cumulez des points et transformez-les en festins.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pr-12">
+                <div className="space-y-4">
+                  <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-3xl">🎁</div>
+                  <h3 className="text-white font-black text-xl">Bonus Inscription</h3>
+                  <p className="text-gray-600 font-bold text-sm leading-relaxed">Commencez l'aventure avec 10 points offerts dès la validation du compte.</p>
                 </div>
-                <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-                  Family Box
-                </h2>
-                <p className="text-lg text-white/90 mb-6 leading-relaxed">
-                  Le menu parfait pour toute la famille • Plus de 10 personnes servies
-                </p>
-                <div className="flex items-center gap-4 mb-8">
-                  <div>
-                    <div className="text-sm text-white/60 mb-1">Prix normal</div>
-                    <span className="text-2xl text-white/60 line-through font-bold">85 DT</span>
-                  </div>
-                  <div className="h-10 w-px bg-white/20"></div>
-                  <div>
-                    <div className="text-sm text-yellow-400 mb-1">Prix promo</div>
-                    <span className="text-5xl font-black text-yellow-400">68 DT</span>
-                  </div>
-                  <div className="bg-red-600 text-white px-3 py-2 rounded-full font-black">
-                    -20%
-                  </div>
+                <div className="space-y-4">
+                  <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-3xl">💎</div>
+                  <h3 className="text-white font-black text-xl">Statut VIP</h3>
+                  <p className="text-gray-600 font-bold text-sm leading-relaxed">Débloquez des cadeaux exclusifs en gravissant nos échelons de fidélité.</p>
                 </div>
+              </div>
+
+              <div className="pt-8">
                 <Link
-                  href="/promos"
-                  className="inline-flex items-center gap-3 bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-8 py-4 rounded-full font-black text-lg transition transform hover:scale-105"
+                  href="/login"
+                  className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-12 py-6 rounded-2xl font-black text-xl transition-all shadow-2xl shadow-yellow-400/20 inline-flex items-center gap-4 group active:scale-95"
                 >
-                  Voir toutes les promos
-                  <ArrowRight className="w-5 h-5" />
+                  Ouvrir mon compte
+                  <ArrowRight className="group-hover:translate-x-2 transition-transform" />
                 </Link>
               </div>
-              <div className="h-full min-h-[400px] relative">
-                <div className="absolute inset-0 flex items-center justify-center text-9xl">
-                  🎉
+            </div>
+
+            <div className="lg:w-1/2 relative">
+              <div className="relative bg-gradient-to-br from-gray-900 to-black p-12 lg:p-16 rounded-[4rem] border-2 border-gray-800 shadow-3xl overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/5 blur-[100px]"></div>
+                <div className="flex items-center justify-between mb-12">
+                  <div className="w-20 h-20 bg-yellow-400 rounded-3xl flex items-center justify-center text-4xl shadow-2xl">😎</div>
+                  <div className="text-right">
+                    <div className="text-gray-600 text-xs font-black uppercase tracking-widest mb-1">Total Points</div>
+                    <div className="text-5xl font-black text-white italic">1482</div>
+                  </div>
+                </div>
+
+                <div className="space-y-8">
+                  <div className="space-y-4">
+                    <div className="flex justify-between text-xs font-black uppercase tracking-widest text-gray-500">
+                      <span>Palier Actuel</span>
+                      <span className="text-yellow-400">Niveau Pro++</span>
+                    </div>
+                    <div className="h-4 bg-gray-950 rounded-full border border-gray-800 p-0.5 overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full w-4/5 shadow-[0_0_15px_rgba(250,204,21,0.4)]"></div>
+                    </div>
+                  </div>
+
+                  <div className="p-8 bg-gray-950 rounded-[2.5rem] border border-gray-800 flex items-center gap-6 group/item hover:border-yellow-400/30 transition-colors">
+                    <div className="w-16 h-16 bg-gray-900 rounded-2xl flex items-center justify-center text-3xl group-hover/item:scale-110 transition-transform">🌮</div>
+                    <div className="flex-1">
+                      <h4 className="text-white font-black">Tacos Signature XL</h4>
+                      <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest">En cadeau !</p>
+                    </div>
+                    <div className="bg-green-500 inline-block px-4 py-1.5 rounded-full text-[10px] font-black text-gray-900 uppercase">Debloqué</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -284,52 +395,52 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="py-20 px-4 bg-gray-900">
+      {/* Brand Pillars */}
+      <section className="py-32 px-4 bg-gray-950">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-black text-center text-white mb-16">
-            Pourquoi <span className="text-yellow-400">Mato's</span>?
-          </h2>
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-4 gap-12">
             {[
-              { emoji: '🔥', title: 'Fraîcheur', desc: 'Ingrédients frais du jour' },
-              { emoji: '⚡', title: 'Rapidité', desc: 'Service express' },
-              { emoji: '💯', title: 'Qualité', desc: 'Produits premium' },
-              { emoji: '😋', title: 'Saveur', desc: 'Goût authentique' }
-            ].map((item, index) => (
-              <div key={index} className="text-center group">
-                <div className="w-24 h-24 bg-yellow-400 rounded-2xl mx-auto mb-6 flex items-center justify-center text-5xl group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300 shadow-xl">
-                  {item.emoji}
+              { emoji: '🍅', title: 'FRAÎCHEUR', desc: 'Produits livrés chaque matin' },
+              { emoji: '🚂', title: 'RAPIDITÉ', desc: 'Prêt en moins de 15 minutes' },
+              { emoji: '✨', title: 'QUALITÉ', desc: 'Recettes artisanales uniques' },
+              { emoji: '🤘', title: 'AUDACE', desc: 'Des saveurs qui détonnent' }
+            ].map((pillar, idx) => (
+              <div key={idx} className="text-center space-y-6 group">
+                <div className="w-24 h-24 bg-gray-900 border border-gray-800 rounded-[2.5rem] mx-auto flex items-center justify-center text-4xl group-hover:bg-yellow-400 group-hover:text-gray-900 group-hover:rotate-6 transition-all duration-500 shadow-2xl">
+                  {pillar.emoji}
                 </div>
-                <h3 className="text-xl font-black text-white mb-2">{item.title}</h3>
-                <p className="text-gray-400 text-sm">{item.desc}</p>
+                <div className="space-y-2">
+                  <h3 className="text-white font-black text-xs tracking-[0.3em]">{pillar.title}</h3>
+                  <p className="text-gray-500 font-bold text-sm px-6">{pillar.desc}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-20 px-4 bg-gray-950">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-black text-center text-white mb-12">
-            Venez Nous Voir!
-          </h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-gray-800 p-8 rounded-2xl text-center hover:bg-gray-750 transition border-2 border-gray-700 hover:border-yellow-400">
-              <MapPin className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-              <h3 className="text-xl font-black text-white mb-2">Adresse</h3>
-              <p className="text-gray-400">Tunis, Tunisie</p>
+      {/* Simple Map/Visit Section */}
+      <section className="py-32 px-4 bg-black">
+        <div className="max-w-7xl mx-auto flex flex-col items-center space-y-16">
+          <div className="text-center space-y-4">
+            <h2 className="text-5xl font-black text-white italic tracking-tighter">Venez <span className="text-yellow-400">Nous Voir</span></h2>
+            <p className="text-gray-500 font-bold">Le temple de la gourmandise vous attend.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 w-full">
+            <div className="bg-gray-900/40 p-10 rounded-[3rem] border border-gray-800 text-center space-y-4 backdrop-blur-xl">
+              <MapPin className="w-10 h-10 text-yellow-400 mx-auto" />
+              <h3 className="text-xl font-black text-white">Tunis, Ariana</h3>
+              <p className="text-gray-500 font-bold text-sm">Avenue Hédi Nouira, Ennasr II</p>
             </div>
-            <div className="bg-gray-800 p-8 rounded-2xl text-center hover:bg-gray-750 transition border-2 border-gray-700 hover:border-yellow-400">
-              <Phone className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-              <h3 className="text-xl font-black text-white mb-2">Téléphone</h3>
-              <p className="text-gray-400">+216 XX XXX XXX</p>
+            <div className="bg-gray-900/40 p-10 rounded-[3rem] border border-gray-800 text-center space-y-4 backdrop-blur-xl">
+              <Phone className="w-10 h-10 text-yellow-400 mx-auto" />
+              <h3 className="text-xl font-black text-white">+216 71 000 000</h3>
+              <p className="text-gray-500 font-bold text-sm">Service Clientèle & Commandes</p>
             </div>
-            <div className="bg-gray-800 p-8 rounded-2xl text-center hover:bg-gray-750 transition border-2 border-gray-700 hover:border-yellow-400">
-              <Clock className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-              <h3 className="text-xl font-black text-white mb-2">Horaires</h3>
-              <p className="text-gray-400">Tous les jours<br />11h - 23h</p>
+            <div className="bg-gray-900/40 p-10 rounded-[3rem] border border-gray-800 text-center space-y-4 backdrop-blur-xl">
+              <Clock className="w-10 h-10 text-yellow-400 mx-auto" />
+              <h3 className="text-xl font-black text-white">12h - 23h30</h3>
+              <p className="text-gray-500 font-bold text-sm">Ouvert 7 jours sur 7</p>
             </div>
           </div>
         </div>

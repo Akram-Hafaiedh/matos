@@ -1,7 +1,23 @@
+// app/(public)/contact/page.tsx
 'use client';
 
 import { useState } from 'react';
-import { MapPin, Phone, Clock, Mail, Send, MessageCircle, Instagram, Facebook } from 'lucide-react';
+import {
+    MapPin,
+    Phone,
+    Clock,
+    Mail,
+    Send,
+    MessageCircle,
+    Instagram,
+    Facebook,
+    LifeBuoy,
+    ExternalLink,
+    ChevronRight,
+    Sparkles,
+    ShieldCheck
+} from 'lucide-react';
+import Link from 'next/link';
 
 export default function ContactPage() {
     const [formData, setFormData] = useState({
@@ -14,7 +30,8 @@ export default function ContactPage() {
 
     const [submitted, setSubmitted] = useState(false);
 
-    const handleSubmit = () => {
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
         if (formData.name && formData.email && formData.subject && formData.message) {
             setSubmitted(true);
             setTimeout(() => {
@@ -32,197 +49,187 @@ export default function ContactPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-900 py-20">
-            <div className="max-w-7xl mx-auto px-4">
+        <div className="min-h-screen bg-black text-white py-24 px-4 relative overflow-hidden">
+            {/* Background Accents */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-yellow-400/5 blur-[120px] -mr-64 -mt-64 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-yellow-400/5 blur-[120px] -ml-64 -mb-64 pointer-events-none"></div>
+
+            <div className="max-w-7xl mx-auto space-y-24 relative z-10">
                 {/* Header */}
-                <div className="text-center mb-16">
-                    <h1 className="text-6xl md:text-7xl font-black text-white mb-4">
+                <div className="text-center space-y-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 text-sm font-black uppercase tracking-widest animate-fade-in">
+                        <Sparkles className="w-4 h-4" />
+                        On reste en contact
+                    </div>
+                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none animate-slide-up">
                         Contactez <span className="text-yellow-400">Nous</span>
                     </h1>
-                    <p className="text-2xl text-gray-400">On est là pour vous! Posez-nous vos questions</p>
+                    <p className="text-xl text-gray-500 max-w-2xl mx-auto font-bold animate-fade-in delay-200">
+                        Une question ? Une suggestion ? L'équipe Mato's est à votre entière disposition pour vous offrir la meilleure expérience.
+                    </p>
                 </div>
 
-                <div className="grid lg:grid-cols-2 gap-12 mb-16">
-                    {/* Contact Form */}
-                    <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-8 border-2 border-gray-700 shadow-2xl">
-                        <h2 className="text-3xl font-black text-white mb-6 flex items-center gap-3">
-                            <MessageCircle className="w-8 h-8 text-yellow-400" />
-                            Envoyez-nous un message
-                        </h2>
-
-                        {submitted ? (
-                            <div className="bg-green-600 text-white p-8 rounded-2xl text-center animate-bounce-in">
-                                <div className="text-6xl mb-4">✅</div>
-                                <h3 className="text-2xl font-black mb-2">Message envoyé!</h3>
-                                <p className="text-lg">Nous vous répondrons dans les plus brefs délais.</p>
+                <div className="grid lg:grid-cols-5 gap-12 items-start">
+                    {/* Contact Info Sidebar */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Support Promo Card */}
+                        <div className="bg-gradient-to-br from-yellow-400 to-yellow-600 p-8 rounded-[2.5rem] text-gray-900 shadow-2xl shadow-yellow-400/10 group transition-transform duration-500 hover:scale-[1.02]">
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="p-3 bg-black/10 rounded-2xl">
+                                    <LifeBuoy className="w-8 h-8" />
+                                </div>
+                                <ShieldCheck className="w-6 h-6 opacity-40" />
                             </div>
-                        ) : (
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block text-white font-bold mb-2">Nom Complet *</label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        className="w-full bg-gray-700 text-white px-4 py-3 rounded-xl border-2 border-gray-600 focus:border-yellow-400 focus:outline-none transition"
-                                        placeholder="Votre nom"
-                                    />
-                                </div>
-
-                                <div className="grid md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-white font-bold mb-2">Email *</label>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            className="w-full bg-gray-700 text-white px-4 py-3 rounded-xl border-2 border-gray-600 focus:border-yellow-400 focus:outline-none transition"
-                                            placeholder="votre@email.com"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-white font-bold mb-2">Téléphone</label>
-                                        <input
-                                            type="tel"
-                                            name="phone"
-                                            value={formData.phone}
-                                            onChange={handleChange}
-                                            className="w-full bg-gray-700 text-white px-4 py-3 rounded-xl border-2 border-gray-600 focus:border-yellow-400 focus:outline-none transition"
-                                            placeholder="+216 XX XXX XXX"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-white font-bold mb-2">Sujet *</label>
-                                    <select
-                                        name="subject"
-                                        value={formData.subject}
-                                        onChange={handleChange}
-                                        className="w-full bg-gray-700 text-white px-4 py-3 rounded-xl border-2 border-gray-600 focus:border-yellow-400 focus:outline-none transition"
-                                    >
-                                        <option value="">Choisissez un sujet</option>
-                                        <option value="commande">Commande</option>
-                                        <option value="reservation">Réservation</option>
-                                        <option value="suggestion">Suggestion</option>
-                                        <option value="reclamation">Réclamation</option>
-                                        <option value="autre">Autre</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-white font-bold mb-2">Message *</label>
-                                    <textarea
-                                        name="message"
-                                        value={formData.message}
-                                        onChange={handleChange}
-                                        rows={6}
-                                        className="w-full bg-gray-700 text-white px-4 py-3 rounded-xl border-2 border-gray-600 focus:border-yellow-400 focus:outline-none transition resize-none"
-                                        placeholder="Votre message..."
-                                    ></textarea>
-                                </div>
-
-                                <button
-                                    onClick={handleSubmit}
-                                    className="w-full bg-yellow-400 text-gray-900 py-4 rounded-full font-black text-xl hover:bg-yellow-300 transition shadow-xl flex items-center justify-center gap-2 transform hover:scale-105"
-                                >
-                                    <Send className="w-6 h-6" />
-                                    Envoyer le message
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Contact Info */}
-                    <div className="space-y-6">
-                        {/* Location */}
-                        <div className="bg-gradient-to-br from-yellow-400 to-amber-500 rounded-3xl p-8 shadow-2xl transform hover:scale-105 transition">
-                            <MapPin className="w-12 h-12 text-gray-900 mb-4" />
-                            <h3 className="text-2xl font-black text-gray-900 mb-2">Notre Adresse</h3>
-                            <p className="text-gray-900 text-lg font-bold mb-4">
-                                Avenue Habib Bourguiba<br />
-                                Tunis, Tunisie<br />
-                                Code Postal: 1000
+                            <h3 className="text-2xl font-black mb-3">Support Prioritaire</h3>
+                            <p className="font-bold text-black/70 mb-8">
+                                Nos membres bénéficient d'une assistance dédiée avec un suivi en temps réel de leurs demandes.
                             </p>
-                            <button className="bg-gray-900 text-white px-6 py-3 rounded-full font-bold hover:bg-gray-800 transition flex items-center gap-2">
-                                <MapPin className="w-5 h-5" />
-                                Obtenir l'itinéraire
-                            </button>
+                            <Link href="/support" className="flex items-center justify-between bg-black text-white p-5 rounded-2xl font-black transition group-hover:bg-gray-900 shadow-xl">
+                                <span>Ouvrir un ticket</span>
+                                <ExternalLink className="w-5 h-5" />
+                            </Link>
                         </div>
 
-                        {/* Phone */}
-                        <div className="bg-gradient-to-br from-green-600 to-emerald-600 rounded-3xl p-8 shadow-2xl transform hover:scale-105 transition">
-                            <Phone className="w-12 h-12 text-white mb-4" />
-                            <h3 className="text-2xl font-black text-white mb-2">Téléphone</h3>
-                            <p className="text-white text-lg font-bold mb-2">+216 XX XXX XXX</p>
-                            <p className="text-white text-lg font-bold mb-4">+216 YY YYY YYY</p>
-                            <button className="bg-white text-green-600 px-6 py-3 rounded-full font-bold hover:bg-gray-100 transition flex items-center gap-2">
-                                <Phone className="w-5 h-5" />
-                                Appelez maintenant
-                            </button>
-                        </div>
+                        {/* Quick Info Grid */}
+                        <div className="grid grid-cols-1 gap-4">
+                            <div className="bg-gray-900/40 border border-gray-800 p-6 rounded-3xl backdrop-blur-xl group hover:border-yellow-400/30 transition-colors">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-gray-950 rounded-2xl flex items-center justify-center border border-gray-800 group-hover:rotate-6 transition-transform">
+                                        <Phone className="w-5 h-5 text-yellow-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Téléphone</p>
+                                        <p className="text-lg font-black">+216 71 000 000</p>
+                                    </div>
+                                </div>
+                            </div>
 
-                        {/* Hours */}
-                        <div className="bg-gradient-to-br from-blue-600 to-cyan-600 rounded-3xl p-8 shadow-2xl transform hover:scale-105 transition">
-                            <Clock className="w-12 h-12 text-white mb-4" />
-                            <h3 className="text-2xl font-black text-white mb-4">Horaires d'ouverture</h3>
-                            <div className="space-y-2 text-white font-bold text-lg">
-                                <div className="flex justify-between">
-                                    <span>Lundi - Jeudi</span>
-                                    <span>11:00 - 23:00</span>
+                            <div className="bg-gray-900/40 border border-gray-800 p-6 rounded-3xl backdrop-blur-xl group hover:border-yellow-400/30 transition-colors">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-gray-950 rounded-2xl flex items-center justify-center border border-gray-800 group-hover:rotate-6 transition-transform">
+                                        <Mail className="w-5 h-5 text-yellow-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Email</p>
+                                        <p className="text-lg font-black">hello@matos.tn</p>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span>Vendredi - Samedi</span>
-                                    <span>11:00 - 00:00</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Dimanche</span>
-                                    <span>11:00 - 23:00</span>
+                            </div>
+
+                            <div className="bg-gray-900/40 border border-gray-800 p-6 rounded-3xl backdrop-blur-xl group hover:border-yellow-400/30 transition-colors">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-gray-950 rounded-2xl flex items-center justify-center border border-gray-800 group-hover:rotate-6 transition-transform">
+                                        <MapPin className="w-5 h-5 text-yellow-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Localisation</p>
+                                        <p className="text-lg font-black">Avenue Bourguiba, Tunis</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Email */}
-                        <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl p-8 shadow-2xl transform hover:scale-105 transition">
-                            <Mail className="w-12 h-12 text-white mb-4" />
-                            <h3 className="text-2xl font-black text-white mb-2">Email</h3>
-                            <p className="text-white text-lg font-bold mb-4">contact@matos-restaurant.tn</p>
-                            <button className="bg-white text-purple-600 px-6 py-3 rounded-full font-bold hover:bg-gray-100 transition flex items-center gap-2">
-                                <Mail className="w-5 h-5" />
-                                Envoyez un email
-                            </button>
+                    {/* Main Form */}
+                    <div className="lg:col-span-3">
+                        <div className="bg-gray-900/40 border border-gray-800 p-10 md:p-12 rounded-[3.5rem] shadow-3xl backdrop-blur-3xl relative overflow-hidden">
+                            <h2 className="text-3xl font-black mb-10 flex items-center gap-4">
+                                <MessageCircle className="w-8 h-8 text-yellow-400" />
+                                Envoyez un message
+                            </h2>
+
+                            {submitted ? (
+                                <div className="py-20 text-center space-y-6 animate-fade-in">
+                                    <div className="w-24 h-24 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto text-4xl border border-green-500/30">
+                                        ✓
+                                    </div>
+                                    <h3 className="text-3xl font-black">Message Envoyé !</h3>
+                                    <p className="text-gray-500 font-bold max-w-sm mx-auto text-lg">
+                                        Nous avons bien reçu votre demande et reviendrons vers vous très prochainement.
+                                    </p>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleSubmit} className="space-y-8">
+                                    <div className="grid md:grid-cols-2 gap-8">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-gray-600 uppercase tracking-widest ml-1">Nom Complet</label>
+                                            <input
+                                                type="text"
+                                                name="name"
+                                                required
+                                                value={formData.name}
+                                                onChange={handleChange}
+                                                className="w-full bg-gray-950 border border-gray-800 p-5 rounded-2xl focus:border-yellow-400 focus:outline-none transition-colors font-bold"
+                                                placeholder="votre nom"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-gray-600 uppercase tracking-widest ml-1">Email</label>
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                required
+                                                value={formData.email}
+                                                onChange={handleChange}
+                                                className="w-full bg-gray-950 border border-gray-800 p-5 rounded-2xl focus:border-yellow-400 focus:outline-none transition-colors font-bold"
+                                                placeholder="votre@email.com"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black text-gray-600 uppercase tracking-widest ml-1">Sujet de votre demande</label>
+                                        <select
+                                            name="subject"
+                                            required
+                                            value={formData.subject}
+                                            onChange={handleChange}
+                                            className="w-full bg-gray-950 border border-gray-800 p-5 rounded-2xl focus:border-yellow-400 focus:outline-none transition-colors font-black appearance-none"
+                                        >
+                                            <option value="">Choisissez un sujet</option>
+                                            <option value="commande">Suivi de commande</option>
+                                            <option value="partenariat">Partenariat</option>
+                                            <option value="reclamation">Réclamation</option>
+                                            <option value="autre">Autre chose</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black text-gray-600 uppercase tracking-widest ml-1">Message</label>
+                                        <textarea
+                                            name="message"
+                                            required
+                                            rows={5}
+                                            value={formData.message}
+                                            onChange={handleChange}
+                                            className="w-full bg-gray-950 border border-gray-800 p-5 rounded-2xl focus:border-yellow-400 focus:outline-none transition-colors font-bold resize-none"
+                                            placeholder="Comment pouvons-nous vous aider ?"
+                                        />
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        className="w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-6 rounded-2xl font-black text-xl transition-all transform hover:scale-[1.01] shadow-xl shadow-yellow-400/10 flex items-center justify-center gap-3 group"
+                                    >
+                                        <Send className="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                        Envoyer ma demande
+                                    </button>
+                                </form>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                {/* Social Media */}
-                <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-12 text-center border-4 border-yellow-400 shadow-2xl">
-                    <h2 className="text-4xl font-black text-white mb-6">Suivez-nous sur les réseaux sociaux</h2>
-                    <p className="text-xl text-gray-400 mb-8">Restez connectés pour nos dernières offres et actualités!</p>
+                {/* Socials & Networking */}
+                <div className="bg-gray-900/20 border border-gray-800/50 p-12 rounded-[3.5rem] text-center space-y-8">
+                    <h3 className="text-3xl font-black">Suivez l'aventure sur les réseaux</h3>
                     <div className="flex justify-center gap-6">
-                        <a href="#" className="bg-gradient-to-br from-pink-600 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg">
-                            <Instagram className="w-8 h-8 text-white" />
-                        </a>
-                        <a href="#" className="bg-gradient-to-br from-blue-600 to-blue-700 w-16 h-16 rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg">
-                            <Facebook className="w-8 h-8 text-white" />
-                        </a>
-                        <a href="#" className="bg-gradient-to-br from-red-600 to-orange-600 w-16 h-16 rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg">
-                            <span className="text-2xl">📱</span>
-                        </a>
-                    </div>
-                </div>
-
-                {/* Map Placeholder */}
-                <div className="mt-16 bg-gray-800 rounded-3xl overflow-hidden shadow-2xl border-4 border-gray-700">
-                    <div className="h-96 bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
-                        <div className="text-center">
-                            <MapPin className="w-24 h-24 text-yellow-400 mx-auto mb-4" />
-                            <p className="text-2xl font-black text-white">Carte Interactive</p>
-                            <p className="text-gray-400 mt-2">Intégration Google Maps à venir</p>
-                        </div>
+                        <Link href="#" className="w-16 h-16 bg-gray-900 border border-gray-800 rounded-3xl flex items-center justify-center hover:bg-yellow-400 hover:text-gray-900 hover:border-yellow-400 transition-all duration-500 group">
+                            <Instagram className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                        </Link>
+                        <Link href="#" className="w-16 h-16 bg-gray-900 border border-gray-800 rounded-3xl flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-500 group">
+                            <Facebook className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                        </Link>
                     </div>
                 </div>
             </div>
