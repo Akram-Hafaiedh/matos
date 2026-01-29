@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { ShoppingBag, Menu, X, User, LogOut, LayoutDashboard, UserCircle, Settings } from 'lucide-react';
+import { ShoppingBag, Menu, X, User, LogOut, LayoutDashboard, UserCircle, Settings, Bell } from 'lucide-react';
 import { useCart } from '@/app/cart/CartContext';
+import { useEffect, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import NotificationsDropdown from '@/components/NotificationsDropdown';
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -66,6 +67,9 @@ export default function Navbar() {
 
                     {/* Right: Actions */}
                     <div className="flex items-center gap-3">
+                        {/* Notifications */}
+                        {status === 'authenticated' && <NotificationsDropdown />}
+
                         {/* Cart Indicator */}
                         {totalItems > 0 && (
                             <div className="flex items-center gap-2 bg-yellow-400 text-gray-900 px-4 py-2 rounded-xl font-black text-xs shadow-lg shadow-yellow-400/20">

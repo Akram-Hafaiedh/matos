@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Lock, Phone, MapPin, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Mail, Lock, Phone, MapPin, AlertCircle, CheckCircle, ArrowRight, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 
 export default function RegisterPage() {
@@ -70,134 +70,142 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="w-full">
+        <div className="w-full relative">
+            {/* Ambient Background Glows */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-yellow-400/10 blur-[100px] rounded-full pointer-events-none animate-pulse"></div>
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-yellow-400/10 blur-[100px] rounded-full pointer-events-none animate-pulse delay-700"></div>
+
             {/* Header */}
-            <div className="text-center mb-8">
-                <div className="inline-block bg-yellow-400 rounded-full p-4 mb-4">
-                    <User className="w-12 h-12 text-gray-900" />
+            <div className="text-center mb-10 relative z-10">
+                <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-950 rounded-[2rem] border-2 border-yellow-400/20 shadow-2xl shadow-yellow-400/5 mb-6 group hover:border-yellow-400/50 transition-colors duration-500">
+                    <UserPlus className="w-10 h-10 text-yellow-400 group-hover:scale-110 transition-transform duration-500" />
                 </div>
-                <h1 className="text-4xl font-black text-white mb-2">
-                    Créer un <span className="text-yellow-400">Compte</span>
+                <h1 className="text-5xl font-black text-white mb-2 uppercase italic tracking-tighter leading-none">
+                    Rejoindre <span className="text-yellow-400 block mt-1">Mato's</span>
                 </h1>
-                <p className="text-gray-400">Inscrivez-vous pour commander</p>
+                <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em]">Devenez un client privilégié</p>
             </div>
 
             {/* Registration Form */}
-            <div className="bg-gray-800 rounded-2xl p-8 border-2 border-gray-700 shadow-2xl">
+            <div className="bg-gray-900/50 rounded-[3.5rem] p-10 border-2 border-gray-800 backdrop-blur-3xl shadow-3xl shadow-black relative z-10 hover:border-yellow-400/10 transition-colors duration-500">
                 {error && (
-                    <div className="bg-red-600/20 border-2 border-red-600 rounded-lg p-4 flex items-center gap-3 mb-6">
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3 mb-8 animate-in fade-in slide-in-from-top-2">
                         <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                        <p className="text-red-500 font-bold text-sm">{error}</p>
+                        <p className="text-red-500 font-black text-[10px] uppercase tracking-wider">{error}</p>
                     </div>
                 )}
 
                 {success && (
-                    <div className="bg-green-600/20 border-2 border-green-600 rounded-lg p-4 flex items-center gap-3 mb-6">
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 flex items-center gap-3 mb-8 animate-in fade-in slide-in-from-top-2">
                         <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                        <p className="text-green-500 font-bold text-sm">{success}</p>
+                        <p className="text-green-500 font-black text-[10px] uppercase tracking-wider">{success}</p>
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Name */}
-                    <div>
-                        <label className="block text-white font-bold mb-2">Nom complet *</label>
-                        <div className="relative">
-                            <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                className="w-full bg-gray-700 text-white pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                                placeholder="Votre nom"
-                                required
-                            />
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 gap-6">
+                        {/* Name */}
+                        <div className="space-y-2">
+                            <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Nom complet *</label>
+                            <div className="relative group">
+                                <User className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
+                                    placeholder="Votre nom"
+                                    required
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Email */}
-                    <div>
-                        <label className="block text-white font-bold mb-2">Email *</label>
-                        <div className="relative">
-                            <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="w-full bg-gray-700 text-white pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                                placeholder="votre@email.com"
-                                required
-                            />
+                        {/* Email */}
+                        <div className="space-y-2">
+                            <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Email *</label>
+                            <div className="relative group">
+                                <Mail className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
+                                    placeholder="votre@email.com"
+                                    required
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Phone */}
-                    <div>
-                        <label className="block text-white font-bold mb-2">Téléphone</label>
-                        <div className="relative">
-                            <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="tel"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                className="w-full bg-gray-700 text-white pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                                placeholder="XX XXX XXX"
-                            />
+                        {/* Phone & Map in Grid if needed, but let's keep it simple */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Phone */}
+                            <div className="space-y-2">
+                                <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Téléphone</label>
+                                <div className="relative group">
+                                    <Phone className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                                    <input
+                                        type="tel"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
+                                        placeholder="XX XXX XXX"
+                                    />
+                                </div>
+                            </div>
+                            {/* Address */}
+                            <div className="space-y-2">
+                                <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Adresse</label>
+                                <div className="relative group">
+                                    <MapPin className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                                    <input
+                                        type="text"
+                                        name="address"
+                                        value={formData.address}
+                                        onChange={handleChange}
+                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
+                                        placeholder="Votre adresse"
+                                    />
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Address */}
-                    <div>
-                        <label className="block text-white font-bold mb-2">Adresse</label>
-                        <div className="relative">
-                            <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="text"
-                                name="address"
-                                value={formData.address}
-                                onChange={handleChange}
-                                className="w-full bg-gray-700 text-white pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                                placeholder="Votre adresse de livraison"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Password */}
-                    <div>
-                        <label className="block text-white font-bold mb-2">Mot de passe *</label>
-                        <div className="relative">
-                            <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="w-full bg-gray-700 text-white pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                                placeholder="••••••••"
-                                required
-                                minLength={6}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Confirm Password */}
-                    <div>
-                        <label className="block text-white font-bold mb-2">Confirmer le mot de passe *</label>
-                        <div className="relative">
-                            <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="password"
-                                name="confirmPassword"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                className="w-full bg-gray-700 text-white pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                                placeholder="••••••••"
-                                required
-                                minLength={6}
-                            />
+                        {/* Passwords */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Mot de passe *</label>
+                                <div className="relative group">
+                                    <Lock className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
+                                        placeholder="••••••••"
+                                        required
+                                        minLength={6}
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Confirmation *</label>
+                                <div className="relative group">
+                                    <Lock className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                                    <input
+                                        type="password"
+                                        name="confirmPassword"
+                                        value={formData.confirmPassword}
+                                        onChange={handleChange}
+                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
+                                        placeholder="••••••••"
+                                        required
+                                        minLength={6}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -205,24 +213,27 @@ export default function RegisterPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-4 rounded-xl font-black text-lg transition disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+                        className="w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] transition-all shadow-xl shadow-yellow-400/10 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                         {loading ? (
-                            <span className="flex items-center justify-center gap-2">
+                            <span className="flex items-center justify-center gap-3">
                                 <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-900 border-t-transparent"></div>
-                                Création du compte...
+                                Traitement...
                             </span>
                         ) : (
-                            'S\'inscrire'
+                            <span className="flex items-center justify-center gap-2">
+                                S'inscrire maintenant
+                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            </span>
                         )}
                     </button>
                 </form>
 
                 {/* Login Link */}
-                <div className="mt-6 text-center">
-                    <p className="text-gray-400 text-sm">
-                        Déjà un compte ?{' '}
-                        <Link href="/login" className="text-yellow-400 hover:text-yellow-300 font-bold transition">
+                <div className="mt-8 text-center">
+                    <p className="text-gray-500 font-bold text-xs">
+                        Déjà membre ?{' '}
+                        <Link href="/login" className="text-yellow-400 hover:text-yellow-300 font-black uppercase tracking-wider underline underline-offset-4 decoration-yellow-400/20 hover:decoration-yellow-400 transition-all">
                             Se connecter
                         </Link>
                     </p>
