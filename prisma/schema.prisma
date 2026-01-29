@@ -47,23 +47,25 @@ model Session {
 }
 
 model User {
-  id            String        @id @default(cuid()) // Ensure this matches your auth model
-  name          String?
-  email         String?       @unique
-  emailVerified DateTime?     @map("email_verified")
-  password      String?       @db.VarChar(255)
-  image         String?
-  phone         String?       @db.VarChar(20) // Your custom field
-  address       String? // Your custom field
-  role          String        @default("customer") @db.VarChar(50) // Your custom field
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
+  id             String          @id @default(cuid()) // Ensure this matches your auth model
+  name           String?
+  email          String?         @unique
+  emailVerified  DateTime?       @map("email_verified")
+  password       String?         @db.VarChar(255)
+  image          String?
+  phone          String?         @db.VarChar(20) // Your custom field
+  address        String? // Your custom field
+  role           String          @default("customer") @db.VarChar(50) // Your custom field
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
   // Relations
-  accounts      Account[]
-  sessions      Session[]
+  accounts       Account[]
+  sessions       Session[]
   // Your restaurant relations
-  orders        Order[]
-  cartSessions  CartSession[]
+  orders         Order[]
+  cartSessions   CartSession[]
+  supportTickets SupportTicket[]
+  loyaltyPoints  Int             @default(0) @map("loyalty_points")
 
   @@map("users") // Ensure this matches your existing table
 }
@@ -172,8 +174,9 @@ model Order {
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  user       User?       @relation(fields: [userId], references: [id])
-  orderItems OrderItem[]
+  user           User?           @relation(fields: [userId], references: [id])
+  orderItems     OrderItem[]
+  supportTickets SupportTicket[]
 
   @@map("orders")
 }
@@ -227,4 +230,22 @@ model ContactMessage {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("contact_messages")
+}
+
+model SupportTicket {
+  id          Int      @id @default(autoincrement())
+  userId      String?  @map("user_id")
+  orderId     Int?     @map("order_id")
+  subject     String   @db.VarChar(255)
+  description String   @db.Text
+  status      String   @default("open") @db.VarChar(50) // 'open', 'in_progress', 'resolved', 'closed'
+  priority    String   @default("medium") @db.VarChar(20) // 'low', 'medium', 'high', 'urgent'
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user  User?  @relation(fields: [userId], references: [id])
+  order Order? @relation(fields: [orderId], references: [id])
+
+  @@map("support_tickets")
 }
