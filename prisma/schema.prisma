@@ -65,6 +65,9 @@ model User {
   orders         Order[]
   cartSessions   CartSession[]
   supportTickets SupportTicket[]
+  ticketMessages TicketMessage[]
+  notifications  Notification[]
+  reviews        Review[]
   loyaltyPoints  Int             @default(0) @map("loyalty_points")
 
   @@map("users") // Ensure this matches your existing table
@@ -119,6 +122,7 @@ model MenuItem {
   // Relations
   category   Category?   @relation(fields: [categoryId], references: [id])
   orderItems OrderItem[]
+  reviews    Review[]
 
   @@map("menu_items")
 }
@@ -244,8 +248,55 @@ model SupportTicket {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user  User?  @relation(fields: [userId], references: [id])
-  order Order? @relation(fields: [orderId], references: [id])
+  user     User?           @relation(fields: [userId], references: [id])
+  order    Order?          @relation(fields: [orderId], references: [id])
+  messages TicketMessage[]
 
   @@map("support_tickets")
+}
+
+model TicketMessage {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int      @map("ticket_id")
+  userId    String   @map("user_id")
+  message   String   @db.Text
+  isAdmin   Boolean  @default(false) @map("is_admin")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id])
+
+  @@map("ticket_messages")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  userId     String   @map("user_id")
+  menuItemId Int      @map("menu_item_id")
+  rating     Int      @default(5)
+  comment    String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id])
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@map("reviews")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  title     String   @db.VarChar(255)
+  message   String   @db.Text
+  type      String   @db.VarChar(50) // 'order_update', 'ticket_response', 'promotion', etc.
+  link      String?  @db.VarChar(255) // Optional link to the relevant page
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }

@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Menu as MenuIcon } from 'lucide-react';
 import AdminSidebar from '@/components/dashboard/AdminSidebar';
+import NotificationsDropdown from '@/components/NotificationsDropdown';
 
 export default function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     const { data: session, status } = useSession();
@@ -54,19 +55,24 @@ export default function AdminLayoutContent({ children }: { children: React.React
 
             {/* Main Content */}
             <div className="lg:ml-64">
-                {/* Top Header (Mobile) */}
-                <header className="lg:hidden bg-gray-800 border-b-2 border-gray-700 p-4 sticky top-0 z-30">
+                {/* Global Header */}
+                <header className="bg-gray-800 border-b-2 border-gray-700 p-4 sticky top-0 z-30">
                     <div className="flex items-center justify-between">
-                        <button
-                            onClick={() => setSidebarOpen(true)}
-                            className="text-white hover:text-yellow-400 transition"
-                        >
-                            <MenuIcon className="w-6 h-6" />
-                        </button>
-                        <h1 className="text-xl font-black text-white">
-                            🍕 <span className="text-yellow-400">Admin</span>
-                        </h1>
-                        <div className="w-6" /> {/* Spacer */}
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => setSidebarOpen(true)}
+                                className="lg:hidden text-white hover:text-yellow-400 transition"
+                            >
+                                <MenuIcon className="w-6 h-6" />
+                            </button>
+                            <h1 className="text-xl font-black text-white italic tracking-tighter uppercase">
+                                Mato's <span className="text-yellow-400">Admin</span>
+                            </h1>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <NotificationsDropdown />
+                        </div>
                     </div>
                 </header>
 

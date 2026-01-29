@@ -1,15 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-    Search,
-    User,
-    Package,
-    Loader2,
-    Calendar,
-    MessageSquare,
-    MoreHorizontal
-} from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, AlertCircle, Search, RefreshCw, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 
 interface Ticket {
     id: number;
@@ -19,8 +12,8 @@ interface Ticket {
     priority: string;
     createdAt: string;
     user: {
-        name: string | null;
-        email: string | null;
+        name: string;
+        email: string;
     } | null;
     order: {
         orderNumber: string;
@@ -30,33 +23,19 @@ interface Ticket {
 export default function AdminSupportPage() {
     const [tickets, setTickets] = useState<Ticket[]>([]);
     const [loading, setLoading] = useState(true);
+    const [filterStatus, setFilterStatus] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [pagination, setPagination] = useState({
-        totalItems: 0,
-        totalPages: 0,
-        currentPage: 1,
-        limit: 10
-    });
-
-    useEffect(() => {
-        fetchTickets();
-    }, [statusFilter, pagination.currentPage, searchQuery]);
 
     const fetchTickets = async () => {
         setLoading(true);
         try {
-            const params = new URLSearchParams({
-                page: pagination.currentPage.toString(),
-                limit: pagination.limit.toString(),
-                status: statusFilter,
-                search: searchQuery
-            });
-            const res = await fetch(`/api/support?${params.toString()}`);
+            let url = `/api/support?status=${filterStatus}`;
+            if (searchQuery) url += `&search=${searchQuery}`;
+
+            const res = await fetch(url);
             const data = await res.json();
             if (data.success) {
                 setTickets(data.tickets);
-                setPagination(data.pagination);
             }
         } catch (error) {
             console.error('Error fetching tickets:', error);
@@ -65,139 +44,159 @@ export default function AdminSupportPage() {
         }
     };
 
-    const updateTicketStatus = async (id: number, newStatus: string) => {
-        try {
-            const res = await fetch(`/api/support/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus })
-            });
-            if (res.ok) {
-                fetchTickets();
-            }
-        } catch (error) {
-            console.error('Error updating ticket:', error);
+    useEffect(() => {
+        fetchTickets();
+    }, [filterStatus]);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        fetchTickets();
+    };
+
+    const getStatusStyle = (status: string) => {
+        switch (status) {
+            case 'open': return 'bg-yellow-400/10 text-yellow-400 border-yellow-400/20';
+            case 'in_progress': return 'bg-blue-400/10 text-blue-400 border-blue-400/20';
+            case 'resolved': return 'bg-green-400/10 text-green-400 border-green-400/20';
+            case 'closed': return 'bg-gray-800 text-gray-500 border-gray-700';
+            default: return 'bg-gray-800 text-gray-400 border-gray-700';
+        }
+    };
+
+    const getPriorityStyle = (priority: string) => {
+        switch (priority) {
+            case 'urgent': return 'text-red-500 bg-red-500/10 border-red-500/20';
+            case 'high': return 'text-orange-500 bg-orange-500/10 border-orange-500/20';
+            case 'medium': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
+            default: return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
         }
     };
 
     return (
-        <div className="space-y-8 max-w-7xl mx-auto">
+        <div className="space-y-8 pb-20">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div>
-                    <h1 className="text-4xl font-black text-white mb-2">
-                        Centre de <span className="text-yellow-400">Support</span>
+                    <h1 className="text-5xl font-black text-white mb-2 uppercase italic tracking-tighter">
+                        Support <span className="text-yellow-400">Tickets</span>
                     </h1>
-                    <p className="text-gray-400">Gérez les demandes d'assistance de vos clients</p>
+                    <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Gérez les demandes d'assistance des clients</p>
                 </div>
+                <button
+                    onClick={fetchTickets}
+                    className="flex items-center gap-2 bg-gray-900 border border-gray-800 px-6 py-3 rounded-2xl text-white font-black uppercase text-[10px] tracking-widest hover:border-yellow-400/50 transition duration-500"
+                >
+                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    Actualiser
+                </button>
             </div>
 
-            {/* Filters */}
-            <div className="bg-gray-800/50 p-6 rounded-3xl border border-gray-700/50 flex flex-col md:flex-row gap-6">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                        type="text"
-                        placeholder="Rechercher par sujet, description..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-gray-900 text-white pl-12 pr-4 py-4 rounded-2xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
-                    />
-                </div>
-                <div className="flex items-center gap-2">
-                    {['all', 'open', 'in_progress', 'resolved', 'closed'].map((s) => (
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {[
+                    { label: 'Total', value: tickets.length, color: 'from-gray-800 to-gray-900' },
+                    { label: 'Ouverts', value: tickets.filter(t => t.status === 'open').length, color: 'from-yellow-400/20 to-yellow-600/20 text-yellow-400' },
+                    { label: 'Urgents', value: tickets.filter(t => t.priority === 'urgent').length, color: 'from-red-500/20 to-red-600/20 text-red-500' },
+                    { label: 'Résolus', value: tickets.filter(t => t.status === 'resolved').length, color: 'from-green-500/20 to-green-600/20 text-green-500' }
+                ].map((stat, i) => (
+                    <div key={i} className={`bg-gradient-to-br ${stat.color} p-6 rounded-[2rem] border border-white/5 shadow-2xl`}>
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">{stat.label}</p>
+                        <p className="text-4xl font-black italic tracking-tighter">{stat.value}</p>
+                    </div>
+                ))}
+            </div>
+
+            {/* Filters & Search */}
+            <div className="flex flex-col lg:flex-row gap-6">
+                <div className="flex flex-wrap gap-2">
+                    {['all', 'open', 'in_progress', 'resolved', 'closed'].map((status) => (
                         <button
-                            key={s}
-                            onClick={() => setStatusFilter(s)}
-                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition ${statusFilter === s
-                                    ? 'bg-yellow-400 text-gray-900'
-                                    : 'bg-gray-900 text-gray-400 border border-gray-700 hover:text-white'
+                            key={status}
+                            onClick={() => setFilterStatus(status)}
+                            className={`px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest border transition duration-500 ${filterStatus === status
+                                    ? 'bg-yellow-400 text-gray-900 border-yellow-400'
+                                    : 'bg-gray-900 text-gray-400 border-gray-800 hover:border-gray-700'
                                 }`}
                         >
-                            {s === 'all' ? 'Tous' : s === 'in_progress' ? 'En cours' : s}
+                            {status === 'all' ? 'Tous' : status.replace('_', ' ')}
                         </button>
                     ))}
                 </div>
+                <form onSubmit={handleSearch} className="flex-1 relative">
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+                    <input
+                        type="text"
+                        placeholder="Rechercher par sujet, message..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-gray-900/50 border-2 border-gray-800 text-white pl-16 pr-8 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition duration-500"
+                    />
+                </form>
             </div>
 
             {/* Tickets Table */}
-            <div className="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden relative shadow-2xl">
-                {loading && (
-                    <div className="absolute inset-0 bg-gray-800/50 backdrop-blur-[2px] z-10 flex items-center justify-center">
-                        <Loader2 className="w-10 h-10 text-yellow-400 animate-spin" />
-                    </div>
-                )}
+            <div className="bg-gray-900/30 rounded-[3rem] border border-gray-800 backdrop-blur-3xl overflow-hidden shadow-3xl">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-900/50 text-gray-400 uppercase text-[10px] font-black tracking-widest border-b border-gray-700">
-                            <tr>
-                                <th className="px-8 py-6">Status / Priorité</th>
-                                <th className="px-8 py-6">Client / Commande</th>
-                                <th className="px-8 py-6">Sujet</th>
-                                <th className="px-8 py-6">Date</th>
-                                <th className="px-8 py-6 text-right">Actions</th>
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="border-b border-gray-800/50 bg-gray-950/20">
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Ticket</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Client</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Sujet</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Status</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Priorité</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest text-right">Action</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-700/50">
-                            {tickets.map((ticket) => (
-                                <tr key={ticket.id} className="hover:bg-gray-750 transition group">
+                        <tbody className="divide-y divide-gray-800/50">
+                            {loading ? (
+                                Array(5).fill(0).map((_, i) => (
+                                    <tr key={i} className="animate-pulse">
+                                        <td colSpan={6} className="px-8 py-8"><div className="h-8 bg-gray-800/50 rounded-xl w-full"></div></td>
+                                    </tr>
+                                ))
+                            ) : tickets.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-8 py-20 text-center text-gray-500 font-bold uppercase tracking-widest">
+                                        Aucun ticket trouvé
+                                    </td>
+                                </tr>
+                            ) : tickets.map((ticket) => (
+                                <tr key={ticket.id} className="group hover:bg-white/[0.02] transition duration-500">
                                     <td className="px-8 py-6">
-                                        <div className="flex flex-col gap-2">
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${ticket.status === 'open' ? 'bg-yellow-400/10 text-yellow-400' :
-                                                    ticket.status === 'resolved' ? 'bg-green-500/10 text-green-400' :
-                                                        'bg-gray-700 text-gray-400'
-                                                }`}>
-                                                {ticket.status}
-                                            </span>
-                                            <span className={`text-[9px] font-black uppercase tracking-widest ${ticket.priority === 'urgent' ? 'text-red-500' :
-                                                    ticket.priority === 'high' ? 'text-orange-400' :
-                                                        'text-gray-500'
-                                                }`}>
-                                                {ticket.priority}
-                                            </span>
-                                        </div>
+                                        <span className="font-black text-yellow-400 italic">#{ticket.id}</span>
+                                        <p className="text-[10px] text-gray-600 font-bold mt-1">{new Date(ticket.createdAt).toLocaleDateString()}</p>
                                     </td>
                                     <td className="px-8 py-6">
                                         <div className="flex flex-col">
-                                            <div className="flex items-center gap-2 font-black text-white">
-                                                <User className="w-4 h-4 text-gray-500" />
-                                                {ticket.user?.name || 'Invité'}
-                                            </div>
-                                            {ticket.order && (
-                                                <div className="flex items-center gap-2 text-xs text-yellow-400 font-bold mt-1">
-                                                    <Package className="w-3 h-3" />
-                                                    {ticket.order.orderNumber}
-                                                </div>
-                                            )}
+                                            <span className="text-white font-black text-sm uppercase">{ticket.user?.name || 'Inconnu'}</span>
+                                            <span className="text-[10px] text-gray-500 font-bold">{ticket.user?.email || '-'}</span>
                                         </div>
                                     </td>
                                     <td className="px-8 py-6">
-                                        <div className="max-w-xs">
-                                            <div className="font-black text-white group-hover:text-yellow-400 transition">{ticket.subject}</div>
-                                            <div className="text-gray-500 text-xs line-clamp-1 mt-1">{ticket.description}</div>
-                                        </div>
+                                        <p className="text-gray-300 font-bold text-sm max-w-xs truncate">{ticket.subject}</p>
+                                        {ticket.order && (
+                                            <span className="text-[10px] text-yellow-400 font-black uppercase tracking-widest">Ordre: #{ticket.order.orderNumber}</span>
+                                        )}
                                     </td>
                                     <td className="px-8 py-6">
-                                        <div className="flex items-center gap-2 text-gray-500 text-xs font-bold">
-                                            <Calendar className="w-4 h-4" />
-                                            {new Date(ticket.createdAt).toLocaleDateString()}
-                                        </div>
+                                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-2 ${getStatusStyle(ticket.status)}`}>
+                                            {ticket.status.replace('_', ' ')}
+                                        </span>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-2 ${getPriorityStyle(ticket.priority)}`}>
+                                            {ticket.priority}
+                                        </span>
                                     </td>
                                     <td className="px-8 py-6 text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <button
-                                                className="p-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition shadow-lg"
-                                                title="Voir Détails"
-                                            >
-                                                <MessageSquare className="w-5 h-5" />
-                                            </button>
-                                            <div className="relative group/actions">
-                                                <button className="p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-gray-400 rounded-xl transition">
-                                                    <MoreHorizontal className="w-5 h-5" />
-                                                </button>
-                                                {/* Dropdown would go here for updating status */}
-                                            </div>
-                                        </div>
+                                        <Link
+                                            href={`/dashboard/support/${ticket.id}`}
+                                            className="inline-flex items-center gap-2 bg-gray-800 text-white px-5 py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-yellow-400 hover:text-gray-900 transition duration-500"
+                                        >
+                                            Répondre
+                                            <ChevronRight size={14} />
+                                        </Link>
                                     </td>
                                 </tr>
                             ))}
@@ -205,13 +204,6 @@ export default function AdminSupportPage() {
                     </table>
                 </div>
             </div>
-
-            {/* Pagination placeholder */}
-            {pagination.totalPages > 1 && (
-                <div className="flex justify-center gap-2">
-                    {/* Pagination logic similar to menu items */}
-                </div>
-            )}
         </div>
     );
 }

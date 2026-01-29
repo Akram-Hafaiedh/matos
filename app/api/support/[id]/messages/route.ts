@@ -1,0 +1,101 @@
+import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { authOptions } from '../../../auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
+
+export async function POST(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({
+                success: false,
+                error: 'Non autorisé'
+            }, { status: 401 });
+        }
+
+        const ticketId = parseInt(id);
+        const body = await request.json();
+        const { message } = body;
+
+        if (!message) {
+            return NextResponse.json({
+                success: false,
+                error: 'Le message est requis'
+            }, { status: 400 });
+        }
+
+        // Verify ticket existence and ownership
+        const ticket = await prisma.supportTicket.findUnique({
+            where: { id: ticketId }
+        });
+
+        if (!ticket) {
+            return NextResponse.json({
+                success: false,
+                error: 'Ticket non trouvé'
+            }, { status: 404 });
+        }
+
+        const isAdmin = (session.user as any).role === 'admin';
+
+        if (!isAdmin && ticket.userId !== (session.user as any).id) {
+            return NextResponse.json({
+                success: false,
+                error: 'Accès non autorisé'
+            }, { status: 403 });
+        }
+
+        const newMessage = await prisma.ticketMessage.create({
+            data: {
+                message,
+                ticketId,
+                userId: (session.user as any).id,
+                isAdmin: isAdmin
+            },
+            include: {
+                user: {
+                    select: {
+                        name: true,
+                        image: true
+                    }
+                }
+            }
+        });
+
+        // Create notification for the user if an admin responded
+        if (isAdmin) {
+            await prisma.notification.create({
+                data: {
+                    userId: ticket.userId!,
+                    title: 'Nouveau message de support',
+                    message: `Un admin a répondu à votre ticket #${ticket.id}`,
+                    type: 'ticket_response',
+                    link: `/support/${ticket.id}`,
+                }
+            });
+        }
+
+        // Optionally update ticket status if user responds to a closed/resolved ticket
+        if (!isAdmin && (ticket.status === 'resolved' || ticket.status === 'closed')) {
+            await prisma.supportTicket.update({
+                where: { id: ticketId },
+                data: { status: 'open' }
+            });
+        }
+
+        return NextResponse.json({
+            success: true,
+            message: newMessage
+        });
+    } catch (error) {
+        console.error('Error adding ticket message:', error);
+        return NextResponse.json({
+            success: false,
+            error: 'Erreur lors de l\'envoi du message'
+        }, { status: 500 });
+    }
+}

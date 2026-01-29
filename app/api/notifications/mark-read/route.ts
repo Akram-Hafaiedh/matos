@@ -1,0 +1,28 @@
+import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { authOptions } from '../../auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
+
+export async function POST(request: NextRequest) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ success: false }, { status: 401 });
+        }
+
+        await prisma.notification.updateMany({
+            where: {
+                userId: (session.user as any).id,
+                isRead: false
+            },
+            data: {
+                isRead: true
+            }
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Error marking notifications as read:', error);
+        return NextResponse.json({ success: false }, { status: 500 });
+    }
+}
