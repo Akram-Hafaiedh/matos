@@ -7,15 +7,39 @@ import { prisma } from '@/lib/prisma';
 // GET - Fetch all categories
 export async function GET(request: NextRequest) {
     try {
-        const categories = await prisma.category.findMany({
-            orderBy: {
-                displayOrder: 'asc'
-            }
-        });
+        const { searchParams } = new URL(request.url);
+        const search = searchParams.get('search');
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '50'); // Larger limit for categories by default
+        const skip = (page - 1) * limit;
+
+        const where: any = {};
+
+        if (search) {
+            where.name = { contains: search, mode: 'insensitive' };
+        }
+
+        const [totalItems, categories] = await Promise.all([
+            prisma.category.count({ where }),
+            prisma.category.findMany({
+                where,
+                orderBy: {
+                    displayOrder: 'asc'
+                },
+                skip,
+                take: limit
+            })
+        ]);
 
         return NextResponse.json({
             success: true,
-            categories
+            categories,
+            pagination: {
+                totalItems,
+                totalPages: Math.ceil(totalItems / limit),
+                currentPage: page,
+                limit
+            }
         });
     } catch (error) {
         console.error('Error fetching categories:', error);

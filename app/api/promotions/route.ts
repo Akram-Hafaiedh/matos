@@ -8,9 +8,20 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const onlyActive = searchParams.get('active') === 'true';
+        const search = searchParams.get('search');
+        const status = searchParams.get('status'); // 'active', 'inactive', 'all'
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '12');
+        const skip = (page - 1) * limit;
 
         const where: any = {};
-        if (onlyActive) {
+
+        // Status handling
+        if (status === 'active') {
+            where.isActive = true;
+        } else if (status === 'inactive') {
+            where.isActive = false;
+        } else if (onlyActive) {
             where.isActive = true;
             where.OR = [
                 { endDate: null },
@@ -18,16 +29,35 @@ export async function GET(request: NextRequest) {
             ];
         }
 
-        const promotions = await prisma.promotion.findMany({
-            where,
-            orderBy: {
-                createdAt: 'desc'
-            }
-        });
+        // Search handling
+        if (search) {
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } }
+            ];
+        }
+
+        const [totalItems, promotions] = await Promise.all([
+            prisma.promotion.count({ where }),
+            prisma.promotion.findMany({
+                where,
+                orderBy: {
+                    createdAt: 'desc'
+                },
+                skip,
+                take: limit
+            })
+        ]);
 
         return NextResponse.json({
             success: true,
-            promotions
+            promotions,
+            pagination: {
+                totalItems,
+                totalPages: Math.ceil(totalItems / limit),
+                currentPage: page,
+                limit
+            }
         });
     } catch (error) {
         console.error('Error fetching promotions:', error);
