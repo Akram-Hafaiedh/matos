@@ -16,22 +16,31 @@ export const authOptions: NextAuthOptions = {
             },
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) {
+                    console.log('❌ Missing credentials');
                     return null;
                 }
+
+                console.log('🔍 Looking for user:', credentials.email);
 
                 const user = await prisma.user.findFirst({
-                    where: { email: credentials.email.toLocaleLowerCase().trim() }
+                    where: { email: credentials.email.toLowerCase().trim() }
                 });
 
-                if (!user) {
+                console.log('👤 User found:', user ? 'Yes' : 'No');
+
+                if (!user || !user.password) {
+                    console.log('❌ User not found or no password');
                     return null;
                 }
 
-                const isValidPassword = await compare(credentials.password, user.password_hash);
+                console.log('🔐 Comparing password...');
+                const isValidPassword = await compare(credentials.password, user.password);
 
                 if (!isValidPassword) {
+                    console.log('❌ Invalid password');
                     return null;
                 }
+                console.log('✅ Login successful for:', user.email);
 
                 return {
                     id: user.id,
