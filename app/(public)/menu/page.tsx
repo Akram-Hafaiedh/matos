@@ -1,9 +1,10 @@
 'use client';
 
-import { categories, menuItems } from '@/lib/data/menu';
+// import { categories, menuItems } from '@/lib/data/menu';
 import { Flame, Minus, Plus, Star, Percent, ChevronRight, Search, ArrowRight, LayoutGrid, Grid3X3, Grid2X2, ChevronLeft, X, MessageSquare, Utensils, User } from 'lucide-react';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -11,11 +12,60 @@ import { MenuItem } from '@/types/menu';
 import { useCart } from '../../cart/CartContext';
 
 export default function MenuPage() {
-    const [selectedCategory, setSelectedCategory] = useState('all');
-    const [selectedSauce, setSelectedSauce] = useState<'all' | 'rouge' | 'blanche'>('all');
-    const [searchQuery, setSearchQuery] = useState('');
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-white font-black uppercase text-xs tracking-widest">Chargement du menu...</p>
+                </div>
+            </div>
+        }>
+            <MenuContent />
+        </Suspense>
+    );
+}
+
+function MenuContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
+
+    // Mapping between URL slugs and DB category names/ids
+    const DB_URL_MAP: Record<string, string> = {
+        'pizza': 'Pizzas',
+        'tacos': 'Tacos',
+        'makloub': 'Makloub',
+        'sandwich': 'Sandwichs',
+        'burger': 'Burgers',
+        'plat': 'Plats',
+        'salade': 'Salades',
+        'sides': 'Sides',
+        'tunisian': 'Tunisien',
+        'kids': 'Enfants',
+        'drinks': 'Boissons',
+        'dessert': 'Desserts',
+        'supplements': 'Suppléments',
+        'promotions': 'Promos' // Map both to the same logic
+    };
+
+    // Read from URL or use defaults
+    const initialCategory = searchParams.get('category') || 'all';
+    const initialSauce = (searchParams.get('sauce') as 'all' | 'rouge' | 'blanche') || 'all';
+    const initialSearch = searchParams.get('search') || '';
+    const initialPage = Number(searchParams.get('page')) || 1;
+
+    const [dbCategories, setDbCategories] = useState<any[]>([]);
+    const [dbItems, setDbItems] = useState<MenuItem[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+    const [selectedSauce, setSelectedSauce] = useState<'all' | 'rouge' | 'blanche'>(initialSauce);
+    const [searchQuery, setSearchQuery] = useState(initialSearch);
     const [gridCols, setGridCols] = useState<2 | 3 | 4>(3);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(initialPage);
+    const [totalItems, setTotalItems] = useState(0);
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
     const [reviews, setReviews] = useState<any[]>([]);
     const [reviewStats, setReviewStats] = useState({ average: 0, total: 0 });
@@ -23,36 +73,174 @@ export default function MenuPage() {
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
     const { data: session } = useSession();
-
     const { addToCart } = useCart();
 
-    const filteredItems = useMemo(() => {
-        let items = selectedCategory === 'all'
-            ? Object.values(menuItems).flat()
-            : menuItems[selectedCategory as keyof typeof menuItems] || [];
+    // URL Update Logic
+    const createQueryString = useCallback(
+        (params: Record<string, string | number | null>) => {
+            const newParams = new URLSearchParams(searchParams.toString());
+            Object.entries(params).forEach(([name, value]) => {
+                if (value === null || value === 'all' || value === '' || (name === 'page' && value === 1)) {
+                    newParams.delete(name);
+                } else {
+                    newParams.set(name, String(value));
+                }
+            });
+            return newParams.toString();
+        },
+        [searchParams]
+    );
 
-        // Apply Search
-        if (searchQuery) {
-            items = items.filter(item =>
-                item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (item.ingredients && item.ingredients.toLowerCase().includes(searchQuery.toLowerCase()))
-            );
+    const updateUrl = useCallback((params: Record<string, string | number | null>) => {
+        const query = createQueryString(params);
+        router.push(pathname + (query ? `?${query}` : ''), { scroll: false });
+    }, [createQueryString, pathname, router]);
+
+    // Handle initial state and URL sync
+    useEffect(() => {
+        setSelectedCategory(searchParams.get('category') || 'all');
+        setSelectedSauce((searchParams.get('sauce') as 'all' | 'rouge' | 'blanche') || 'all');
+        setSearchQuery(searchParams.get('search') || '');
+        setCurrentPage(Number(searchParams.get('page')) || 1);
+    }, [searchParams]);
+
+    // Fetch Categories
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch('/api/categories?limit=100');
+                const data = await res.json();
+                if (data.success) {
+                    setDbCategories(data.categories);
+                }
+            } catch (err) {
+                console.error('Failed to fetch categories:', err);
+            }
+        };
+        fetchCategories();
+    }, []);
+
+    // Fetch Menu Items & Promotions
+    useEffect(() => {
+        const fetchItems = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                let items: MenuItem[] = [];
+                let total = 0;
+
+                const itemsPerPage = gridCols === 2 ? 6 : gridCols === 3 ? 9 : 12;
+                const isPromoFilter = selectedCategory === 'promos' || selectedCategory === 'promotions';
+
+                if (isPromoFilter) {
+                    // Fetch from both sources for Promotions
+                    const [promosRes, menuRes] = await Promise.all([
+                        fetch(`/api/promotions?active=true&search=${searchQuery}&page=${currentPage}&limit=${itemsPerPage}`),
+                        fetch(`/api/menu-items?categoryId=14&status=active&search=${searchQuery}&page=${currentPage}&limit=${itemsPerPage}`)
+                    ]);
+
+                    const [promosData, menuData] = await Promise.all([promosRes.json(), menuRes.json()]);
+
+                    if (promosData.success) {
+                        const promoModels = promosData.promotions.map((p: any) => ({
+                            id: p.id,
+                            name: p.name,
+                            price: p.price,
+                            originalPrice: p.originalPrice,
+                            discount: p.discount,
+                            savings: p.originalPrice && p.price ? p.originalPrice - p.price : 0,
+                            ingredients: p.description,
+                            image: p.imageUrl || p.emoji || '🎁',
+                            category: 'promotions',
+                            isActive: p.isActive
+                        }));
+                        items = [...items, ...promoModels];
+                        total += promosData.pagination.totalItems;
+                    }
+
+                    if (menuData.success) {
+                        const promoItems = menuData.menuItems.map((item: any) => ({
+                            id: item.id,
+                            name: item.name,
+                            price: item.price,
+                            ingredients: item.ingredients?.join(', '),
+                            popular: item.popular,
+                            bestseller: item.bestseller,
+                            hot: item.hot,
+                            image: item.imageUrl || item.emoji || '🍽️',
+                            category: 'promotions',
+                            sauce: item.sauce,
+                            discount: item.discount
+                        }));
+                        items = [...items, ...promoItems];
+                        total += menuData.pagination.totalItems;
+                    }
+                } else {
+                    // Find the DB category ID if a specific category is selected
+                    let categoryId = null;
+                    if (selectedCategory !== 'all') {
+                        const dbCat = dbCategories.find(c =>
+                            c.name.toLowerCase() === DB_URL_MAP[selectedCategory]?.toLowerCase() ||
+                            c.name.toLowerCase() === selectedCategory.toLowerCase()
+                        );
+                        categoryId = dbCat?.id;
+                    }
+
+                    const query = new URLSearchParams({
+                        page: String(currentPage),
+                        limit: String(itemsPerPage),
+                        status: 'active',
+                        search: searchQuery
+                    });
+                    if (categoryId) query.set('categoryId', String(categoryId));
+
+                    const res = await fetch(`/api/menu-items?${query.toString()}`);
+                    const data = await res.json();
+
+                    if (data.success) {
+                        items = data.menuItems.map((item: any) => ({
+                            id: item.id,
+                            name: item.name,
+                            price: item.price,
+                            ingredients: item.ingredients?.join(', '),
+                            popular: item.popular,
+                            bestseller: item.bestseller,
+                            hot: item.hot,
+                            image: item.imageUrl || item.emoji || '🍽️',
+                            category: Object.keys(DB_URL_MAP).find(key => DB_URL_MAP[key].toLowerCase() === item.category?.name.toLowerCase()) || item.category?.name.toLowerCase() || 'all',
+                            sauce: item.sauce,
+                            discount: item.discount
+                        }));
+
+                        // Client-side sauce filtering for Pizzas if needed
+                        if (selectedCategory === 'pizza' && selectedSauce !== 'all') {
+                            items = items.filter(item => item.sauce === selectedSauce);
+                        }
+
+                        total = data.pagination.totalItems;
+                    }
+                }
+
+                setDbItems(items);
+                setTotalItems(total);
+            } catch (err) {
+                console.error('Failed to fetch menu items:', err);
+                setError('Impossible de charger le menu. Veuillez réessayer plus tard.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        // Only fetch items when categories are available or if we're fetching everything
+        if (dbCategories.length > 0 || selectedCategory === 'all' || selectedCategory === 'promos' || selectedCategory === 'promotions') {
+            fetchItems();
         }
-
-        // Apply Sauce Filter for Pizzas
-        if (selectedCategory === 'pizza' && selectedSauce !== 'all') {
-            items = items.filter((item: MenuItem) =>
-                'sauce' in item && item.sauce === selectedSauce
-            );
-        }
-
-        return items;
-    }, [selectedCategory, selectedSauce, searchQuery]);
+    }, [selectedCategory, selectedSauce, searchQuery, currentPage, gridCols, dbCategories]);
 
     // Pagination logic
     const itemsPerPage = gridCols === 2 ? 6 : gridCols === 3 ? 9 : 12;
-    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-    const paginatedItems = filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const paginatedItems = dbItems; // Already paginated from server
 
     const getPaginationRange = () => {
         const delta = 1;
@@ -70,12 +258,33 @@ export default function MenuPage() {
         return range;
     };
 
-    // Reset page when filters change
+    // Reset page when filters change and update URL
     useEffect(() => {
-        setCurrentPage(1);
-    }, [selectedCategory, selectedSauce, searchQuery]);
+        // Only trigger update if values actually changed to avoid infinite loops
+        const currentCat = searchParams.get('category') || 'all';
+        const currentSauce = searchParams.get('sauce') || 'all';
+        const currentSearch = searchParams.get('search') || '';
 
-    const fetchReviews = async (itemId: string) => {
+        if (selectedCategory !== currentCat || selectedSauce !== currentSauce || searchQuery !== currentSearch) {
+            setCurrentPage(1);
+            updateUrl({
+                category: selectedCategory,
+                sauce: selectedSauce,
+                search: searchQuery,
+                page: 1
+            });
+        }
+    }, [selectedCategory, selectedSauce, searchQuery, updateUrl, searchParams]);
+
+    // Sync page to URL
+    useEffect(() => {
+        const currentPageParam = Number(searchParams.get('page')) || 1;
+        if (currentPage !== currentPageParam) {
+            updateUrl({ page: currentPage });
+        }
+    }, [currentPage, updateUrl, searchParams]);
+
+    const fetchReviews = async (itemId: string | number) => {
         try {
             const res = await fetch(`/api/menu/reviews?menuItemId=${itemId}`);
             const data = await res.json();
@@ -88,7 +297,7 @@ export default function MenuPage() {
 
     useEffect(() => {
         if (selectedItem) {
-            fetchReviews(String(selectedItem.id));
+            fetchReviews(selectedItem.id);
         }
     }, [selectedItem]);
 
@@ -109,7 +318,7 @@ export default function MenuPage() {
             const data = await res.json();
             if (data.success) {
                 setNewReview({ rating: 5, comment: '' });
-                fetchReviews(String(selectedItem.id));
+                fetchReviews(selectedItem.id);
             }
         } catch (error) { console.error(error); } finally { setIsSubmittingReview(false); }
     };
@@ -258,8 +467,8 @@ export default function MenuPage() {
 
                             {/* Search Bar */}
                             <div className="relative group w-full md:w-80">
-                                <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
-                                    <Search className="w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                                <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none z-10">
+                                    <Search className="w-5 h-5 text-gray-400 group-focus-within:text-yellow-400 transition-colors" />
                                 </div>
                                 <input
                                     type="text"
@@ -276,22 +485,46 @@ export default function MenuPage() {
                 {/* Categories Navigation */}
                 <div className="flex flex-col gap-8 mb-16">
                     <div className="flex flex-wrap gap-3">
-                        {categories.map(cat => (
-                            <button
-                                key={cat.id}
-                                onClick={() => {
-                                    setSelectedCategory(cat.id);
-                                    setSelectedSauce('all');
-                                }}
-                                className={`px-8 py-4 rounded-[1.5rem] font-black text-sm uppercase tracking-widest transition-all duration-300 flex items-center gap-3 active:scale-95 ${selectedCategory === cat.id
-                                    ? 'bg-yellow-400 text-gray-900 shadow-2xl shadow-yellow-400/20'
-                                    : 'bg-gray-900/40 text-gray-500 border-2 border-gray-800/50 hover:border-yellow-400/30 hover:text-white backdrop-blur-md'
-                                    }`}
-                            >
-                                <span className="text-xl">{cat.emoji}</span>
-                                {cat.name}
-                            </button>
-                        ))}
+                        {/* All Category */}
+                        <button
+                            onClick={() => {
+                                setSelectedCategory('all');
+                                setSelectedSauce('all');
+                            }}
+                            className={`px-8 py-4 rounded-[1.5rem] font-black text-sm uppercase tracking-widest transition-all duration-300 flex items-center gap-3 active:scale-95 ${selectedCategory === 'all'
+                                ? 'bg-yellow-400 text-gray-900 shadow-2xl shadow-yellow-400/20'
+                                : 'bg-gray-900/40 text-gray-500 border-2 border-gray-800/50 hover:border-yellow-400/30 hover:text-white backdrop-blur-md'
+                                }`}
+                        >
+                            <span className="text-xl">🍽️</span>
+                            Tous
+                        </button>
+
+                        {/* DB Categories */}
+                        {dbCategories.map(cat => {
+                            const rawSlug = Object.keys(DB_URL_MAP).find(key => DB_URL_MAP[key].toLowerCase() === cat.name.toLowerCase()) || cat.name.toLowerCase();
+                            const isPromoCategory = cat.name.toLowerCase() === 'promos' || cat.name.toLowerCase() === 'promotions';
+                            const slug = isPromoCategory ? 'promotions' : rawSlug;
+
+                            return (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => {
+                                        setSelectedCategory(slug);
+                                        setSelectedSauce('all');
+                                    }}
+                                    className={`px-8 py-4 rounded-[1.5rem] font-black text-sm uppercase tracking-widest transition-all duration-300 flex items-center gap-3 active:scale-95 ${selectedCategory === slug
+                                        ? 'bg-yellow-400 text-gray-900 shadow-2xl shadow-yellow-400/20'
+                                        : isPromoCategory
+                                            ? 'bg-yellow-400/10 text-yellow-500 border-2 border-yellow-400/20 hover:border-yellow-400/40 hover:text-yellow-400 backdrop-blur-md'
+                                            : 'bg-gray-900/40 text-gray-500 border-2 border-gray-800/50 hover:border-yellow-400/30 hover:text-white backdrop-blur-md'
+                                        }`}
+                                >
+                                    <span className="text-xl">{cat.emoji || '🍕'}</span>
+                                    {cat.name}
+                                </button>
+                            );
+                        })}
                     </div>
 
                     {/* Sub-Filters for Pizza */}
@@ -329,14 +562,46 @@ export default function MenuPage() {
                 </div>
 
                 {/* Items Grid */}
-                {paginatedItems.length > 0 ? (
+                {isLoading ? (
                     <div className={`grid grid-cols-1 md:grid-cols-2 ${gridCols === 2 ? 'lg:grid-cols-2' :
                         gridCols === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'
                         } gap-8`}>
-                        {paginatedItems.map(item => (
+                        {[...Array(itemsPerPage)].map((_, i) => (
+                            <div key={i} className="bg-gray-900/30 border-2 border-gray-800 rounded-[3rem] h-[500px] animate-pulse">
+                                <div className="h-64 bg-gray-800/50 rounded-t-[3rem]"></div>
+                                <div className="p-8 space-y-4">
+                                    <div className="h-8 bg-gray-800/50 rounded-xl w-3/4"></div>
+                                    <div className="h-4 bg-gray-800/50 rounded-lg w-1/2"></div>
+                                    <div className="h-20 bg-gray-800/50 rounded-2xl"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : error ? (
+                    <div className="text-center py-40 space-y-8">
+                        <div className="w-32 h-32 bg-red-900/20 rounded-[3rem] border border-red-900/50 flex items-center justify-center mx-auto text-6xl">
+                            ⚠️
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-3xl font-black text-white italic">Oups !</h3>
+                            <p className="text-gray-500 font-bold">{error}</p>
+                        </div>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="bg-yellow-400 text-gray-900 px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition"
+                        >
+                            Réessayer
+                        </button>
+                    </div>
+                ) : paginatedItems.length > 0 ? (
+                    <div className={`grid grid-cols-1 md:grid-cols-2 ${gridCols === 2 ? 'lg:grid-cols-2' :
+                        gridCols === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'
+                        } gap-8`}>
+                        {paginatedItems.map((item: MenuItem) => (
                             <div
                                 key={item.id}
-                                className={`group relative bg-gray-900/30 border-2 border-gray-800 rounded-[3rem] overflow-hidden backdrop-blur-3xl hover:border-yellow-400/30 transition-all duration-500 flex flex-col h-full hover:shadow-3xl hover:shadow-yellow-400/5 ${item.category === 'promos' ? 'border-yellow-400/50' : ''
+                                onClick={() => setSelectedItem(item)}
+                                className={`group relative bg-gray-900/30 border-2 border-gray-800 rounded-[3rem] overflow-hidden backdrop-blur-3xl hover:border-yellow-400/30 transition-all duration-500 flex flex-col h-full hover:shadow-3xl hover:shadow-yellow-400/5 cursor-pointer ${item.category === 'promos' ? 'border-yellow-400/50' : ''
                                     }`}
                             >
                                 {/* Media Section */}
@@ -388,7 +653,6 @@ export default function MenuPage() {
                                             </h3>
                                         </div>
 
-                                        {/* Placeholder for Star Rating */}
                                         <div className="flex items-center gap-1">
                                             {[1, 2, 3, 4, 5].map((s) => (
                                                 <Star key={s} className={`w-3 h-3 ${s <= 4 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-800'}`} />
@@ -404,7 +668,7 @@ export default function MenuPage() {
                                     </div>
 
                                     {/* Action Section */}
-                                    <div className="mt-auto pt-6 border-t border-gray-800/50">
+                                    <div className="mt-auto pt-6 border-t border-gray-800/50" onClick={(e) => e.stopPropagation()}>
                                         {renderPriceAndButton(item)}
                                     </div>
                                 </div>
@@ -424,6 +688,7 @@ export default function MenuPage() {
                             onClick={() => {
                                 setSelectedCategory('all');
                                 setSearchQuery('');
+                                setCurrentPage(1);
                             }}
                             className="bg-white/5 hover:bg-white/10 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition"
                         >
