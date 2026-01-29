@@ -7,10 +7,10 @@ import { prisma } from '@/lib/prisma';
 // GET - Fetch single order
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-
+        const { id: orderIdStr } = await params;
         const session = await getServerSession(authOptions);
 
         if (!session) {
@@ -21,7 +21,7 @@ export async function GET(
         }
 
         const order = await prisma.order.findUnique({
-            where: { id: parseInt(params.id) },
+            where: { id: parseInt(orderIdStr) },
             include: {
                 orderItems: {
                     include: {
@@ -62,10 +62,10 @@ export async function GET(
 // PATCH - Update order status
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-
+        const { id: orderIdStr } = await params;
         const session = await getServerSession(authOptions);
 
         // Check if user is admin
@@ -95,18 +95,36 @@ export async function PATCH(
         };
 
 
+        const orderId = parseInt(orderIdStr);
         const order = await prisma.order.update({
-            where: { id: parseInt(params.id) },
+            where: { id: orderId },
             data: updateData,
             include: {
-                orderItems: true,
                 user: true
             }
         });
 
+        // Create notification for the user
+        if (order.userId) {
+            const statusLabels: { [key: string]: string } = {
+                'pending': 'en attente',
+                'confirmed': 'confirmée',
+                'preparing': 'en préparation',
+                'out_for_delivery': 'en livraison',
+                'delivered': 'livrée',
+                'cancelled': 'annulée'
+            };
 
-        // TODO: Send SMS to customer about status update
-        // await sendStatusUpdateSMS(order);
+            await prisma.notification.create({
+                data: {
+                    userId: order.userId,
+                    title: `Commande ${statusLabels[status] || status}`,
+                    message: `Le statut de votre commande #${order.orderNumber} est passé à: ${statusLabels[status] || status}`,
+                    type: 'order_update',
+                    link: `/account?tab=orders`,
+                }
+            });
+        }
 
         return NextResponse.json({
             success: true,
@@ -126,10 +144,10 @@ export async function PATCH(
 // DELETE - Cancel/delete order
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-
+        const { id } = await params;
         const session = await getServerSession(authOptions);
 
         // Check if user is admin
@@ -141,7 +159,7 @@ export async function DELETE(
         }
 
         await prisma.order.delete({
-            where: { id: parseInt(params.id) }
+            where: { id: parseInt(id) }
         });
 
         return NextResponse.json({

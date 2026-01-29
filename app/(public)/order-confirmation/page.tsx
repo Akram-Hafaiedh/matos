@@ -33,160 +33,129 @@ export default function OrderConfirmationPage() {
     const orderNumber = `MAT${Date.now().toString().slice(-6)}`;
 
     return (
-        <div className="min-h-screen bg-gray-900 py-20">
-            <div className="max-w-3xl mx-auto px-4">
+        <div className="min-h-screen bg-black py-24 relative overflow-hidden">
+            {/* Ambient Success Glow */}
+            <div className="absolute top-0 inset-x-0 h-[600px] bg-green-500/5 blur-[120px] pointer-events-none"></div>
 
-                {/* Success Animation */}
-                <div className="text-center mb-8">
-                    <div className="inline-block bg-green-500 rounded-full p-4 mb-6 animate-bounce-in">
-                        <CheckCircle className="w-20 h-20 text-white" />
+            <div className="max-w-4xl mx-auto px-4 relative z-10">
+
+                {/* Success Animation & Title */}
+                <div className="text-center mb-16 space-y-8">
+                    <div className="inline-flex items-center justify-center w-32 h-32 bg-green-500 rounded-[2.5rem] shadow-3xl shadow-green-500/20 animate-in zoom-in duration-700">
+                        <CheckCircle className="w-16 h-16 text-white stroke-[3px]" />
                     </div>
-                    <h1 className="text-5xl md:text-6xl font-black text-white mb-4">
-                        Commande <span className="text-yellow-400">Confirmée!</span>
-                    </h1>
-                    <p className="text-xl text-gray-400">
-                        Merci pour votre commande. Nous préparons vos plats avec soin!
-                    </p>
-                </div>
-
-                {/* Order Number */}
-                <div className="bg-gradient-to-r from-yellow-400 to-amber-500 rounded-2xl p-6 mb-8 text-center">
-                    <p className="text-gray-900 font-bold mb-2">Numéro de commande</p>
-                    <p className="text-4xl font-black text-gray-900">#{orderNumber}</p>
-                </div>
-
-                {/* Order Status */}
-                <div className="bg-gray-800 rounded-2xl p-6 border-2 border-gray-700 mb-8">
-                    <h2 className="text-2xl font-black text-white mb-6 flex items-center gap-2">
-                        <Package className="w-6 h-6 text-yellow-400" />
-                        État de la Commande
-                    </h2>
-
                     <div className="space-y-4">
-                        {[
-                            { label: 'Commande reçue', status: 'complete', icon: '✅' },
-                            { label: 'En préparation', status: 'current', icon: '👨‍🍳' },
-                            { label: 'En livraison', status: 'pending', icon: '🛵' },
-                            { label: 'Livrée', status: 'pending', icon: '🎉' }
-                        ].map((step, index) => (
-                            <div key={index} className="flex items-center gap-4">
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${step.status === 'complete' ? 'bg-green-500' :
-                                        step.status === 'current' ? 'bg-yellow-400 animate-pulse' :
-                                            'bg-gray-700'
-                                    }`}>
-                                    {step.icon}
+                        <h1 className="text-6xl md:text-8xl font-black text-white uppercase italic tracking-tighter leading-none">
+                            C'est <span className="text-yellow-400">Prêt!</span>
+                        </h1>
+                        <p className="text-gray-500 font-bold uppercase text-xs tracking-[0.4em]">Commande confirmée • Chef prévenu</p>
+                    </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-8 items-start">
+                    {/* Left Column - Details */}
+                    <div className="space-y-8">
+                        {/* Order Number Card */}
+                        <div className="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-[3rem] p-10 text-gray-950 shadow-3xl shadow-yellow-400/10 group relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-[60px] -mr-16 -mt-16"></div>
+                            <Package className="absolute bottom-4 right-8 w-24 h-24 text-black/5 -mr-8 -mb-8 transform -rotate-12" />
+
+                            <p className="text-[10px] font-black uppercase tracking-[0.5em] mb-4 opacity-60">Numéro de commande</p>
+                            <p className="text-6xl font-black tracking-tighter italic">#{orderNumber}</p>
+                        </div>
+
+                        {/* Status Tracker */}
+                        <div className="bg-gray-900/40 rounded-[3rem] p-10 border border-gray-800 backdrop-blur-3xl">
+                            <h2 className="text-xl font-black text-white mb-8 flex items-center gap-4 uppercase italic tracking-widest">
+                                <Clock className="w-5 h-5 text-yellow-400" />
+                                Suivi en Direct
+                            </h2>
+
+                            <div className="space-y-8">
+                                {[
+                                    { label: 'Reçue', time: 'À l\'instant', status: 'done', icon: '🔥' },
+                                    { label: 'En cuisine', time: 'En cours', status: 'current', icon: '👨‍🍳' },
+                                    { label: 'Livraison', time: '--:--', status: 'pending', icon: '🛵' }
+                                ].map((step, idx) => (
+                                    <div key={idx} className="flex items-center gap-6 group">
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl transition-all ${step.status === 'done' ? 'bg-green-500 shadow-lg shadow-green-500/10' :
+                                                step.status === 'current' ? 'bg-yellow-400 animate-pulse' :
+                                                    'bg-gray-950 border border-gray-800'
+                                            }`}>
+                                            {step.icon}
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className={`font-black uppercase text-xs tracking-widest ${step.status === 'pending' ? 'text-gray-600' : 'text-white'}`}>{step.label}</p>
+                                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{step.time}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column - Summary & Info */}
+                    <div className="space-y-8">
+                        {/* Summary */}
+                        <div className="bg-gray-900/40 rounded-[3rem] p-10 border border-gray-800 backdrop-blur-3xl">
+                            <h2 className="text-xl font-black text-white mb-8 uppercase italic tracking-widest">Résumé</h2>
+                            <div className="space-y-4 mb-8">
+                                {Object.entries(orderData.cart).map(([key, cartItem]: [string, any]) => (
+                                    <div key={key} className="flex justify-between items-center">
+                                        <span className="text-gray-400 font-bold text-xs uppercase tracking-wider">
+                                            {cartItem.quantity}x {cartItem.item.name}
+                                        </span>
+                                        <span className="text-white font-black text-xs">
+                                            {((typeof cartItem.item.price === 'number' ? cartItem.item.price : cartItem.item.price[cartItem.selectedSize]) * cartItem.quantity).toFixed(1)} <span className="text-[9px] opacity-30 italic">DT</span>
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="pt-8 border-t border-gray-800 flex justify-between items-center text-3xl font-black text-yellow-400 italic tracking-tighter">
+                                <span className="text-xs not-italic uppercase tracking-[0.3em] text-gray-500">Total</span>
+                                <div>{orderData.finalTotal.toFixed(1)} <span className="text-sm not-italic opacity-30">DT</span></div>
+                            </div>
+                        </div>
+
+                        {/* Delivery Info */}
+                        <div className="bg-gray-900/40 rounded-[3rem] p-10 border border-gray-800 backdrop-blur-3xl">
+                            <div className="space-y-6">
+                                <div className="flex gap-5">
+                                    <MapPin className="w-5 h-5 text-yellow-400 mt-1" />
+                                    <div className="space-y-1">
+                                        <p className="text-gray-500 font-black uppercase text-[9px] tracking-widest">Destination</p>
+                                        <p className="text-white font-bold text-sm leading-tight">{orderData.deliveryInfo.address}</p>
+                                    </div>
                                 </div>
-                                <span className={`font-bold ${step.status === 'pending' ? 'text-gray-500' : 'text-white'
-                                    }`}>
-                                    {step.label}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Delivery Info */}
-                <div className="bg-gray-800 rounded-2xl p-6 border-2 border-gray-700 mb-8">
-                    <h2 className="text-2xl font-black text-white mb-6">Informations de Livraison</h2>
-
-                    <div className="space-y-4">
-                        <div className="flex items-start gap-3">
-                            <MapPin className="w-5 h-5 text-yellow-400 mt-1" />
-                            <div>
-                                <p className="text-gray-400 text-sm">Adresse</p>
-                                <p className="text-white font-bold">{orderData.deliveryInfo.address}</p>
-                                <p className="text-white">{orderData.deliveryInfo.city}</p>
+                                <div className="flex gap-5">
+                                    <Phone className="w-5 h-5 text-yellow-400 mt-1" />
+                                    <div className="space-y-1">
+                                        <p className="text-gray-500 font-black uppercase text-[9px] tracking-widest">Contact</p>
+                                        <p className="text-white font-bold text-sm">{orderData.deliveryInfo.phone}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="flex items-start gap-3">
-                            <Phone className="w-5 h-5 text-yellow-400 mt-1" />
-                            <div>
-                                <p className="text-gray-400 text-sm">Téléphone</p>
-                                <p className="text-white font-bold">{orderData.deliveryInfo.phone}</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-start gap-3">
-                            <Clock className="w-5 h-5 text-yellow-400 mt-1" />
-                            <div>
-                                <p className="text-gray-400 text-sm">Heure estimée</p>
-                                <p className="text-white font-bold">
-                                    {orderData.deliveryInfo.deliveryTime === 'asap'
-                                        ? '30-45 minutes'
-                                        : orderData.deliveryInfo.scheduledTime}
-                                </p>
-                            </div>
+                        {/* Actions */}
+                        <div className="flex flex-col gap-4">
+                            <button
+                                onClick={() => router.push('/menu')}
+                                className="w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-6 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] transition-all shadow-2xl shadow-yellow-400/10 active:scale-95"
+                            >
+                                Revenir au menu
+                            </button>
+                            <button
+                                onClick={() => router.push('/')}
+                                className="w-full bg-white/5 hover:bg-white/10 text-white py-6 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] transition-all border border-white/10"
+                            >
+                                Accueil
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                {/* Order Summary */}
-                <div className="bg-gray-800 rounded-2xl p-6 border-2 border-gray-700 mb-8">
-                    <h2 className="text-2xl font-black text-white mb-6">Résumé de la Commande</h2>
-
-                    <div className="space-y-3 mb-6">
-                        {Object.entries(orderData.cart).map(([key, cartItem]: [string, any]) => (
-                            <div key={key} className="flex justify-between">
-                                <span className="text-gray-300">
-                                    {cartItem.quantity}x {cartItem.item.name}
-                                    {cartItem.selectedSize && ` (${cartItem.selectedSize.toUpperCase()})`}
-                                </span>
-                                <span className="text-white font-bold">
-                                    {(
-                                        (typeof cartItem.item.price === 'number'
-                                            ? cartItem.item.price
-                                            : cartItem.item.price[cartItem.selectedSize]) * cartItem.quantity
-                                    ).toFixed(1)} DT
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="border-t border-gray-700 pt-4 space-y-2">
-                        <div className="flex justify-between text-gray-300">
-                            <span>Sous-total</span>
-                            <span>{orderData.totalPrice.toFixed(1)} DT</span>
-                        </div>
-                        <div className="flex justify-between text-gray-300">
-                            <span>Frais de livraison</span>
-                            <span>{orderData.deliveryFee === 0 ? 'GRATUIT' : `${orderData.deliveryFee} DT`}</span>
-                        </div>
-                        <div className="flex justify-between text-2xl font-black text-yellow-400 pt-3 border-t border-gray-700">
-                            <span>Total</span>
-                            <span>{orderData.finalTotal.toFixed(1)} DT</span>
-                        </div>
-                    </div>
-
-                    <div className="mt-6 bg-gray-700 rounded-lg p-4">
-                        <p className="text-white font-bold">💵 Paiement à la livraison</p>
-                        <p className="text-gray-400 text-sm mt-1">Préparez {orderData.finalTotal.toFixed(1)} DT en espèces</p>
-                    </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <button
-                        onClick={() => router.push('/menu')}
-                        className="flex-1 bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-4 rounded-xl font-black text-lg transition"
-                    >
-                        Nouvelle Commande
-                    </button>
-                    <button
-                        onClick={() => router.push('/')}
-                        className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-4 rounded-xl font-black text-lg transition"
-                    >
-                        Retour à l'accueil
-                    </button>
-                </div>
-
-                {/* Contact Info */}
-                <div className="mt-8 text-center">
-                    <p className="text-gray-400 mb-2">Besoin d'aide?</p>
-                    <a href="tel:+21670000000" className="text-yellow-400 font-bold text-lg hover:underline">
-                        📞 +216 70 XXX XXX
-                    </a>
-                </div>
+                <p className="mt-16 text-center text-gray-600 font-bold uppercase text-[10px] tracking-[0.4em]">Signature Mato's • Bon Appétit</p>
             </div>
         </div>
     );
