@@ -233,28 +233,6 @@ export default function ContactPage() {
                         </div>
                     </div>
                 </div>
-
-                {/* Socials & Networking */}
-                <div className="bg-gray-900/20 border border-gray-800/50 p-12 rounded-[3.5rem] text-center space-y-8">
-                    <h3 className="text-3xl font-black">Suivez l'aventure sur les réseaux</h3>
-                    <div className="flex justify-center gap-6">
-                        {settings?.instagram && (
-                            <Link href={settings.instagram} target="_blank" className="w-16 h-16 bg-gray-900 border border-gray-800 rounded-3xl flex items-center justify-center hover:bg-yellow-400 hover:text-gray-900 hover:border-yellow-400 transition-all duration-500 group">
-                                <Instagram className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                            </Link>
-                        )}
-                        {settings?.facebook && (
-                            <Link href={settings.facebook} target="_blank" className="w-16 h-16 bg-gray-900 border border-gray-800 rounded-3xl flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-500 group">
-                                <Facebook className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                            </Link>
-                        )}
-                        {settings?.tiktok && (
-                            <Link href={settings.tiktok} target="_blank" className="w-16 h-16 bg-gray-900 border border-gray-800 rounded-3xl flex items-center justify-center hover:bg-black hover:text-white hover:border-white transition-all duration-500 group">
-                                <Video className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                            </Link>
-                        )}
-                    </div>
-                </div>
             </div>
         </div>
     );

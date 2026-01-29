@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { ChevronRight, Clock, MapPin, Phone, Star, ArrowRight, Gift } from "lucide-react";
+import { ChevronRight, Clock, MapPin, Phone, Star, ArrowRight, Gift, Compass, Locate, Crosshair } from "lucide-react";
 import dynamic from 'next/dynamic';
 
 const InteractiveMap = dynamic(() => import('@/components/Map'), {
@@ -23,6 +23,7 @@ export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [promoSlide, setPromoSlide] = useState(0);
   const [promos, setPromos] = useState<any[]>([]);
+  const [mapVisible, setMapVisible] = useState(false);
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -34,6 +35,22 @@ export default function HomePage() {
       } catch (e) { console.error(e); }
     };
     fetchPromos();
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setMapVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const section = document.getElementById('localisation-section');
+    if (section) observer.observe(section);
+
+    return () => observer.disconnect();
   }, []);
 
   const heroSlides = categories
@@ -430,27 +447,64 @@ export default function HomePage() {
       </section>
 
       {/* Interactive Map Section */}
-      <section className="py-32 px-4 bg-black relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-yellow-400/5 blur-[150px] pointer-events-none"></div>
+      <section id="localisation-section" className="py-48 px-4 bg-black relative overflow-hidden">
+        {/* Massive Pulsing Glows */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-yellow-400/5 blur-[150px] pointer-events-none animate-pulse"></div>
+        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-orange-500/5 blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: '1s' }}></div>
 
         <div className="max-w-7xl mx-auto space-y-20 relative z-10">
-          <div className="text-center space-y-6">
+          <div className={`text-center space-y-6 transition-all duration-1000 ${mapVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <div className="flex items-center justify-center gap-4">
-              <div className="w-12 h-1 bg-yellow-400 rounded-full"></div>
-              <span className="text-yellow-400 font-black uppercase text-xs tracking-[0.4em]">Localisation</span>
-              <div className="w-12 h-1 bg-yellow-400 rounded-full"></div>
+              <div className="w-12 h-1 bg-gradient-to-r from-transparent to-yellow-400 rounded-full"></div>
+              <span className="text-yellow-400 font-black uppercase text-xs tracking-[0.4em] flex items-center gap-2">
+                <Locate className="w-4 h-4 animate-pulse" />
+                Localisation
+              </span>
+              <div className="w-12 h-1 bg-gradient-to-l from-transparent to-yellow-400 rounded-full"></div>
             </div>
-            <h2 className="text-6xl md:text-8xl font-black text-white italic tracking-tighter uppercase leading-none">
-              Venez <span className="text-yellow-400">Nous Voir</span>
+            <h2 className="text-6xl md:text-9xl font-black text-white italic tracking-tighter uppercase leading-none">
+              Venez <span className="text-transparent bg-clip-text bg-gradient-to-b from-yellow-400 to-orange-600">Nous Voir</span>
             </h2>
-            <p className="text-gray-500 font-bold max-w-2xl mx-auto uppercase text-xs tracking-widest leading-relaxed">
-              Le temple de la gourmandise vous attend à Carthage. <br className="hidden md:block" />
-              Une ambiance unique pour une expérience culinaire inoubliable.
-            </p>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-gray-500 font-bold uppercase text-[10px] tracking-widest leading-relaxed">
+              <span className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full">
+                <Crosshair className="w-3 h-3 text-yellow-400" />
+                36.8529° N, 10.3307° E
+              </span>
+              <span className="hidden md:block w-20 h-px bg-white/10"></span>
+              <span>Le temple de la gourmandise vous attend à Carthage.</span>
+            </div>
           </div>
 
-          <div className="w-full">
-            <InteractiveMap />
+          <div className={`relative group transition-all duration-1000 delay-300 ${mapVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+            {/* Technical Decorative Elements */}
+            <div className="absolute -top-10 -left-10 w-40 h-40 border-t-2 border-l-2 border-yellow-400/20 rounded-tl-[4rem] pointer-events-none group-hover:border-yellow-400/40 transition-colors"></div>
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 border-b-2 border-r-2 border-yellow-400/20 rounded-br-[4rem] pointer-events-none group-hover:border-yellow-400/40 transition-colors"></div>
+
+            <div className="absolute -right-20 top-1/2 -translate-y-1/2 hidden xl:flex flex-col items-center gap-4 opacity-20 group-hover:opacity-40 transition-opacity">
+              <Compass className="w-12 h-12 text-yellow-400 animate-spin-slow" />
+              <div className="[writing-mode:vertical-lr] text-yellow-400 font-black tracking-[0.5em] text-xs uppercase">Navigation System</div>
+            </div>
+
+            {/* Map Container with Scanline and Glow */}
+            <div className="relative rounded-[3.5rem] overflow-hidden border-2 border-white/5 bg-gray-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:border-yellow-400/20 transition-all duration-500 group-hover:shadow-yellow-400/5">
+              {/* Scanline Effect */}
+              <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+                <div className="w-full h-[200%] bg-gradient-to-b from-transparent via-yellow-400/[0.03] to-transparent animate-scanline"></div>
+              </div>
+
+              <div className="w-full relative z-10 transition-transform duration-700 group-hover:scale-[1.01]">
+                <InteractiveMap />
+              </div>
+            </div>
+
+            {/* Visual Balance Bottom Labels */}
+            <div className="absolute -bottom-8 left-10 flex gap-8 items-center opacity-30 text-[9px] font-black uppercase text-yellow-400 tracking-[0.3em]">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></div>
+                Live Status
+              </div>
+              <div>Carthage, Tunisia</div>
+            </div>
           </div>
         </div>
       </section>
