@@ -38,12 +38,12 @@
 - [-] Menu Rating & Review System (Authenticated users)
 - [x] Optimize Protected Layout (Space management & Responsive)
 - [x] Real-time updates for ticket conversations and notifications (Live stream)
-- [-] Redesign Cart and PromotionConfigModal (Premium Aesthetic)
-- [-] Add file/image attachments to Support Tickets (Storage optimized)
+- [x] Redesign Cart and PromotionConfigModal (Premium Aesthetic)
+- [x] Add file/image attachments to Support Tickets (Storage optimized)
 - [x] Fix Admin Dashboard Loading Screen (Yellow loader on black bg)
 - [x] Move User Dropdown to Global Header (Admin Layout)
 - [x] **Admin Account Page**: Allow admin to modify address/password.
-- [ ] **Admin Impersonation**: Allow admin to login as a client to debug issues from their POV. management
+- [-] **Admin Impersonation**: Allow admin to login as a client to debug issues from their POV. management
 
 ## Future Roadmap Items
 - [ ] SMS notifications for order status

@@ -82,82 +82,79 @@ export default function CategoriesPage() {
     };
 
     return (
-        <div className="space-y-8 max-w-5xl mx-auto">
+        <div className="space-y-10 pb-20">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div>
-                    <h1 className="text-4xl font-black text-white mb-2">
+                    <h1 className="text-5xl font-black text-white mb-2 uppercase italic tracking-tighter">
                         Catégories <span className="text-yellow-400">Menu</span>
                     </h1>
-                    <p className="text-gray-400">Gérez les catégories de votre restaurant ({pagination.totalItems})</p>
+                    <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Gérez les catégories de votre restaurant ({pagination.totalItems})</p>
                 </div>
 
                 <Link
                     href="/dashboard/categories/new"
-                    className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition justify-center w-full md:w-auto"
+                    className="flex items-center gap-2 bg-yellow-400 px-6 py-4 rounded-2xl text-gray-900 font-black uppercase text-[10px] tracking-widest hover:bg-yellow-300 transition duration-500 shadow-xl shadow-yellow-400/10"
                 >
-                    <Plus className="w-5 h-5" />
-                    Nouvelle Catégorie
+                    <Plus className="w-4 h-4" />
+                    Nouvelle
                 </Link>
             </div>
 
-            {/* Filters */}
-            <div className="bg-gray-800/50 p-4 rounded-2xl border border-gray-700/50">
-                <div className="relative">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            {/* Toolbar */}
+            <div className="bg-gray-900/40 p-8 rounded-[3rem] border border-gray-800 backdrop-blur-3xl shadow-3xl">
+                <div className="relative group max-w-xl">
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-yellow-400 transition-colors" />
                     <input
                         type="text"
                         placeholder="Rechercher une catégorie..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-gray-900 text-white pl-12 pr-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
+                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-8 py-5 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
                     />
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden relative">
-                {loading && (
-                    <div className="absolute inset-0 bg-gray-800/50 backdrop-blur-[2px] z-10 flex items-center justify-center">
-                        <Loader2 className="w-10 h-10 text-yellow-400 animate-spin" />
-                    </div>
-                )}
+            {/* Table Container */}
+            <div className="bg-gray-900/30 rounded-[3rem] border border-gray-800 backdrop-blur-3xl overflow-hidden shadow-3xl relative">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-900/50 text-gray-400 uppercase text-xs font-black tracking-widest">
-                            <tr>
-                                <th className="px-6 py-5">Ordre</th>
-                                <th className="px-6 py-5">Emoji</th>
-                                <th className="px-6 py-5">Nom</th>
-                                <th className="px-6 py-5 text-right">Actions</th>
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="border-b border-gray-800/50 bg-gray-950/20">
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Ordre</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Aperçu</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Désignation</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-700">
+                        <tbody className="divide-y divide-gray-800/50">
                             {categories.map((category) => (
-                                <tr key={category.id} className="hover:bg-gray-750 transition group">
-                                    <td className="px-6 py-4">
-                                        <span className="bg-gray-900 px-3 py-1 rounded-lg text-yellow-400 font-mono font-bold border border-gray-700">
-                                            {category.displayOrder}
-                                        </span>
+                                <tr key={category.id} className="group hover:bg-white/[0.02] transition duration-500 relative">
+                                    <td className="px-8 py-6">
+                                        <span className="font-black text-yellow-400 italic text-xl">#{category.displayOrder}</span>
                                     </td>
-                                    <td className="px-6 py-4 text-3xl">
-                                        {category.emoji || '📁'}
+                                    <td className="px-8 py-6">
+                                        <div className="w-16 h-16 bg-gray-950 rounded-2xl flex items-center justify-center text-4xl shadow-inner border border-gray-800 group-hover:border-yellow-400/30 transition duration-500">
+                                            {category.emoji || '📁'}
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <div className="font-black text-white text-lg group-hover:text-yellow-400 transition">{category.name}</div>
+                                    <td className="px-8 py-6">
+                                        <div className="font-black text-white text-xl uppercase italic group-hover:text-yellow-400 transition duration-500 tracking-tight">
+                                            {category.name}
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-2">
+                                    <td className="px-8 py-6 text-right">
+                                        <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                             <Link
                                                 href={`/dashboard/categories/${category.id}`}
-                                                className="p-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition shadow-lg"
-                                                title="Editer"
+                                                className="p-4 bg-gray-900 border border-gray-800 hover:border-yellow-400/50 text-white rounded-2xl transition duration-500"
+                                                title="Modifier"
                                             >
                                                 <Edit className="w-5 h-5" />
                                             </Link>
                                             <button
                                                 onClick={() => handleDelete(category.id)}
-                                                className="p-3 bg-red-900/20 hover:bg-red-900/40 text-red-500 rounded-xl transition border border-red-500/10"
+                                                className="p-4 bg-red-500/5 border border-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl transition duration-500"
                                                 title="Supprimer"
                                             >
                                                 <Trash2 className="w-5 h-5" />
@@ -168,12 +165,13 @@ export default function CategoriesPage() {
                             ))}
                             {!loading && categories.length === 0 && (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-20 text-center text-gray-500">
-                                        <div className="flex flex-col items-center justify-center gap-4">
-                                            <div className="bg-gray-900 p-6 rounded-full">
-                                                <Tag className="w-12 h-12 opacity-20" />
+                                    <td colSpan={4} className="px-8 py-40">
+                                        <div className="flex flex-col items-center justify-center gap-4 text-center">
+                                            <div className="bg-gray-950 p-8 rounded-full mb-4">
+                                                <Tag className="w-12 h-12 text-gray-700" />
                                             </div>
-                                            <p className="text-xl font-bold text-gray-400">Aucune catégorie trouvée</p>
+                                            <h3 className="text-2xl font-black text-white uppercase italic tracking-widest">Aucune catégorie</h3>
+                                            <p className="text-gray-500 font-bold text-sm">Votre menu semble encore vide.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -181,19 +179,25 @@ export default function CategoriesPage() {
                         </tbody>
                     </table>
                 </div>
+
+                {loading && (
+                    <div className="absolute inset-0 bg-gray-950/40 backdrop-blur-sm z-20 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow-400 border-t-transparent"></div>
+                    </div>
+                )}
             </div>
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-                <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center justify-center gap-6 pt-10">
                     <button
                         disabled={pagination.currentPage === 1}
                         onClick={() => setPagination(p => ({ ...p, currentPage: p.currentPage - 1 }))}
-                        className="p-3 rounded-xl bg-gray-800 text-white border border-gray-700 hover:bg-gray-700 disabled:opacity-20 transition"
+                        className="px-6 py-4 rounded-2xl bg-gray-900 border border-gray-800 text-[10px] font-black uppercase tracking-widest text-white hover:border-yellow-400/50 disabled:opacity-30 transition duration-500"
                     >
                         Précédent
                     </button>
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                         {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
                             let pageNum = pagination.currentPage - 2 + i;
                             if (pageNum < 1) pageNum = i + 1;
@@ -202,7 +206,10 @@ export default function CategoriesPage() {
                                 <button
                                     key={pageNum}
                                     onClick={() => setPagination(p => ({ ...p, currentPage: pageNum }))}
-                                    className={`w-12 h-12 rounded-xl font-black transition ${pagination.currentPage === pageNum ? 'bg-yellow-400 text-gray-900 shadow-lg' : 'bg-gray-800 text-gray-400 border border-gray-700'}`}
+                                    className={`w-12 h-12 rounded-2xl font-black text-sm transition duration-500 ${pagination.currentPage === pageNum
+                                        ? 'bg-yellow-400 text-gray-900 shadow-xl shadow-yellow-400/20'
+                                        : 'bg-gray-900 text-gray-500 hover:text-white border border-gray-800'
+                                        }`}
                                 >
                                     {pageNum}
                                 </button>
@@ -212,7 +219,7 @@ export default function CategoriesPage() {
                     <button
                         disabled={pagination.currentPage === pagination.totalPages}
                         onClick={() => setPagination(p => ({ ...p, currentPage: p.currentPage + 1 }))}
-                        className="p-3 rounded-xl bg-gray-800 text-white border border-gray-700 hover:bg-gray-700 disabled:opacity-20 transition"
+                        className="px-6 py-4 rounded-2xl bg-gray-900 border border-gray-800 text-[10px] font-black uppercase tracking-widest text-white hover:border-yellow-400/50 disabled:opacity-30 transition duration-500"
                     >
                         Suivant
                     </button>
