@@ -10,30 +10,62 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const categoryId = searchParams.get('categoryId');
         const showInactive = searchParams.get('showInactive');
+        const search = searchParams.get('search');
+        const status = searchParams.get('status'); // 'active', 'inactive', 'all'
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '12');
+        const skip = (page - 1) * limit;
 
         const where: any = {};
 
+        // Category filter
         if (categoryId && categoryId !== 'all') {
             where.categoryId = parseInt(categoryId);
         }
 
-        if (showInactive !== 'true') {
+        // Status filter (newer, more specific than showInactive)
+        if (status === 'active') {
+            where.isActive = true;
+        } else if (status === 'inactive') {
+            where.isActive = false;
+        } else if (showInactive !== 'true') {
+            // Backward compatibility
             where.isActive = true;
         }
 
-        const menuItems = await prisma.menuItem.findMany({
-            where,
-            include: {
-                category: true
-            },
-            orderBy: {
-                createdAt: 'desc'
-            }
-        });
+        // Search filter
+        if (search) {
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+                { ingredients: { hasSome: [search] } } // Search in ingredients too
+            ];
+        }
+
+        const [totalItems, menuItems] = await Promise.all([
+            prisma.menuItem.count({ where }),
+            prisma.menuItem.findMany({
+                where,
+                include: {
+                    category: true
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                },
+                skip,
+                take: limit
+            })
+        ]);
 
         return NextResponse.json({
             success: true,
-            menuItems
+            menuItems,
+            pagination: {
+                totalItems,
+                totalPages: Math.ceil(totalItems / limit),
+                currentPage: page,
+                limit
+            }
         });
     } catch (error) {
         console.error('Error fetching menu items:', error);
