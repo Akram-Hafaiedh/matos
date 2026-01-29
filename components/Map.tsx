@@ -5,21 +5,22 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useEffect, useState } from 'react';
 
-// Fix for default marker icon in Leaflet with Next.js
-const DefaultIcon = L.icon({
-    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
-
 export default function Map() {
     const [settings, setSettings] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Fix for default marker icon in Leaflet with Next.js
+        // We do this inside useEffect to ensure it only runs on the client
+        // and doesn't interfere with potential SSR (though dynamic ssr:false is used)
+        const DefaultIcon = L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+        });
+        L.Marker.prototype.options.icon = DefaultIcon;
+
         const fetchSettings = async () => {
             try {
                 const res = await fetch('/api/settings');
@@ -45,12 +46,13 @@ export default function Map() {
     const position: [number, number] = [settings.lat || 36.8391486, settings.lng || 10.3200549];
 
     return (
-        <div className="w-full h-[500px] rounded-[3rem] overflow-hidden border-2 border-gray-800 shadow-3xl bg-gray-900/50">
+        <div className="w-full h-[500px] rounded-[3rem] overflow-hidden border-2 border-gray-800 shadow-3xl bg-gray-900/50 relative">
             <MapContainer
+                key={`${position[0]}-${position[1]}`}
                 center={position}
                 zoom={16}
                 scrollWheelZoom={false}
-                style={{ height: '100%', width: '100%' }}
+                style={{ height: '100%', width: '100%', zIndex: 1 }}
             >
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

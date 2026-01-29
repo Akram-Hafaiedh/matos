@@ -357,7 +357,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: 14,
             ingredients: 'Pain, viande, salade, tomate',
             popular: true,
-            image: '🍔',
+            image: '/images/burger/classicburger.png',
             category: 'burger'
         },
         {
@@ -366,7 +366,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: 16,
             ingredients: 'Pain, viande, cheddar, salade',
             bestseller: true,
-            image: '🍔',
+            image: '/images/burger/cheeseburger.png',
             category: 'burger'
         },
         {
@@ -374,7 +374,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             name: 'Rustique',
             price: 18,
             ingredients: 'Pain rustique, viande, légumes',
-            image: '🍔',
+            image: '/images/burger/rustiqueburger.png',
             category: 'burger'
         },
         {
@@ -383,7 +383,7 @@ export const menuItems: Record<string, MenuItem[]> = {
             price: 13,
             ingredients: 'Pain, poulet croustillant, sauce',
             hot: true,
-            image: '🍗',
+            image: '/images/burger/crispychickenburger.png',
             category: 'burger'
         },
     ],

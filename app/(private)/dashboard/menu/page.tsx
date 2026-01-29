@@ -171,23 +171,23 @@ export default function AdminMenuPage() {
             </div>
 
             {/* Toolbar */}
-            <div className="bg-gray-900/40 p-8 rounded-[3rem] border border-gray-800 backdrop-blur-3xl space-y-8 shadow-3xl">
-                <div className="flex flex-col xl:flex-row gap-8">
-                    {/* Search */}
-                    <div className="xl:w-1/3 relative group">
+            <div className="bg-gray-900/40 p-6 md:p-8 rounded-[3rem] border border-gray-800 backdrop-blur-3xl space-y-8 shadow-3xl">
+                <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-6">
+                    {/* Search - Full width on mobile/tablet, 1/4 on desktop */}
+                    <div className="lg:w-1/4 relative group">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-yellow-400 transition-colors" />
                         <input
                             type="text"
-                            placeholder="Rechercher par nom, ingrédients..."
+                            placeholder="Rechercher par nom..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-8 py-5 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
+                            className="w-full bg-gray-950/50 border-2 border-gray-800 text-white pl-16 pr-8 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
                         />
                     </div>
 
-                    {/* Quick Filters */}
-                    <div className="flex flex-col sm:flex-row items-center gap-6">
-                        <div className="flex bg-gray-950 p-1.5 rounded-[1.5rem] border-2 border-gray-800">
+                    <div className="flex-1 flex flex-col md:flex-row items-stretch md:items-center gap-6 overflow-hidden">
+                        {/* Status Filters - Centered on mobile, fixed width on desktop */}
+                        <div className="flex bg-gray-950/50 p-1.5 rounded-[1.5rem] border-2 border-gray-800 self-center md:self-auto min-w-fit">
                             {[
                                 { id: 'all', label: 'Tout' },
                                 { id: 'active', label: 'Actifs' },
@@ -196,7 +196,7 @@ export default function AdminMenuPage() {
                                 <button
                                     key={s.id}
                                     onClick={() => handleStatusChange(s.id as any)}
-                                    className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition duration-500 ${statusFilter === s.id
+                                    className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest rounded-xl transition duration-500 whitespace-nowrap ${statusFilter === s.id
                                         ? 'bg-yellow-400 text-gray-900 shadow-lg'
                                         : 'text-gray-500 hover:text-white'
                                         }`}
@@ -206,30 +206,32 @@ export default function AdminMenuPage() {
                             ))}
                         </div>
 
-                        {/* Category Badges */}
-                        <div className="flex-1 flex gap-2 overflow-x-auto pb-1 scrollbar-hide max-w-md xl:max-w-xl">
-                            <button
-                                onClick={() => handleCategoryChange('all')}
-                                className={`px-5 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition duration-500 border-2 ${selectedCategory === 'all'
-                                    ? 'bg-yellow-400 border-yellow-400 text-gray-900'
-                                    : 'bg-gray-950 border-gray-800 text-gray-500 hover:border-gray-700'
-                                    }`}
-                            >
-                                Tous
-                            </button>
-                            {categories.map(cat => (
+                        {/* Category Badges - Horizontal scroll with mask */}
+                        <div className="flex-1 relative min-w-0">
+                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1 px-4 scroll-mask-h">
                                 <button
-                                    key={cat.id}
-                                    onClick={() => handleCategoryChange(cat.id.toString())}
-                                    className={`px-5 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition duration-500 border-2 flex items-center gap-2 whitespace-nowrap ${selectedCategory === cat.id.toString()
-                                        ? 'bg-yellow-400 border-yellow-400 text-gray-900'
-                                        : 'bg-gray-950 border-gray-800 text-gray-500 hover:border-gray-700'
+                                    onClick={() => handleCategoryChange('all')}
+                                    className={`px-5 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition duration-500 border-2 whitespace-nowrap shrink-0 ${selectedCategory === 'all'
+                                        ? 'bg-yellow-400 border-yellow-400 text-gray-900 shadow-xl shadow-yellow-400/10'
+                                        : 'bg-gray-950/50 border-gray-800 text-gray-500 hover:border-gray-700'
                                         }`}
                                 >
-                                    <span>{cat.emoji}</span>
-                                    {cat.name}
+                                    Tous
                                 </button>
-                            ))}
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat.id}
+                                        onClick={() => handleCategoryChange(cat.id.toString())}
+                                        className={`px-5 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition duration-500 border-2 flex items-center gap-2 whitespace-nowrap shrink-0 ${selectedCategory === cat.id.toString()
+                                            ? 'bg-yellow-400 border-yellow-400 text-gray-900 shadow-xl shadow-yellow-400/10'
+                                            : 'bg-gray-950/50 border-gray-800 text-gray-500 hover:border-gray-700'
+                                            }`}
+                                    >
+                                        <span className="text-sm">{cat.emoji}</span>
+                                        {cat.name}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
