@@ -17,7 +17,9 @@ import {
     Lock,
     KeyRound,
     ShieldCheck,
-    ArrowRight
+    ArrowRight,
+    Eye,
+    EyeOff
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -46,6 +48,9 @@ export default function AdminAccountPage() {
         newPassword: '',
         confirmPassword: '',
     });
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loadingPassword, setLoadingPassword] = useState(false);
     const [passwordStatus, setPasswordStatus] = useState<{ type: 'idle' | 'success' | 'error', message: string }>({ type: 'idle', message: '' });
 
@@ -309,13 +314,20 @@ export default function AdminAccountPage() {
                                 <div className="relative group">
                                     <KeyRound className="absolute left-6 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-yellow-400 transition-colors" />
                                     <input
-                                        type="password"
+                                        type={showCurrentPassword ? "text" : "password"}
                                         required
                                         value={passwordData.currentPassword}
                                         onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-14 pr-6 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-800 text-sm"
+                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-14 pr-12 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-800 text-sm"
                                         placeholder="••••••••"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                        className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-yellow-400 transition-colors"
+                                    >
+                                        {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
                                 </div>
                             </div>
 
@@ -324,14 +336,21 @@ export default function AdminAccountPage() {
                                 <div className="relative group">
                                     <ShieldCheck className="absolute left-6 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-yellow-400 transition-colors" />
                                     <input
-                                        type="password"
+                                        type={showNewPassword ? "text" : "password"}
                                         required
                                         minLength={6}
                                         value={passwordData.newPassword}
                                         onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-14 pr-6 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-800 text-sm"
+                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-14 pr-12 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-800 text-sm"
                                         placeholder="••••••••"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                        className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-yellow-400 transition-colors"
+                                    >
+                                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
                                 </div>
                             </div>
 
@@ -340,14 +359,21 @@ export default function AdminAccountPage() {
                                 <div className="relative group">
                                     <ShieldCheck className="absolute left-6 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-yellow-400 transition-colors" />
                                     <input
-                                        type="password"
+                                        type={showConfirmPassword ? "text" : "password"}
                                         required
                                         minLength={6}
                                         value={passwordData.confirmPassword}
                                         onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-14 pr-6 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-800 text-sm"
+                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-14 pr-12 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-800 text-sm"
                                         placeholder="••••••••"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-yellow-400 transition-colors"
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
                                 </div>
                             </div>
                         </div>

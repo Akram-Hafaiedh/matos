@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Lock, Phone, MapPin, AlertCircle, CheckCircle, ArrowRight, UserPlus } from 'lucide-react';
+import { User, Mail, Lock, Phone, MapPin, AlertCircle, CheckCircle, ArrowRight, UserPlus, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 
 export default function RegisterPage() {
@@ -16,6 +16,8 @@ export default function RegisterPage() {
         password: '',
         confirmPassword: '',
     });
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
@@ -179,15 +181,22 @@ export default function RegisterPage() {
                                 <div className="relative group">
                                     <Lock className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
                                     <input
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         name="password"
                                         value={formData.password}
                                         onChange={handleChange}
-                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
+                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-14 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
                                         placeholder="••••••••"
                                         required
                                         minLength={6}
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-yellow-400 transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    </button>
                                 </div>
                             </div>
                             <div className="space-y-2">
@@ -195,15 +204,22 @@ export default function RegisterPage() {
                                 <div className="relative group">
                                     <Lock className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
                                     <input
-                                        type="password"
+                                        type={showConfirmPassword ? "text" : "password"}
                                         name="confirmPassword"
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
-                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
+                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-14 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
                                         placeholder="••••••••"
                                         required
                                         minLength={6}
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-yellow-400 transition-colors"
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    </button>
                                 </div>
                             </div>
                         </div>
