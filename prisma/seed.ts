@@ -266,12 +266,103 @@ async function seedPromotions() {
     }
 }
 
+async function seedUsers() {
+    console.log('Seeding Users...');
+    // We can't easily use bcryptjs in some seed environments if it's not pre-bundled or if we have execution policy issues, 
+    // but Prisma seed usually runs with tsx which should be fine.
+    // For simplicity, we'll just create users with plain text or simple hashes if needed.
+    // However, the schema says password is a string.
+
+    const users = [
+        {
+            name: 'Admin Mato\'s',
+            email: 'admin@matos.com',
+            role: 'admin',
+        },
+        {
+            name: 'Yassine K.',
+            email: 'yassine@example.com',
+            role: 'customer',
+        },
+        {
+            name: 'Sonia M.',
+            email: 'sonia@example.com',
+            role: 'customer',
+        }
+    ];
+
+    for (const u of users) {
+        const exists = await prisma.user.findUnique({ where: { email: u.email } });
+        if (!exists) {
+            await prisma.user.create({
+                data: {
+                    ...u,
+                    password: 'password123', // In a real app, hash this
+                }
+            });
+            console.log(`Created User: ${u.email}`);
+        }
+    }
+}
+
+async function seedReviews() {
+    console.log('Seeding Reviews...');
+    const users = await prisma.user.findMany({ where: { role: 'customer' } });
+    const items = await prisma.menuItem.findMany({ take: 10 });
+
+    if (users.length === 0 || items.length === 0) {
+        console.warn('Need users and items to seed reviews.');
+        return;
+    }
+
+    const reviewTexts = [
+        "Le meilleur burger de Tunis, sans aucun doute. Le service est rapide.",
+        "Une expérience incroyable à chaque visite. Les produits sont frais.",
+        "J'adore les tacos signature. C'est devenu mon rituel hebdomadaire.",
+        "La pizza Margherita est simple mais parfaite. La pâte est excellente.",
+        "Le crispy chicken est vraiment croustillant, je recommande !",
+        "Un accueil chaleureux et une cuisine délicieuse. 5 étoiles méritées.",
+        "Les portions sont généreuses et le goût est au rendez-vous.",
+        "Le programme de fidélité est vraiment avantageux, j'ai déjà eu mon premier cadeau.",
+        "L'ambiance à Carthage est tout simplement unique. Un must-go !",
+        "Enfin un vrai fast-food premium à Tunis. Je reviendrai souvent.",
+        "Le milkshake à la fraise est une tuerie ! Parfait pour finir le repas.",
+        "Le plat escalope grillée est healthy et savoureux. Top !"
+    ];
+
+    for (let i = 0; i < reviewTexts.length; i++) {
+        const user = users[i % users.length];
+        const item = items[i % items.length];
+
+        const exists = await prisma.review.findFirst({
+            where: {
+                userId: user.id,
+                menuItemId: item.id
+            }
+        });
+
+        if (!exists) {
+            await prisma.review.create({
+                data: {
+                    userId: user.id,
+                    menuItemId: item.id,
+                    rating: 5,
+                    comment: reviewTexts[i],
+                    showOnHome: i < 9 // Select first 9 for home page
+                }
+            });
+        }
+    }
+}
+
 async function main() {
     console.log('Start seeding...');
     await cleanup();
     await seedCategories();
     await seedMenuItems();
     await seedPromotions();
+    await seedUsers();
+    await seedReviews();
     console.log('Seeding finished.');
 }
 

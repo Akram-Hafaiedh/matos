@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../app/generated/prisma"
 }
 
@@ -156,26 +156,32 @@ model Promotion {
 // ======================
 
 model Order {
-  id              Int       @id @default(autoincrement())
-  orderNumber     String    @unique @map("order_number") @db.VarChar(50)
-  userId          String?   @map("user_id")
-  customerName    String    @map("customer_name") @db.VarChar(255)
-  customerPhone   String    @map("customer_phone") @db.VarChar(20)
-  customerEmail   String?   @map("customer_email") @db.VarChar(255)
-  deliveryAddress String    @map("delivery_address")
-  city            String    @default("Tunis") @db.VarChar(100)
-  notes           String?
-  deliveryTime    String    @default("asap") @map("delivery_time") @db.VarChar(50) // 'asap' or 'scheduled'
-  scheduledTime   DateTime? @map("scheduled_time")
-  paymentMethod   String    @default("cash") @map("payment_method") @db.VarChar(50) // 'cash' or 'd17'
-  subtotal        Float
-  deliveryFee     Float     @default(0) @map("delivery_fee")
-  totalAmount     Float     @map("total_amount")
-  status          String    @default("pending") @db.VarChar(50) // 'pending', 'confirmed', 'preparing', 'delivering', 'delivered', 'cancelled'
-  orderDate       DateTime  @default(now()) @map("order_date")
-  deliveredAt     DateTime? @map("delivered_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id               Int       @id @default(autoincrement())
+  orderNumber      String    @unique @map("order_number") @db.VarChar(50)
+  userId           String?   @map("user_id")
+  customerName     String    @map("customer_name") @db.VarChar(255)
+  customerPhone    String    @map("customer_phone") @db.VarChar(20)
+  customerEmail    String?   @map("customer_email") @db.VarChar(255)
+  deliveryAddress  String    @map("delivery_address")
+  city             String    @default("Tunis") @db.VarChar(100)
+  notes            String?
+  deliveryTime     String    @default("asap") @map("delivery_time") @db.VarChar(50) // 'asap' or 'scheduled'
+  scheduledTime    DateTime? @map("scheduled_time")
+  paymentMethod    String    @default("cash") @map("payment_method") @db.VarChar(50) // 'cash' or 'd17'
+  orderType        String    @default("delivery") @map("order_type") @db.VarChar(50) // 'delivery' or 'pickup'
+  subtotal         Float     @map("subtotal")
+  deliveryFee      Float     @default(0) @map("delivery_fee")
+  totalAmount      Float     @map("total_amount")
+  status           String    @default("pending") @db.VarChar(50) // 'pending', 'confirmed', 'preparing', 'delivering', 'delivered', 'cancelled'
+  orderDate        DateTime  @default(now()) @map("order_date")
+  confirmedAt      DateTime? @map("confirmed_at")
+  preparingAt      DateTime? @map("preparing_at")
+  readyAt          DateTime? @map("ready_at")
+  outForDeliveryAt DateTime? @map("out_for_delivery_at")
+  deliveredAt      DateTime? @map("delivered_at")
+  cancelledAt      DateTime? @map("cancelled_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   // Relations
   user           User?           @relation(fields: [userId], references: [id])
@@ -280,6 +286,7 @@ model Review {
   menuItemId Int      @map("menu_item_id")
   rating     Int      @default(5)
   comment    String?  @db.Text
+  showOnHome Boolean  @default(false) @map("show_on_home")
   createdAt  DateTime @default(now()) @map("created_at")
 
   // Relations
