@@ -32,6 +32,23 @@ export default function ProfilePage() {
             </h2>
 
             <div className="bg-gray-900/60 p-10 rounded-[3rem] border border-gray-800 backdrop-blur-xl space-y-12">
+                <div className="flex items-center gap-8 border-b border-gray-800 pb-10">
+                    <div className="w-24 h-24 rounded-[2rem] bg-gray-950 border-2 border-yellow-400/20 overflow-hidden flex items-center justify-center text-4xl shadow-2xl relative">
+                        {userData?.image && userData.image.length < 5 ? (
+                            <span>{userData.image}</span>
+                        ) : userData?.image ? (
+                            <img src={userData.image} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-gray-700">👤</span>
+                        )}
+                    </div>
+                    <div className="space-y-1">
+                        <div className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">Mon identité</div>
+                        <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase">{userData?.name || 'Utilisateur'}</h3>
+                        <p className="text-gray-600 font-bold text-xs">Membre privilégié</p>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div className="space-y-3">
                         <label className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] block ml-4">Nom complet</label>

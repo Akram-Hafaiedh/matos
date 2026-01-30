@@ -17,6 +17,7 @@ import {
     UserCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import UserAvatar from '@/components/UserAvatar';
 
 const AVATAR_OPTIONS = [
     '🍕', '🍔', '🌮', '🥗', '🍗', '🍟', '🍩', '🍦', '🥩', '🥓', '🍣', '🥟'
@@ -127,8 +128,8 @@ export default function EditProfilePage() {
 
                 {message && (
                     <div className={`p-6 rounded-[2rem] flex items-center gap-4 animate-in fade-in slide-in-from-top-4 ${message.type === 'success'
-                            ? 'bg-green-500/10 border border-green-500/20 text-green-400'
-                            : 'bg-red-500/10 border border-red-500/20 text-red-500'
+                        ? 'bg-green-500/10 border border-green-500/20 text-green-400'
+                        : 'bg-red-500/10 border border-red-500/20 text-red-500'
                         }`}>
                         {message.type === 'success' ? <CheckCircle2 className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
                         <span className="font-black text-sm uppercase tracking-widest">{message.text}</span>
@@ -144,20 +145,12 @@ export default function EditProfilePage() {
                         </div>
 
                         <div className="flex flex-col md:flex-row items-center gap-12">
-                            <div className="w-32 h-32 bg-gray-950 border-2 border-yellow-400/30 rounded-[2.5rem] flex items-center justify-center text-6xl shadow-2xl relative group overflow-hidden">
-                                {formData.image && formData.image.length < 5 ? (
-                                    <span>{formData.image}</span>
-                                ) : formData.image ? (
-                                    <div className="relative w-full h-full">
-                                        <img src={formData.image} alt="Avatar" className="w-full h-full object-cover" />
-                                    </div>
-                                ) : (
-                                    <UserCircle className="w-16 h-16 text-gray-800" />
-                                )}
-                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <Camera className="w-8 h-8 text-yellow-400" />
-                                </div>
-                            </div>
+                            <UserAvatar
+                                image={formData.image}
+                                name={formData.name}
+                                size="xl"
+                                className="border-2 border-yellow-400/30 shadow-2xl relative group overflow-hidden"
+                            />
 
                             <div className="flex-1 space-y-4">
                                 <p className="text-gray-500 font-bold text-sm">Sélectionnez une icône qui vous ressemble ou entrez l'URL d'une image :</p>
@@ -168,8 +161,8 @@ export default function EditProfilePage() {
                                             type="button"
                                             onClick={() => setFormData({ ...formData, image: emoji })}
                                             className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl transition-all ${formData.image === emoji
-                                                    ? 'bg-yellow-400 scale-110 shadow-lg shadow-yellow-400/20'
-                                                    : 'bg-gray-950 border border-gray-800 hover:border-yellow-400/30'
+                                                ? 'bg-yellow-400 scale-110 shadow-lg shadow-yellow-400/20'
+                                                : 'bg-gray-950 border border-gray-800 hover:border-yellow-400/30'
                                                 }`}
                                         >
                                             {emoji}

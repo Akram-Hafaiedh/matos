@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import UserAvatar from '@/components/UserAvatar';
 import {
     User,
     Package,
@@ -51,9 +52,12 @@ export default function AccountLayout({
                     <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-400/5 blur-[120px] -mr-48 -mt-48 pointer-events-none"></div>
 
                     <div className="flex items-center gap-8 z-10 w-full font-sans">
-                        <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-[2rem] flex items-center justify-center text-4xl shadow-2xl shadow-yellow-500/20 transform group-hover:scale-105 transition-transform duration-500 flex-shrink-0">
-                            {userData?.name?.charAt(0) || 'U'}
-                        </div>
+                        <UserAvatar
+                            image={userData?.image}
+                            name={userData?.name}
+                            size="xl"
+                            className="transform group-hover:scale-105 transition-transform duration-500 border-4 border-gray-900 shadow-yellow-500/20 italic"
+                        />
                         <div className="space-y-2 flex-1">
                             <h1 className="text-4xl font-black tracking-tight uppercase italic">{userData?.name || 'Utilisateur'}</h1>
                             <div className="flex flex-wrap items-center gap-4 text-gray-400">
@@ -74,14 +78,16 @@ export default function AccountLayout({
                     {/* Persistent Navigation Sidebar */}
                     <div className="space-y-3">
                         {navItems.map((item) => {
-                            const isActive = pathname === item.href;
+                            const isActive = item.href === '/account/profile'
+                                ? (pathname === '/account/profile' || pathname === '/account/edit')
+                                : pathname.startsWith(item.href);
                             return (
                                 <Link
                                     key={item.id}
                                     href={item.href}
                                     className={`w-full flex items-center justify-between p-6 rounded-[2rem] transition-all duration-300 border ${isActive
-                                            ? 'bg-yellow-400 border-yellow-400 text-gray-900 shadow-xl shadow-yellow-400/10 translate-x-4'
-                                            : 'bg-gray-900/50 border-gray-800 text-gray-500 hover:bg-gray-800 hover:border-gray-700 hover:translate-x-2'
+                                        ? 'bg-yellow-400 border-yellow-400 text-gray-900 shadow-xl shadow-yellow-400/10 translate-x-4'
+                                        : 'bg-gray-900/50 border-gray-800 text-gray-500 hover:bg-gray-800 hover:border-gray-700 hover:translate-x-2'
                                         }`}
                                 >
                                     <div className="flex items-center gap-5">

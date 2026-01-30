@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import UserAvatar from '@/components/UserAvatar';
 import { ShoppingBag, Menu, X, User, LogOut, LayoutDashboard, UserCircle, Settings, Bell } from 'lucide-react';
 import { useCart } from '@/app/cart/CartContext';
 import { useEffect, useState } from 'react';
@@ -21,6 +22,7 @@ export default function Navbar() {
         { href: '/', label: 'Accueil' },
         { href: '/menu', label: 'Menu' },
         { href: '/promos', label: 'Promos' },
+        { href: '/fidelity', label: 'Fidélité' },
         { href: '/contact', label: 'Contact' },
     ];
 
@@ -87,9 +89,11 @@ export default function Navbar() {
                                         onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                                         className="flex items-center gap-2 p-1.5 pr-4 bg-gray-900 border border-gray-800 rounded-2xl hover:border-yellow-400/50 transition truncate max-w-[180px]"
                                     >
-                                        <div className="w-8 h-8 rounded-xl bg-yellow-400 flex items-center justify-center text-gray-900 font-black">
-                                            {session.user?.name?.[0].toUpperCase() || 'U'}
-                                        </div>
+                                        <UserAvatar
+                                            image={session.user?.image}
+                                            name={session.user?.name}
+                                            size="sm"
+                                        />
                                         <span className="text-sm font-bold text-white truncate">{session.user?.name}</span>
                                     </button>
 
@@ -98,9 +102,17 @@ export default function Navbar() {
                                         <>
                                             <div className="fixed inset-0 z-10" onClick={() => setIsUserMenuOpen(false)}></div>
                                             <div className="absolute right-0 mt-3 w-56 bg-gray-900 border border-gray-800 rounded-3xl shadow-3xl z-20 overflow-hidden py-2 animate-slide-up">
-                                                <div className="px-4 py-3 border-b border-gray-800 mb-2">
-                                                    <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Connecté en tant que</p>
-                                                    <p className="text-sm font-bold text-white truncate">{session.user?.email}</p>
+                                                <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-800 mb-2">
+                                                    <UserAvatar
+                                                        image={session.user?.image}
+                                                        name={session.user?.name}
+                                                        size="md"
+                                                        className="border border-white/10"
+                                                    />
+                                                    <div className="truncate text-left">
+                                                        <p className="text-white font-black truncate text-sm">{session.user?.name}</p>
+                                                        <p className="text-gray-500 text-xs font-bold truncate">{session.user?.email}</p>
+                                                    </div>
                                                 </div>
 
                                                 <Link href="/account" className="flex items-center gap-3 px-4 py-2.5 text-gray-400 hover:text-white hover:bg-white/5 transition font-bold text-sm">
@@ -165,12 +177,15 @@ export default function Navbar() {
                         <div className="pt-6 border-t border-gray-900">
                             {status === 'authenticated' ? (
                                 <div className="space-y-3">
-                                    <div className="flex items-center gap-3 px-5 mb-4">
-                                        <div className="w-10 h-10 rounded-xl bg-yellow-400 flex items-center justify-center text-gray-900 font-black">
-                                            {session.user?.name?.[0].toUpperCase()}
-                                        </div>
-                                        <div className="truncate">
-                                            <p className="text-white font-black truncate">{session.user?.name}</p>
+                                    <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-800 mb-4 bg-gray-900/40 rounded-2xl mx-2">
+                                        <UserAvatar
+                                            image={session.user?.image}
+                                            name={session.user?.name}
+                                            size="md"
+                                            className="border border-white/10"
+                                        />
+                                        <div className="truncate text-left">
+                                            <p className="text-white font-black truncate text-sm">{session.user?.name}</p>
                                             <p className="text-gray-500 text-xs font-bold truncate">{session.user?.email}</p>
                                         </div>
                                     </div>
