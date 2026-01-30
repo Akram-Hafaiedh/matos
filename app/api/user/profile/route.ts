@@ -25,6 +25,8 @@ export async function GET(request: NextRequest) {
                 address: true,
                 role: true,
                 image: true,
+                selectedFrame: true,
+                selectedBg: true,
                 createdAt: true
             }
         });
@@ -36,9 +38,17 @@ export async function GET(request: NextRequest) {
             }, { status: 404 });
         }
 
+        const rank = await prisma.user.count({
+            where: {
+                loyaltyPoints: {
+                    gt: user.loyaltyPoints || 0
+                }
+            }
+        }) + 1;
+
         return NextResponse.json({
             success: true,
-            user
+            user: { ...user, rank }
         });
     } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -47,6 +57,10 @@ export async function GET(request: NextRequest) {
             error: 'Erreur lors de la récupération du profil'
         }, { status: 500 });
     }
+}
+
+export async function PUT(request: NextRequest) {
+    return PATCH(request);
 }
 
 export async function PATCH(request: NextRequest) {
@@ -60,7 +74,7 @@ export async function PATCH(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { name, phone, address, image } = body;
+        const { name, phone, address, image, selectedFrame, selectedBg } = body;
 
         const updatedUser = await prisma.user.update({
             where: { id: (session.user as any).id },
@@ -68,7 +82,9 @@ export async function PATCH(request: NextRequest) {
                 name,
                 phone,
                 address,
-                image
+                image,
+                selectedFrame,
+                selectedBg
             },
             select: {
                 id: true,
@@ -76,7 +92,9 @@ export async function PATCH(request: NextRequest) {
                 email: true,
                 phone: true,
                 address: true,
-                image: true
+                image: true,
+                selectedFrame: true,
+                selectedBg: true
             }
         });
 

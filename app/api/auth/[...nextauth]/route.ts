@@ -48,19 +48,30 @@ export const authOptions: NextAuthOptions = {
                     email: user.email,
                     image: user.image,
                     role: user.role,
-                    phone: user.phone
+                    phone: user.phone,
+                    selectedBg: user.selectedBg,
+                    selectedFrame: user.selectedFrame
                 };
             }
         })
     ],
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.id = user.id;
                 token.email = user.email
                 token.picture = user.image;
                 token.role = (user as any).role;
                 token.phone = (user as any).phone;
+                token.selectedBg = (user as any).selectedBg;
+                token.selectedFrame = (user as any).selectedFrame;
+            }
+            // Logic to support session update
+            if (trigger === "update" && session?.user) {
+                token.name = session.user.name;
+                token.picture = session.user.image;
+                token.selectedBg = session.user.selectedBg;
+                token.selectedFrame = session.user.selectedFrame;
             }
             return token;
         },
@@ -71,6 +82,8 @@ export const authOptions: NextAuthOptions = {
                 session.user.email = token.email;
                 session.user.image = token.picture as string | null | undefined;
                 session.user.phone = token.phone as string | null | undefined;
+                session.user.selectedBg = token.selectedBg as string | null | undefined;
+                session.user.selectedFrame = token.selectedFrame as string | null | undefined;
             }
             return session;
         },

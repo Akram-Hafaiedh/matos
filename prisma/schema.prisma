@@ -69,6 +69,8 @@ model User {
   notifications  Notification[]
   reviews        Review[]
   loyaltyPoints  Int             @default(0) @map("loyalty_points")
+  selectedFrame  String?         @map("selected_frame")
+  selectedBg     String?         @map("selected_bg")
 
   @@map("users") // Ensure this matches your existing table
 }
@@ -109,6 +111,7 @@ model MenuItem {
   categoryId    Int?     @map("category_id")
   imageUrl      String?  @map("image_url") @db.VarChar(500)
   emoji         String?  @db.VarChar(10)
+  displayOrder  Int      @default(0) @map("display_order")
   ingredients   String[] // PostgreSQL native array
   popular       Boolean  @default(false)
   bestseller    Boolean  @default(false)
@@ -180,6 +183,8 @@ model Order {
   outForDeliveryAt DateTime? @map("out_for_delivery_at")
   deliveredAt      DateTime? @map("delivered_at")
   cancelledAt      DateTime? @map("cancelled_at")
+  cancelMessage    String?   @map("cancel_message")
+  pointsAwarded    Boolean   @default(false) @map("points_awarded")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
