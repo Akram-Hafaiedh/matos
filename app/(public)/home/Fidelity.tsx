@@ -10,8 +10,8 @@ export default function Fidelity() {
             <div className="max-w-7xl mx-auto relative z-10">
                 <div className="bg-gradient-to-br from-gray-950 to-black rounded-[4rem] border border-white/5 p-10 md:p-16 lg:p-20 flex flex-col lg:flex-row items-center justify-between gap-12 group shadow-3xl">
                     <div className="flex flex-col lg:flex-row items-center gap-10 text-center lg:text-left">
-                        <div className="w-28 h-28 bg-yellow-400 rounded-3xl flex items-center justify-center text-5xl shadow-[0_0_50px_rgba(250,204,21,0.3)] animate-float relative overflow-hidden group-hover:scale-110 transition-transform duration-700">
-                            <Trophy className="w-14 h-14 text-gray-900 fill-gray-900/10" />
+                        <div className="w-20 h-40 bg-yellow-400 rounded-full flex items-center justify-center text-5xl shadow-[0_0_50px_rgba(250,204,21,0.3)] animate-float relative overflow-hidden group-hover:scale-105 transition-transform duration-700 flex-shrink-0">
+                            <Trophy className="w-12 h-12 text-gray-900 fill-gray-900/10" />
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                         </div>
                         <div className="space-y-4 max-w-2xl">
@@ -24,7 +24,7 @@ export default function Fidelity() {
                                 <span className="text-yellow-400">Simple Repas</span>
                             </h2>
                             <p className="text-gray-500 font-bold text-base md:text-lg italic uppercase tracking-wider leading-relaxed">
-                                Cumulez des points à chaque commande et débloquez des avantages exclusifs. <span className="text-yellow-400/80">10 points offerts</span> à l'inscription.
+                                Cumulez des points à chaque commande et débloquez des avantages exclusifs. <span className="text-yellow-400">10 points offerts à l'inscription.</span>
                             </p>
                         </div>
                     </div>

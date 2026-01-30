@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
                 phone,
                 address,
                 role,
+                loyaltyPoints: 10,
             },
             select: {
                 id: true,
