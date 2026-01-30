@@ -45,7 +45,7 @@ export default function AdminLayoutContent({ children }: { children: React.React
     }
 
     return (
-        <div className="min-h-screen bg-gray-900">
+        <div className="flex min-h-screen bg-gray-900 overflow-hidden">
             <AdminSidebar
                 sidebarOpen={sidebarOpen}
                 setSidebarOpen={setSidebarOpen}
@@ -53,10 +53,10 @@ export default function AdminLayoutContent({ children }: { children: React.React
                 handleLogout={handleLogout}
             />
 
-            {/* Main Content */}
-            <div className="lg:ml-64">
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col min-w-0 lg:ml-64 relative">
                 {/* Global Header */}
-                <header className="bg-gray-800/80 backdrop-blur-xl border-b-2 border-gray-700/50 p-4 sticky top-0 z-30 transition-all duration-300">
+                <header className="bg-gray-800/80 backdrop-blur-xl border-b-2 border-gray-700/50 p-4 sticky top-0 z-30 shrink-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button
@@ -104,8 +104,8 @@ export default function AdminLayoutContent({ children }: { children: React.React
                     </div>
                 </header>
 
-                {/* Page Content */}
-                <main className="p-4 lg:p-8">
+                {/* Page Content - This sub-container will now handle its own scroll independently if needed */}
+                <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
                     {children}
                 </main>
             </div>

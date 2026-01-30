@@ -29,7 +29,8 @@ export default function NewMenuItemPage() {
         popular: false,
         bestseller: false,
         hot: false,
-        discount: ''
+        discount: '',
+        displayOrder: '0'
     });
 
     useEffect(() => {
@@ -86,7 +87,8 @@ export default function NewMenuItemPage() {
             const payload = {
                 ...formData,
                 price: parseFloat(formData.price),
-                discount: formData.discount ? parseInt(formData.discount) : null
+                discount: formData.discount ? parseInt(formData.discount) : null,
+                displayOrder: formData.displayOrder ? parseInt(formData.displayOrder) : 0
             };
 
             const response = await fetch('/api/menu-items', {
@@ -248,6 +250,19 @@ export default function NewMenuItemPage() {
                                     className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 border border-gray-700"
                                     placeholder="Tomate, Mozzarella, Basilic... (séparés par des virgules)"
                                 />
+                            </div>
+
+                            <div>
+                                <label className="block text-gray-400 mb-2 text-sm font-bold ml-1">Ordre d'affichage</label>
+                                <input
+                                    type="number"
+                                    name="displayOrder"
+                                    value={formData.displayOrder}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 border border-gray-700"
+                                    placeholder="0"
+                                />
+                                <p className="text-xs text-gray-500 ml-1 mt-1">Plus le chiffre est petit, plus l'article apparaît en premier.</p>
                             </div>
                         </div>
                     </div>

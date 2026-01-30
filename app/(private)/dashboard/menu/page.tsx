@@ -14,6 +14,7 @@ interface MenuItem {
     price: number | any;
     imageUrl: string;
     isActive: boolean;
+    displayOrder: number;
     category: {
         id: number;
         name: string;
@@ -267,6 +268,10 @@ export default function AdminMenuPage() {
                                     <div className="absolute top-4 right-4 flex flex-col gap-2">
                                         <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border border-opacity-30 ${item.isActive ? 'bg-green-500/10 text-green-400 border-green-500' : 'bg-red-500/10 text-red-400 border-red-500 shadow-2xl'}`}>
                                             {item.isActive ? 'Actif' : 'Masqué'}
+                                        </div>
+                                        {/* Order Badge */}
+                                        <div className="px-4 py-1.5 rounded-full bg-gray-900/80 text-white text-[9px] font-black uppercase tracking-widest border border-white/10 backdrop-blur-md">
+                                            #{item.displayOrder}
                                         </div>
                                     </div>
 

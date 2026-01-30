@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import {
     Users, Search, Star, Package, Calendar, MoreVertical,
     ChevronRight, Loader2, ArrowUpDown, Filter, Edit2,
-    Check, X, Phone, Mail, User
+    Check, X, Phone, Mail, User, MapPin
 } from 'lucide-react';
 
 interface Customer {
@@ -12,8 +12,10 @@ interface Customer {
     name: string | null;
     email: string | null;
     phone: string | null;
+    address: string | null;
     loyaltyPoints: number;
     totalOrders: number;
+    totalRevenue: number;
     createdAt: string;
 }
 
@@ -88,7 +90,7 @@ export default function AdminCustomersPage() {
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-gray-900/40 p-8 rounded-[2rem] border border-gray-800 flex items-center gap-6">
                     <div className="w-14 h-14 bg-yellow-400/10 rounded-2xl flex items-center justify-center">
                         <Users className="w-6 h-6 text-yellow-500" />
@@ -99,6 +101,17 @@ export default function AdminCustomersPage() {
                     </div>
                 </div>
                 <div className="bg-gray-900/40 p-8 rounded-[2rem] border border-gray-800 flex items-center gap-6">
+                    <div className="w-14 h-14 bg-green-400/10 rounded-2xl flex items-center justify-center">
+                        <Package className="w-6 h-6 text-green-500" />
+                    </div>
+                    <div>
+                        <div className="text-2xl font-black text-white italic">
+                            {customers.reduce((acc, c) => acc + c.totalRevenue, 0).toLocaleString()} <span className="text-xs text-gray-500 not-italic">DT</span>
+                        </div>
+                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Revenu Total</div>
+                    </div>
+                </div>
+                <div className="bg-gray-900/40 p-8 rounded-[2rem] border border-gray-800 flex items-center gap-6">
                     <div className="w-14 h-14 bg-orange-400/10 rounded-2xl flex items-center justify-center">
                         <Star className="w-6 h-6 text-orange-500" />
                     </div>
@@ -106,7 +119,7 @@ export default function AdminCustomersPage() {
                         <div className="text-2xl font-black text-white italic">
                             {customers.reduce((acc, c) => acc + c.loyaltyPoints, 0).toLocaleString()}
                         </div>
-                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Points Distribués</div>
+                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Points Fidélité</div>
                     </div>
                 </div>
                 <div className="bg-gray-900/40 p-8 rounded-[2rem] border border-gray-800 flex items-center gap-6">
@@ -117,7 +130,7 @@ export default function AdminCustomersPage() {
                         <div className="text-2xl font-black text-white italic">
                             {customers.reduce((acc, c) => acc + c.totalOrders, 0).toLocaleString()}
                         </div>
-                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Commandes Totales</div>
+                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Commandes</div>
                     </div>
                 </div>
             </div>
@@ -129,10 +142,10 @@ export default function AdminCustomersPage() {
                         <thead>
                             <tr className="bg-gray-900/50 border-b border-gray-800">
                                 <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Client</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Contact</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Points Fidélité</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Commandes</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Inscrit le</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Contact & Adresse</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Stats Financières</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Points</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Depuis le</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Actions</th>
                             </tr>
                         </thead>
@@ -170,10 +183,20 @@ export default function AdminCustomersPage() {
                                     <td className="px-8 py-6">
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
-                                                <Mail className="w-3 h-3" /> {customer.email || 'Pas d\'email'}
+                                                <Phone className="w-3 h-3 text-yellow-400" /> {customer.phone || 'Pas de tel'}
                                             </div>
-                                            <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
-                                                <Phone className="w-3 h-3" /> {customer.phone || 'Pas de tel'}
+                                            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-600 italic">
+                                                <MapPin className="w-3 h-3 text-blue-400" /> {customer.address || 'Pas d\'adresse'}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="space-y-1">
+                                            <div className="text-lg font-black text-white italic">
+                                                {customer.totalRevenue.toFixed(1)} <span className="text-[10px] not-italic text-gray-600">DT</span>
+                                            </div>
+                                            <div className="text-[9px] font-black uppercase tracking-widest text-gray-500">
+                                                {customer.totalOrders} commande{customer.totalOrders > 1 ? 's' : ''}
                                             </div>
                                         </div>
                                     </td>
@@ -218,12 +241,6 @@ export default function AdminCustomersPage() {
                                                 </button>
                                             </div>
                                         )}
-                                    </td>
-                                    <td className="px-8 py-6">
-                                        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-800/50 rounded-full text-white font-bold text-[10px] uppercase tracking-wider">
-                                            <Package className="w-3 h-3 text-blue-400" />
-                                            {customer.totalOrders}
-                                        </div>
                                     </td>
                                     <td className="px-8 py-6 text-xs font-bold text-gray-500 italic uppercase">
                                         {new Date(customer.createdAt).toLocaleDateString()}

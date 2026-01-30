@@ -27,8 +27,14 @@ export async function GET(req: Request) {
                 name: true,
                 email: true,
                 phone: true,
+                address: true,
                 loyaltyPoints: true,
                 createdAt: true,
+                orders: {
+                    select: {
+                        totalAmount: true
+                    }
+                },
                 _count: {
                     select: { orders: true }
                 }
@@ -40,7 +46,8 @@ export async function GET(req: Request) {
 
         const formattedCustomers = customers.map(c => ({
             ...c,
-            totalOrders: c._count.orders
+            totalOrders: c._count.orders,
+            totalRevenue: c.orders.reduce((acc, o) => acc + o.totalAmount, 0)
         }));
 
         return NextResponse.json({ success: true, customers: formattedCustomers });
