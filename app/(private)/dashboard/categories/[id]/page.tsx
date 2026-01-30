@@ -4,6 +4,8 @@ import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Save, Loader2, Tag } from 'lucide-react';
+import EmojiPicker from '@/components/EmojiPicker';
+
 
 export default function CategoryFormPage(props: { params: Promise<{ id: string }> }) {
     const params = use(props.params);
@@ -27,15 +29,6 @@ export default function CategoryFormPage(props: { params: Promise<{ id: string }
 
     const fetchCategory = async () => {
         try {
-            // Since we don't have a specific GET by ID endpoint for categories (only list), 
-            // we will fetch all and find the one we need, or we can rely on the list view.
-            // Ideally we should have a GET /api/categories/[id], but standard /api/categories returns all.
-            // For simplicity and since categories are few, we can filter client side or implement GET id.
-            // Let's implement GET in the API or just use what we have.
-            // Actually, I didn't implement GET by ID in the API, I only did PUT and DELETE.
-            // I should have implemented GET in [id]/route.ts.
-            // Let's implement fetch from all categories as a fallback or fix the API.
-            // Fix: I will fetch all and find. It's safe for now.
             const res = await fetch('/api/categories');
             const data = await res.json();
 
@@ -92,27 +85,61 @@ export default function CategoryFormPage(props: { params: Promise<{ id: string }
         }
     };
 
+    // ... loading state ... (will be kept from previous file or restored implicitly if contiguous) but since I'm replacing a large chunk I'll include it to be safe 
+    // actually wait, this tool is REPLACEMENT. I should target the top import block down to the end of form rendering where I had the icon picker.
+    // I can stick to targeting the imports and the emoji picker area separately or just rewrite the component since it's small.
+    // Let's rewrite the imports and constant first, then the specific part of the form.
+
+    // Wait, the "previous view" shows I have a lot of lucide imports. I'll replace the imports and constants first.
+
+
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-64">
-                <Loader2 className="w-8 h-8 text-yellow-400 animate-spin" />
+            <div className="max-w-2xl mx-auto space-y-8 pb-32">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <Link href="/dashboard/categories" className="text-gray-400 hover:text-yellow-400 transition flex items-center gap-2">
+                        <ArrowLeft className="w-5 h-5" />
+                        Retour aux catégories
+                    </Link>
+                </div>
+
+                {/* Form */}
+                <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-6 animate-pulse">
+                    <div className="h-8 bg-gray-700 rounded w-3/4 mb-6"></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="col-span-2 md:col-span-1 h-12 bg-gray-700 rounded"></div>
+                        <div className="h-12 bg-gray-700 rounded"></div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="h-12 bg-gray-700 rounded"></div>
+                    </div>
+                    <div className="bg-gray-900/50 p-6 rounded-2xl border border-gray-700">
+                        <div className="h-6 bg-gray-700 rounded w-1/3 mb-4"></div>
+                        <div className="grid grid-cols-5 gap-3">
+                            {[...Array(10)].map((_, i) => (
+                                <div key={i} className="aspect-square bg-gray-700 rounded-xl"></div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex justify-end pt-4 border-t border-gray-700">
+                        <div className="h-12 w-40 bg-gray-700 rounded-xl"></div>
+                    </div>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="max-w-2xl mx-auto space-y-8">
+        <div className="max-w-2xl mx-auto space-y-8 pb-32">
             {/* Header */}
-            <div>
-                <Link
-                    href="/dashboard/categories"
-                    className="inline-flex items-center text-gray-400 hover:text-white mb-4 transition"
-                >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+            <div className="flex items-center justify-between">
+                <Link href="/dashboard/categories" className="text-gray-400 hover:text-yellow-400 transition flex items-center gap-2">
+                    <ArrowLeft className="w-5 h-5" />
                     Retour aux catégories
                 </Link>
-                <h1 className="text-3xl font-black text-white">
-                    {isNew ? 'Nouvelle Catégorie' : `Modifier ${formData.name}`}
+                <h1 className="text-3xl font-bold text-white">
+                    {isNew ? 'Nouvelle catégorie' : 'Modifier la catégorie'}
                 </h1>
             </div>
 
@@ -125,47 +152,67 @@ export default function CategoryFormPage(props: { params: Promise<{ id: string }
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Name */}
-                    <div className="col-span-2">
-                        <label className="block text-gray-400 font-bold mb-2">Nom de la catégorie</label>
-                        <div className="relative">
-                            <Tag className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
+                <div className="space-y-6">
+                    {/* Name & Order Group */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Name */}
+                        <div className="col-span-2 md:col-span-1">
+                            <label className="block text-gray-400 font-bold mb-2">Nom de la catégorie</label>
+                            <div className="relative">
+                                <Tag className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
+                                <input
+                                    type="text"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    className="w-full bg-gray-900 text-white pl-12 pr-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
+                                    placeholder="ex: Burgers"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        {/* Order */}
+                        <div>
+                            <label className="block text-gray-400 font-bold mb-2">Ordre d'affichage</label>
                             <input
-                                type="text"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full bg-gray-900 text-white pl-12 pr-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
-                                placeholder="ex: Burgers, Boissons..."
-                                required
+                                type="number"
+                                value={formData.displayOrder}
+                                onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+                                className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
+                                placeholder="0"
                             />
                         </div>
                     </div>
 
-                    {/* Emoji */}
-                    <div>
-                        <label className="block text-gray-400 font-bold mb-2">Emoji</label>
-                        <input
-                            type="text"
-                            value={formData.emoji}
-                            onChange={(e) => setFormData({ ...formData, emoji: e.target.value })}
-                            className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition text-2xl text-center"
-                            placeholder="🍔"
-                            maxLength={2}
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Emoji */}
+                        <div>
+                            <label className="block text-gray-400 font-bold mb-2">Emoji</label>
+                            <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 flex items-center justify-center bg-gray-950 rounded-xl text-3xl border border-gray-700">
+                                    {formData.emoji || <span className="text-gray-700 text-xl">?</span>}
+                                </div>
+                                <input
+                                    type="text"
+                                    value={formData.emoji}
+                                    onChange={(e) => setFormData({ ...formData, emoji: e.target.value })}
+                                    className="flex-1 bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
+                                    placeholder="ex: 🍔"
+                                    maxLength={2}
+                                />
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Order */}
-                    <div>
-                        <label className="block text-gray-400 font-bold mb-2">Ordre d'affichage</label>
-                        <input
-                            type="number"
-                            value={formData.displayOrder}
-                            onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
-                            className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
-                            placeholder="0"
-                        />
-                    </div>
+                    {/* Emoji Picker */}
+                    <EmojiPicker
+                        selected={formData.emoji}
+                        onSelect={(emoji) => setFormData({ ...formData, emoji })}
+                        label="Choisir un Emoji"
+                        description="Cliquez sur un emoji pour l'assigner à la catégorie."
+                        isAdmin={true}
+                    />
+
                 </div>
 
                 {/* Actions */}
