@@ -44,6 +44,7 @@ export async function GET(
                 cancelledAt: order.cancelledAt,
                 deliveryFee: order.deliveryFee,
                 totalAmount: order.totalAmount,
+                paymentMethod: order.paymentMethod,
                 deliveryInfo: {
                     // Start thinking about masking here, or leave it to frontend if we trust the channel
                     // For now, we return full info because the frontend does the masking. 

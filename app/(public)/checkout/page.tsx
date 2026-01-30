@@ -137,10 +137,10 @@ export default function CheckoutPage() {
             // Show success toast
             toast.success('Commande validée avec succès !');
 
-            // Delay redirect slightly for toast visibility
-            setTimeout(() => {
-                router.push(`/order-confirmation?orderNumber=${result.order.orderNumber}`);
-            }, 1500);
+            // Store last order for easy access
+            localStorage.setItem('lastOrder', JSON.stringify(result.order));
+
+            router.push(`/tracking/${result.order.orderNumber}`);
 
         } catch (error) {
             console.error('Error submitting order:', error);

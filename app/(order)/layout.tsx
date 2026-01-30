@@ -20,7 +20,7 @@ export default function OrderLayout({
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         if (searchNumber.trim()) {
-            router.push(`/order-confirmation?orderNumber=${searchNumber.trim().toUpperCase()}`);
+            router.push(`/tracking/${searchNumber.trim().toUpperCase()}`);
             setSearchNumber('');
         }
     };
