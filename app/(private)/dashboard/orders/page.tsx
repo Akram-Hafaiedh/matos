@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Package, Clock, CheckCircle, Truck, XCircle, RefreshCw } from 'lucide-react';
+import { Package, Clock, CheckCircle, Truck, XCircle, RefreshCw, Store } from 'lucide-react';
 
 interface Order {
     id: string;
@@ -15,6 +15,7 @@ interface Order {
     };
     finalTotal: number;
     status: string;
+    orderType: string;
     createdAt: string;
     cart: any[];
 }
@@ -24,8 +25,8 @@ export default function AdminOrdersPage() {
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<string>('all');
 
-    const fetchOrders = async () => {
-        setLoading(true);
+    const fetchOrders = async (isSilent = false) => {
+        if (!isSilent) setLoading(true);
         try {
             const url = filterStatus === 'all'
                 ? '/api/orders'
@@ -40,12 +41,20 @@ export default function AdminOrdersPage() {
         } catch (error) {
             console.error('Error fetching orders:', error);
         } finally {
-            setLoading(false);
+            if (!isSilent) setLoading(false);
         }
     };
 
     useEffect(() => {
         fetchOrders();
+    }, [filterStatus]);
+
+    // Anti-refresh polling for new orders (every 10 seconds)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchOrders(true);
+        }, 10000);
+        return () => clearInterval(interval);
     }, [filterStatus]);
 
     const updateOrderStatus = async (orderId: string, newStatus: string) => {
@@ -72,6 +81,7 @@ export default function AdminOrdersPage() {
             case 'pending': return 'bg-yellow-600';
             case 'confirmed': return 'bg-blue-600';
             case 'preparing': return 'bg-purple-600';
+            case 'ready': return 'bg-teal-600';
             case 'out_for_delivery': return 'bg-orange-600';
             case 'delivered': return 'bg-green-600';
             case 'cancelled': return 'bg-red-600';
@@ -84,6 +94,7 @@ export default function AdminOrdersPage() {
             case 'pending': return <Clock className="w-5 h-5" />;
             case 'confirmed': return <CheckCircle className="w-5 h-5" />;
             case 'preparing': return <Package className="w-5 h-5" />;
+            case 'ready': return <Clock className="w-5 h-5" />;
             case 'out_for_delivery': return <Truck className="w-5 h-5" />;
             case 'delivered': return <CheckCircle className="w-5 h-5" />;
             case 'cancelled': return <XCircle className="w-5 h-5" />;
@@ -96,8 +107,9 @@ export default function AdminOrdersPage() {
             case 'pending': return 'En attente';
             case 'confirmed': return 'Confirmée';
             case 'preparing': return 'En préparation';
+            case 'ready': return 'Prête / Retrait';
             case 'out_for_delivery': return 'En livraison';
-            case 'delivered': return 'Livrée';
+            case 'delivered': return 'Terminée';
             case 'cancelled': return 'Annulée';
             default: return status;
         }
@@ -108,8 +120,9 @@ export default function AdminOrdersPage() {
         { value: 'pending', label: 'En attente' },
         { value: 'confirmed', label: 'Confirmées' },
         { value: 'preparing', label: 'En préparation' },
+        { value: 'ready', label: 'Prêtes (Retrait)' },
         { value: 'out_for_delivery', label: 'En livraison' },
-        { value: 'delivered', label: 'Livrées' },
+        { value: 'delivered', label: 'Terminées' },
         { value: 'cancelled', label: 'Annulées' },
     ];
 
@@ -125,7 +138,7 @@ export default function AdminOrdersPage() {
                 </div>
 
                 <button
-                    onClick={fetchOrders}
+                    onClick={() => fetchOrders()}
                     className="flex items-center gap-2 bg-yellow-400 px-6 py-4 rounded-2xl text-gray-900 font-black uppercase text-[10px] tracking-widest hover:bg-yellow-300 transition duration-500 shadow-xl shadow-yellow-400/10"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -198,6 +211,10 @@ export default function AdminOrdersPage() {
                                         <span className="text-[10px] text-gray-600 font-black uppercase tracking-widest px-4 py-1.5 bg-gray-950 rounded-full border border-gray-800">
                                             {new Date(order.createdAt).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                         </span>
+                                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-2 border-opacity-20 flex items-center gap-2 ${order.orderType === 'pickup' ? 'border-pink-500 bg-pink-500/10 text-pink-400' : 'border-blue-500 bg-blue-500/10 text-blue-400'}`}>
+                                            {order.orderType === 'pickup' ? <Store className="w-3.5 h-3.5" /> : <Truck className="w-3.5 h-3.5" />}
+                                            {order.orderType === 'pickup' ? 'A Emporter' : 'Livraison'}
+                                        </span>
                                     </div>
 
                                     <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-8">
@@ -249,11 +266,28 @@ export default function AdminOrdersPage() {
                                         </button>
                                     )}
                                     {order.status === 'preparing' && (
+                                        order.deliveryInfo.address === 'Retrait sur Place' ? (
+                                            <button
+                                                onClick={() => updateOrderStatus(order.id, 'ready')}
+                                                className="flex-1 bg-teal-500/10 hover:bg-teal-500 text-teal-400 hover:text-white border-2 border-teal-500/20 px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition duration-500 shadow-xl"
+                                            >
+                                                Prêt pour retrait
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => updateOrderStatus(order.id, 'out_for_delivery')}
+                                                className="flex-1 bg-orange-500/10 hover:bg-orange-500 text-orange-400 hover:text-white border-2 border-orange-500/20 px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition duration-500 shadow-xl"
+                                            >
+                                                En livraison
+                                            </button>
+                                        )
+                                    )}
+                                    {order.status === 'ready' && (
                                         <button
-                                            onClick={() => updateOrderStatus(order.id, 'out_for_delivery')}
-                                            className="flex-1 bg-orange-500/10 hover:bg-orange-500 text-orange-400 hover:text-white border-2 border-orange-500/20 px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition duration-500 shadow-xl"
+                                            onClick={() => updateOrderStatus(order.id, 'delivered')}
+                                            className="flex-1 bg-green-500/10 hover:bg-green-500 text-green-400 hover:text-white border-2 border-green-500/20 px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition duration-500 shadow-xl"
                                         >
-                                            En livraison
+                                            Retiré / Terminé
                                         </button>
                                     )}
                                     {order.status === 'out_for_delivery' && (
