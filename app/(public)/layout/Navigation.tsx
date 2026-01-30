@@ -15,7 +15,7 @@ export default function Navbar() {
     const { data: session, status } = useSession();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-    const { getTotalItems } = useCart();
+    const { getTotalItems, setCartOpen } = useCart() as any;
     const totalItems = getTotalItems();
 
     const navLinks = [
@@ -72,15 +72,18 @@ export default function Navbar() {
                         {/* Notifications */}
                         {status === 'authenticated' && <NotificationsDropdown />}
 
-                        {/* Cart Indicator */}
-                        {totalItems > 0 && (
-                            <Link href="/cart" className="relative p-2 bg-gray-900 border border-gray-800 rounded-xl hover:border-yellow-400/50 transition">
-                                <ShoppingBag className="w-5 h-5 text-gray-400" />
-                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 text-gray-900 rounded-full flex items-center justify-center text-xs font-black">
+                        {/* Cart Indicator / Trigger */}
+                        <button
+                            onClick={() => setCartOpen(true)}
+                            className="relative p-2 bg-gray-900 border border-gray-800 rounded-xl hover:border-yellow-400/50 transition group"
+                        >
+                            <ShoppingBag className={`w-5 h-5 ${totalItems > 0 ? 'text-yellow-400' : 'text-gray-400 group-hover:text-white'}`} />
+                            {totalItems > 0 && (
+                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 text-gray-900 rounded-full flex items-center justify-center text-[10px] font-black shadow-lg shadow-yellow-400/20">
                                     {totalItems}
                                 </span>
-                            </Link>
-                        )}
+                            )}
+                        </button>
                         {/* User Access */}
                         <div className="hidden md:block relative">
                             {status === 'authenticated' ? (
@@ -93,6 +96,7 @@ export default function Navbar() {
                                             image={session.user?.image}
                                             name={session.user?.name}
                                             size="sm"
+                                            backgroundColor={session.user?.selectedBg || undefined}
                                         />
                                         <span className="text-sm font-bold text-white truncate">{session.user?.name}</span>
                                     </button>
@@ -108,6 +112,7 @@ export default function Navbar() {
                                                         name={session.user?.name}
                                                         size="md"
                                                         className="border border-white/10"
+                                                        backgroundColor={session.user?.selectedBg || undefined}
                                                     />
                                                     <div className="truncate text-left">
                                                         <p className="text-white font-black truncate text-sm">{session.user?.name}</p>
@@ -183,6 +188,7 @@ export default function Navbar() {
                                             name={session.user?.name}
                                             size="md"
                                             className="border border-white/10"
+                                            backgroundColor={session.user?.selectedBg || undefined}
                                         />
                                         <div className="truncate text-left">
                                             <p className="text-white font-black truncate text-sm">{session.user?.name}</p>

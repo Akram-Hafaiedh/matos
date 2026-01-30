@@ -1,7 +1,6 @@
 // app/auth/layout.tsx
 'use client';
 
-import { Providers } from "../providers";
 
 export default function AuthLayout({
     children,
@@ -9,7 +8,7 @@ export default function AuthLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <Providers>
+        <>
             <div className="min-h-screen bg-black flex items-center justify-center px-4 py-24 relative overflow-hidden">
                 {/* Ambient Background Glows */}
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-yellow-400/5 blur-[120px] -mr-64 -mt-64 pointer-events-none"></div>
@@ -35,6 +34,6 @@ export default function AuthLayout({
                     </div>
                 </div>
             </div>
-        </Providers>
+        </>
     );
 }

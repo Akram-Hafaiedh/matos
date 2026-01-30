@@ -9,32 +9,27 @@ import Image from "next/image";
 export default function GlobalCart() {
     const router = useRouter();
 
-    const [cartOpen, setCartOpen] = useState(false);
-
-    const { cart, removeFromCart, addToCart, clearCart, getTotalPrice, getTotalItems } = useCart() as any;
+    const { cart, removeFromCart, addToCart, clearCart, getTotalPrice, getTotalItems, isCartOpen, setCartOpen } = useCart() as any;
 
     const totalItems = getTotalItems();
-
-    // Don't show anything if cart is empty
-    if (totalItems === 0) {
-        return null;
-    }
     return (
         <>
             {/* Floating Cart Button - Bottom Right */}
-            <button
-                onClick={() => setCartOpen(true)}
-                className="fixed bottom-8 right-8 bg-yellow-400 hover:bg-yellow-300 text-gray-900 pr-6 pl-4 py-4 rounded-full shadow-2xl shadow-yellow-400/20 font-black text-lg z-[60] flex items-center gap-3 transition-all transform hover:scale-110 active:scale-95 animate-bounce-in group"
-            >
-                <div className="bg-gray-900 text-yellow-400 w-10 h-10 rounded-full flex items-center justify-center font-black text-sm group-hover:rotate-12 transition-transform">
-                    {totalItems}
-                </div>
-                <span className="uppercase tracking-tighter italic mr-1">Mon Panier</span>
-            </button>
+            {totalItems > 0 && (
+                <button
+                    onClick={() => setCartOpen(true)}
+                    className="fixed bottom-8 right-8 bg-yellow-400 hover:bg-yellow-300 text-gray-900 pr-6 pl-4 py-4 rounded-full shadow-2xl shadow-yellow-400/20 font-black text-lg z-[60] flex items-center gap-3 transition-all transform hover:scale-110 active:scale-95 animate-bounce-in group"
+                >
+                    <div className="bg-gray-900 text-yellow-400 w-10 h-10 rounded-full flex items-center justify-center font-black text-sm group-hover:rotate-12 transition-transform">
+                        {totalItems}
+                    </div>
+                    <span className="uppercase tracking-tighter italic mr-1">Mon Panier</span>
+                </button>
+            )}
 
             {/* Cart Sidebar - Slides from right - Premium Glassmorphism */}
             <div
-                className={`fixed inset-y-0 right-0 w-full sm:w-[450px] bg-black/60 backdrop-blur-3xl border-l border-white/10 shadow-3xl z-[70] transform transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${cartOpen ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed inset-y-0 right-0 w-full sm:w-[450px] bg-black/60 backdrop-blur-3xl border-l border-white/10 shadow-3xl z-[70] transform transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${isCartOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}
             >
                 <div className="h-full flex flex-col">
@@ -222,7 +217,7 @@ export default function GlobalCart() {
             </div>
 
             {/* Overlay - Dark background when cart is open */}
-            {cartOpen && (
+            {isCartOpen && (
                 <div
                     className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] animate-fade-in"
                     onClick={() => setCartOpen(false)}
