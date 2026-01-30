@@ -45,7 +45,8 @@ export async function GET(
                 user: {
                     select: {
                         name: true,
-                        email: true
+                        email: true,
+                        image: true
                     }
                 },
                 order: {

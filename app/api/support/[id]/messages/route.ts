@@ -75,7 +75,7 @@ export async function POST(
                     title: 'Nouveau message de support',
                     message: `Un admin a répondu à votre ticket #${ticket.id}`,
                     type: 'ticket_response',
-                    link: `/support/${ticket.id}`,
+                    link: `/account/tickets/${ticket.id}`,
                 }
             });
         }

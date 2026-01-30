@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Send, ChevronLeft, Clock, Package, User, Loader2, AlertCircle, Calendar, MessageSquare, UtensilsCrossed, Paperclip } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import UserAvatar from '@/components/UserAvatar';
 
 interface Message {
     id: number;
@@ -248,11 +249,13 @@ export default function TicketDetailsPage() {
                                             <Image src="/logo.svg" alt="Mato's" width={40} height={40} className="object-contain" />
                                         </div>
                                     ) : (
-                                        msg.user.image ? (
-                                            <Image src={msg.user.image} alt={msg.user.name} width={48} height={48} className="object-cover" />
-                                        ) : (
-                                            <span className="font-black text-gray-400 uppercase text-lg">{msg.user.name?.[0] || 'U'}</span>
-                                        )
+                                        <UserAvatar
+                                            image={msg.user.image}
+                                            name={msg.user.name}
+                                            size="lg"
+                                            className="w-full h-full text-white"
+                                            textClassName="text-lg"
+                                        />
                                     )}
                                 </div>
                                 <div className={`space-y-2 max-w-[85%] ${msg.isAdmin ? 'items-end flex flex-col' : ''}`}>

@@ -1,21 +1,48 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { LifeBuoy, ChevronRight, Loader2, Plus, MessageSquare, AlertCircle } from 'lucide-react';
+import { LifeBuoy, ChevronRight, Loader2, Plus, MessageSquare, AlertCircle, Search, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function TicketsPage() {
     const [tickets, setTickets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [status, setStatus] = useState('all');
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState<any>(null);
+
+    const fetchTickets = async () => {
+        setLoading(true);
+        try {
+            const queryParams = new URLSearchParams({
+                page: page.toString(),
+                status: status,
+                search: search,
+                limit: '4'
+            });
+            const res = await fetch(`/api/support?${queryParams.toString()}`);
+            const data = await res.json();
+            if (data.success) {
+                setTickets(data.tickets);
+                setPagination(data.pagination);
+            }
+        } catch (error) {
+            console.error('Error fetching tickets:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        fetch('/api/support')
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) setTickets(data.tickets);
-                setLoading(false);
-            });
-    }, []);
+        fetchTickets();
+    }, [page, status]);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        setPage(1);
+        fetchTickets();
+    };
 
     if (loading) {
         return (
@@ -37,7 +64,39 @@ export default function TicketsPage() {
                 </Link>
             </div>
 
-            {tickets.length === 0 ? (
+            <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
+                <form onSubmit={handleSearch} className="relative w-full md:w-80 group">
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                    <input
+                        type="text"
+                        placeholder="Rechercher un ticket..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full bg-gray-900/50 border-2 border-gray-800 text-white pl-14 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
+                    />
+                </form>
+
+                <div className="flex items-center gap-2">
+                    {['all', 'open', 'resolved'].map((s) => (
+                        <button
+                            key={s}
+                            onClick={() => { setStatus(s); setPage(1); }}
+                            className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${status === s
+                                ? 'bg-yellow-400 border-yellow-400 text-gray-950 shadow-lg shadow-yellow-400/10'
+                                : 'bg-gray-900/50 border-gray-800 text-gray-500 hover:border-gray-700'
+                                }`}
+                        >
+                            {s === 'all' ? 'Tous' : s === 'open' ? 'En cours' : 'Résolu'}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {loading ? (
+                <div className="flex items-center justify-center py-20 font-sans">
+                    <Loader2 className="w-10 h-10 text-yellow-400 animate-spin" />
+                </div>
+            ) : tickets.length === 0 ? (
                 <div className="text-center py-32 bg-gray-900/30 rounded-[3rem] border-2 border-dashed border-gray-800 backdrop-blur-xl">
                     <div className="w-24 h-24 bg-gray-950 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-gray-800">
                         <LifeBuoy className="w-10 h-10 text-gray-700" />
@@ -50,13 +109,13 @@ export default function TicketsPage() {
                     {tickets.map((ticket) => (
                         <Link
                             key={ticket.id}
-                            href={`/support/${ticket.id}`}
-                            className="bg-gray-900/60 p-8 rounded-[2.5rem] border border-gray-800 hover:border-yellow-400/50 transition-all duration-500 group flex flex-col justify-between backdrop-blur-xl"
+                            href={`/account/tickets/${ticket.id}`}
+                            className="bg-gray-900/60 p-8 rounded-[2.5rem] border border-gray-800 hover:border-yellow-400/50 transition-all duration-500 group flex flex-col justify-between backdrop-blur-xl text-left"
                         >
                             <div className="flex justify-between items-start mb-6">
                                 <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border ${ticket.status === 'open'
-                                        ? 'bg-yellow-400/10 text-yellow-500 border-yellow-400/20'
-                                        : 'bg-green-500/10 text-green-400 border-green-500/20'
+                                    ? 'bg-yellow-400/10 text-yellow-500 border-yellow-400/20'
+                                    : 'bg-green-500/10 text-green-400 border-green-500/20'
                                     }`}>
                                     {ticket.status === 'open' ? 'En traitement' : 'Résolu'}
                                 </div>
@@ -80,6 +139,29 @@ export default function TicketsPage() {
                             </div>
                         </Link>
                     ))}
+
+                    {/* Pagination Controls */}
+                    {pagination && pagination.totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-4 mt-8 col-span-full">
+                            <button
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="w-12 h-12 rounded-xl bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:text-white hover:border-yellow-400/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+                            <span className="text-sm font-black text-white px-6 py-2 bg-gray-900 border border-gray-800 rounded-xl tracking-widest uppercase italic border-gray-800 text-white/80">
+                                Page {page} / {pagination.totalPages}
+                            </span>
+                            <button
+                                onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
+                                disabled={page === pagination.totalPages}
+                                className="w-12 h-12 rounded-xl bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:text-white hover:border-yellow-400/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                                <ChevronRight className="w-5 h-5" />
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 
