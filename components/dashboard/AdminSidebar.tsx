@@ -12,7 +12,8 @@ import {
     Tag,
     Gift,
     LifeBuoy,
-    Home
+    Home,
+    MessageSquare
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -34,6 +35,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, session, han
         { name: 'Menu', href: '/dashboard/menu', icon: MenuIcon },
         { name: 'Catégories', href: '/dashboard/categories', icon: Tag },
         { name: 'Promotions', href: '/dashboard/promotions', icon: Gift },
+        { name: 'Avis Clients', href: '/dashboard/reviews', icon: MessageSquare },
         { name: 'Support', href: '/dashboard/support', icon: LifeBuoy },
         { name: 'Clients', href: '/dashboard/customers', icon: Users },
         { name: 'Paramètres', href: '/dashboard/settings', icon: Settings },

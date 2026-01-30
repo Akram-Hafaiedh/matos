@@ -61,21 +61,21 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               transform transition-all duration-500 ease-out
               animate-slide-in-right
               w-full max-w-sm md:min-w-[320px]
-              ${t.type === 'success'
-                                ? 'bg-gray-900/90 border-green-500/30 text-white'
+                ${t.type === 'success'
+                                ? 'bg-gray-950/90 border-yellow-400/20 text-white shadow-yellow-400/5'
                                 : t.type === 'error'
-                                    ? 'bg-gray-900/90 border-red-500/30 text-white'
+                                    ? 'bg-gray-950/90 border-red-500/20 text-white shadow-red-500/5'
                                     : t.type === 'warning'
-                                        ? 'bg-gray-900/90 border-yellow-500/30 text-white'
-                                        : 'bg-gray-900/90 border-blue-500/30 text-white'
+                                        ? 'bg-gray-950/90 border-orange-500/20 text-white shadow-orange-500/5'
+                                        : 'bg-gray-950/90 border-gray-800 text-white'
                             }
             `}
                     >
-                        <div className={`p-2 rounded-full 
-              ${t.type === 'success' ? 'bg-green-500/10 text-green-500' :
-                                t.type === 'error' ? 'bg-red-500/10 text-red-500' :
-                                    t.type === 'warning' ? 'bg-yellow-500/10 text-yellow-500' :
-                                        'bg-blue-500/10 text-blue-500'
+                        <div className={`p-2.5 rounded-xl border
+              ${t.type === 'success' ? 'bg-yellow-400/10 border-yellow-400/20 text-yellow-400' :
+                                t.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
+                                    t.type === 'warning' ? 'bg-orange-500/10 border-orange-500/20 text-orange-500' :
+                                        'bg-gray-800/50 border-gray-700 text-gray-400'
                             }
             `}>
                             {t.type === 'success' && <CheckCircle className="w-5 h-5" />}
