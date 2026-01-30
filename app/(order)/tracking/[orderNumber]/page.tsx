@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Package, Clock, CheckCircle2, Loader2, ArrowLeft, ArrowRight, MapPin, Store, Shield, User, Search } from 'lucide-react';
+import { Package, Clock, CheckCircle2, Loader2, ArrowLeft, ArrowRight, MapPin, Store, Shield, User, Search, XCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '../../../context/ToastContext';
 
 // Masking helper function
 const maskString = (str: string, type: 'name' | 'phone') => {
@@ -20,8 +21,10 @@ export default function PublicOrderDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const [order, setOrder] = useState<any>(null);
+    const [prevStatus, setPrevStatus] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { toast } = useToast();
 
     const fetchOrder = async (number: string, isSilent = false) => {
         if (!isSilent) setLoading(true);
@@ -29,7 +32,14 @@ export default function PublicOrderDetailsPage() {
             const res = await fetch(`/api/tracking/${number}`, { cache: 'no-store' });
             const data = await res.json();
             if (data.success) {
+                // If status changed, show a notification
+                if (prevStatus && prevStatus !== data.order.status) {
+                    const config = getStatusConfig(data.order.status);
+                    toast.info(`Mise à jour: Votre commande est maintenant ${config.label.toLowerCase()} !`);
+                }
+
                 setOrder(data.order);
+                setPrevStatus(data.order.status);
                 setError(null);
                 localStorage.setItem('lastOrder', JSON.stringify(data.order));
             } else {
@@ -60,16 +70,15 @@ export default function PublicOrderDetailsPage() {
 
         if (isFinished) return;
 
-        // Higher frequency for active tracking, lower for pending
-        const isPending = order.status === 'pending';
-        const intervalTime = isPending ? 15 * 1000 : 5 * 1000;
+        // Higher frequency for all states to avoid missing updates
+        const intervalTime = 3000; // 3 seconds for snappy updates
 
         const interval = setInterval(() => {
             fetchOrder(activeNum, true);
         }, intervalTime);
 
         return () => clearInterval(interval);
-    }, [order?.orderNumber, order?.status]);
+    }, [order?.orderNumber, order?.status, prevStatus]);
 
     const getStatusConfig = (status: string) => {
         switch (status) {
@@ -201,6 +210,18 @@ export default function PublicOrderDetailsPage() {
                                     );
                                 })}
                             </div>
+
+                            {order.status === 'cancelled' && order.cancelMessage && (
+                                <div className="mt-12 p-8 bg-red-500/5 border border-red-500/10 rounded-[2rem] animate-in fade-in slide-in-from-top-4 duration-700 delay-300">
+                                    <h3 className="text-red-500 font-black uppercase text-[10px] tracking-widest mb-3 flex items-center gap-2">
+                                        <XCircle className="w-4 h-4" />
+                                        Motif d'annulation
+                                    </h3>
+                                    <p className="text-gray-400 font-bold text-sm italic leading-relaxed">
+                                        "{order.cancelMessage}"
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         {/* Order Identity Badge */}

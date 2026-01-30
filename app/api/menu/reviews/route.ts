@@ -68,13 +68,66 @@ export async function POST(request: NextRequest) {
         const review = await prisma.review.create({
             data: {
                 rating,
-                comment,
+                comment: comment || "",
                 menuItemId: parseInt(menuItemId),
                 userId: (session.user as any).id
             }
         });
 
-        return NextResponse.json({ success: true, review });
+        // Award loyalty points for reviews
+        // Check how many reviews the user has already made
+        const userReviewCount = await prisma.review.count({
+            where: { userId: (session.user as any).id }
+        });
+
+        let pointsToAward = 0;
+        let awardReason = "";
+
+        if (userReviewCount <= 3) {
+            pointsToAward = 25;
+            awardReason = `Points de fidélité pour votre ${userReviewCount}${userReviewCount === 1 ? 'er' : 'ème'} avis !`;
+        } else {
+            // Quality analysis (simple logic: based on comment length and rating)
+            const commentLength = (comment || "").trim().length;
+            if (commentLength > 50 && rating >= 4) {
+                pointsToAward = 25; // Great review
+                awardReason = "Points de fidélité pour votre avis détaillé !";
+            } else if (commentLength > 20) {
+                pointsToAward = 15; // Decent review
+                awardReason = "Merci pour votre avis !";
+            } else {
+                pointsToAward = 10; // Simple review
+                awardReason = "Merci pour votre avis !";
+            }
+        }
+
+        if (pointsToAward > 0) {
+            await prisma.user.update({
+                where: { id: (session.user as any).id },
+                data: {
+                    loyaltyPoints: {
+                        increment: pointsToAward
+                    }
+                }
+            });
+
+            // Create notification for points awarded
+            await prisma.notification.create({
+                data: {
+                    userId: (session.user as any).id,
+                    title: "Points gagnés ! 🎁",
+                    message: `Vous avez reçu ${pointsToAward} points. ${awardReason}`,
+                    type: "loyalty_update"
+                }
+            });
+        }
+
+        return NextResponse.json({
+            success: true,
+            review,
+            pointsAwarded: pointsToAward,
+            message: pointsToAward > 0 ? `Merci ! Vous avez gagné ${pointsToAward} points.` : "Avis publié avec succès."
+        });
     } catch (error) {
         console.error('Review Error:', error);
         return NextResponse.json({ success: false, error: 'Erreur lors de la publication' }, { status: 500 });

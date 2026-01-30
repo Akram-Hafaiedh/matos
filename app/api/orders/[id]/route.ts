@@ -77,7 +77,7 @@ export async function PATCH(
         }
 
         const body = await request.json();
-        const { status } = body;
+        const { status, cancelMessage } = body;
 
         // Validate status
         const validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
@@ -94,16 +94,32 @@ export async function PATCH(
             updatedAt: new Date()
         };
 
+        if (cancelMessage) {
+            updateData.cancelMessage = cancelMessage;
+        }
+
         // Set status-specific timestamps
         if (status === 'confirmed') updateData.confirmedAt = new Date();
         else if (status === 'preparing') updateData.preparingAt = new Date();
         else if (status === 'ready') updateData.readyAt = new Date();
         else if (status === 'out_for_delivery') updateData.outForDeliveryAt = new Date();
         else if (status === 'delivered') updateData.deliveredAt = new Date();
-        else if (status === 'cancelled') updateData.cancelledAt = new Date();
+        else if (status === 'cancelled') {
+            updateData.cancelledAt = new Date();
+        }
 
 
         const orderId = parseInt(orderIdStr);
+
+        // Get current order to check previous status
+        const currentOrder = await prisma.order.findUnique({
+            where: { id: orderId }
+        });
+
+        if (!currentOrder) {
+            return NextResponse.json({ success: false, error: 'Commande introuvable' }, { status: 404 });
+        }
+
         const order = await prisma.order.update({
             where: { id: orderId },
             data: updateData,
@@ -111,6 +127,24 @@ export async function PATCH(
                 user: true
             }
         });
+
+        // Award loyalty points if newly delivered
+        if (status === 'delivered' && !currentOrder.pointsAwarded && order.userId) {
+            await prisma.$transaction([
+                prisma.user.update({
+                    where: { id: order.userId },
+                    data: {
+                        loyaltyPoints: {
+                            increment: Math.floor(order.totalAmount)
+                        }
+                    }
+                }),
+                prisma.order.update({
+                    where: { id: orderId },
+                    data: { pointsAwarded: true }
+                })
+            ]);
+        }
 
         // Create notification for the user
         if (order.userId) {

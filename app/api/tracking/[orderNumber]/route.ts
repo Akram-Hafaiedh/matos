@@ -42,6 +42,7 @@ export async function GET(
                 outForDeliveryAt: order.outForDeliveryAt,
                 deliveredAt: order.deliveredAt,
                 cancelledAt: order.cancelledAt,
+                cancelMessage: order.cancelMessage,
                 deliveryFee: order.deliveryFee,
                 totalAmount: order.totalAmount,
                 paymentMethod: order.paymentMethod,

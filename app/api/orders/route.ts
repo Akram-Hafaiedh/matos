@@ -185,7 +185,7 @@ export async function GET(request: NextRequest) {
 
 
         // Transform orders to match frontend expectations
-        const transformedOrders = orders.map(order => ({
+        const transformedOrders = (orders as any[]).map(order => ({
             id: order.id.toString(),
             orderNumber: order.orderNumber,
             deliveryInfo: {
@@ -207,6 +207,13 @@ export async function GET(request: NextRequest) {
             scheduledTime: order.scheduledTime,
             createdAt: order.createdAt.toISOString(),
             updatedAt: order.updatedAt.toISOString(),
+            confirmedAt: order.confirmedAt,
+            preparingAt: order.preparingAt,
+            readyAt: order.readyAt,
+            outForDeliveryAt: order.outForDeliveryAt,
+            deliveredAt: order.deliveredAt,
+            cancelledAt: order.cancelledAt,
+            cancelMessage: order.cancelMessage,
             user: order.user
         }));
 

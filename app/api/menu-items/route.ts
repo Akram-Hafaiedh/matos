@@ -49,9 +49,10 @@ export async function GET(request: NextRequest) {
                 include: {
                     category: true
                 },
-                orderBy: {
-                    createdAt: 'desc'
-                },
+                orderBy: [
+                    { displayOrder: 'asc' },
+                    { createdAt: 'desc' }
+                ],
                 skip,
                 take: limit
             })
@@ -99,7 +100,8 @@ export async function POST(request: NextRequest) {
             popular,
             bestseller,
             hot,
-            discount
+            discount,
+            displayOrder
         } = body;
 
         // Validation
@@ -129,7 +131,8 @@ export async function POST(request: NextRequest) {
                 popular: popular || false,
                 bestseller: bestseller || false,
                 hot: hot || false,
-                discount: discount ? parseInt(discount) : null
+                discount: discount ? parseInt(discount) : null,
+                displayOrder: displayOrder ? parseInt(displayOrder) : 0
             },
             include: {
                 category: true
