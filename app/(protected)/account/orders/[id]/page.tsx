@@ -2,8 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Package, Clock, CheckCircle2, Loader2, ArrowLeft, MapPin, Phone, CreditCard, ShoppingBag, Store } from 'lucide-react';
+import { Package, Clock, CheckCircle2, Loader2, ArrowLeft, MapPin, Phone, CreditCard, ShoppingBag, Store, XCircle, Star } from 'lucide-react';
 import Link from 'next/link';
+
+const getStatusInfo = (status: string) => {
+    switch (status) {
+        case 'pending': return { label: 'En attente', color: 'bg-yellow-400', text: 'text-yellow-400' };
+        case 'confirmed': return { label: 'Confirmée', color: 'bg-blue-500', text: 'text-blue-500' };
+        case 'preparing': return { label: 'En préparation', color: 'bg-purple-500', text: 'text-purple-500' };
+        case 'ready': return { label: 'Prête', color: 'bg-teal-500', text: 'text-teal-500' };
+        case 'out_for_delivery': return { label: 'En livraison', color: 'bg-orange-500', text: 'text-orange-500' };
+        case 'delivered': return { label: 'Terminée', color: 'bg-green-500', text: 'text-green-500' };
+        case 'cancelled': return { label: 'Annulée', color: 'bg-red-500', text: 'text-red-500' };
+        default: return { label: status, color: 'bg-gray-500', text: 'text-gray-500' };
+    }
+};
 
 export default function OrderDetailsPage() {
     const params = useParams();
@@ -13,20 +26,6 @@ export default function OrderDetailsPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Fetch specific order
-        // Note: You might need to adjust your API to support fetching by single ID/Number
-        // For now, filtering from the list API or creating a new endpoint might be needed.
-        // Assuming /api/orders?id=XYZ or similar, but typically REST is /api/orders/ID
-        // Let's assume we filter client side from the list or add a new route.
-        // Actually, the best way without backend changes is to fetch all and find, OR add the endpoint.
-        // Let's try to add the endpoint or update the existing one to handle single ID?
-        // Wait, the existing GET /api/orders returns a list.
-        // I will update /api/orders to support ?orderNumber or ?id but for now let's try fetching the list and filtering (inefficient but safe for now)
-        // BETTER: Create /api/orders/[id]/route.ts
-        // BUT: I want to avoid creating too many files if I can help it.
-        // Let's modify the GET in /api/orders/route.ts to accept 'id' param?
-        // Actually, let's just fetch all and filter for now to avoid breaking the backend, or better yet, I will update /api/orders/route.ts to support single fetch.
-
         fetch(`/api/orders`)
             .then(res => res.json())
             .then(data => {
@@ -68,7 +67,8 @@ export default function OrderDetailsPage() {
         );
     }
 
-    const isPickup = order.deliveryFee === 0 && order.deliveryInfo?.address === 'Retrait sur Place';
+    const isPickup = (order.orderType === 'pickup') || (order.deliveryFee === 0 && order.deliveryInfo?.address === 'Retrait sur Place');
+    const statusInfo = getStatusInfo(order.status);
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-4xl mx-auto">
@@ -85,12 +85,12 @@ export default function OrderDetailsPage() {
                     </h1>
                 </div>
 
-                <div className={`px-6 py-3 rounded-2xl border-2 self-start md:self-auto flex items-center gap-3 ${order.status === 'delivered' ? 'bg-green-500/10 border-green-500 text-green-500' :
-                        order.status === 'cancelled' ? 'bg-red-500/10 border-red-500 text-red-500' :
-                            'bg-yellow-400/10 border-yellow-400 text-yellow-400'
+                <div className={`px-6 py-3 rounded-2xl border-2 self-start md:self-auto flex items-center gap-3 ${order.status === 'delivered' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
+                    order.status === 'cancelled' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
+                        'bg-yellow-400/10 border-yellow-400/20 text-yellow-400'
                     }`}>
-                    {order.status === 'delivered' ? <CheckCircle2 className="w-5 h-5" /> : <Loader2 className="w-5 h-5 animate-spin" />}
-                    <span className="font-black uppercase text-xs tracking-widest">{order.status}</span>
+                    {order.status === 'delivered' ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <Loader2 className="w-5 h-5 animate-spin" />}
+                    <span className="font-black uppercase text-xs tracking-widest">{statusInfo.label}</span>
                 </div>
             </div>
 
@@ -109,13 +109,13 @@ export default function OrderDetailsPage() {
                             {order.cart.map((item: any, idx: number) => (
                                 <div key={idx} className="flex justify-between items-start border-b border-gray-800 pb-6 last:border-0 last:pb-0">
                                     <div className="space-y-1">
-                                        <p className="text-white font-bold text-sm uppercase tracking-wide">
+                                        <p className="text-white font-bold text-sm uppercase tracking-wide text-left">
                                             <span className="text-yellow-400 mr-2">{item.quantity}x</span>
                                             {item.itemName}
                                         </p>
-                                        {item.selectedSize && <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest ml-7">{item.selectedSize}</p>}
+                                        {item.selectedSize && <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest ml-7 text-left">{item.selectedSize}</p>}
                                         {item.choices && (
-                                            <div className="ml-7 text-xs text-gray-500 space-y-1">
+                                            <div className="ml-7 text-xs text-gray-500 space-y-1 text-left">
                                                 {Object.entries(item.choices).map(([key, value]: any) => (
                                                     <p key={key}><span className="opacity-50">{key}:</span> {value}</p>
                                                 ))}
@@ -131,25 +131,46 @@ export default function OrderDetailsPage() {
                     </div>
 
                     {/* Timeline / Progress */}
-                    {/* Assuming simple timeline for now */}
                     <div className="bg-gray-900/60 p-8 rounded-[2.5rem] border border-gray-800 backdrop-blur-xl">
                         <h2 className="text-xl font-black text-white mb-8 flex items-center gap-4 uppercase italic tracking-widest">
                             <Clock className="w-5 h-5 text-yellow-400" />
                             Historique
                         </h2>
-                        <div className="relative pl-4 border-l-2 border-gray-800 space-y-8">
-                            <div className="relative">
-                                <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-yellow-400 border-2 border-black ring-2 ring-gray-900"></div>
-                                <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">{new Date(order.createdAt).toLocaleString('fr-FR')}</p>
-                                <p className="text-white font-bold text-sm">Commande reçue</p>
-                            </div>
-                            {order.status !== 'pending' && (
-                                <div className="relative">
-                                    <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full border-2 border-black ring-2 ring-gray-900 ${order.status === 'cancelled' ? 'bg-red-500' : 'bg-yellow-400'}`}></div>
-                                    <p className="text-white font-bold text-sm uppercase">{order.status}</p>
-                                </div>
-                            )}
+                        <div className="relative pl-6 border-l-2 border-gray-800 space-y-10">
+                            {[
+                                { id: 'pending', label: 'Commande reçue', time: order.createdAt },
+                                { id: 'confirmed', label: 'Confirmée', time: order.confirmedAt },
+                                { id: 'preparing', label: 'En préparation', time: order.preparingAt },
+                                { id: 'ready', label: 'Prête', time: order.readyAt },
+                                { id: 'out_for_delivery', label: isPickup ? 'Prêt pour retrait' : 'En livraison', time: order.outForDeliveryAt },
+                                { id: 'delivered', label: isPickup ? 'Récupérée / Terminé' : 'Livrée / Terminé', time: order.deliveredAt },
+                                { id: 'cancelled', label: 'Annulée', time: order.cancelledAt }
+                            ].filter(step => step.time).map((step, idx, arr) => {
+                                const isLast = idx === arr.length - 1;
+                                const info = getStatusInfo(step.id);
+                                return (
+                                    <div key={idx} className="relative">
+                                        <div className={`absolute -left-[31px] top-1 w-4 h-4 rounded-full border-2 border-black ring-2 ring-gray-900 ${isLast ? info.color : 'bg-gray-700'}`}></div>
+                                        <div className="text-left">
+                                            <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest mb-1">{new Date(step.time).toLocaleString('fr-FR')}</p>
+                                            <p className={`font-bold text-sm uppercase italic tracking-tight ${isLast ? 'text-white' : 'text-gray-500'}`}>{step.label}</p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
+
+                        {order.status === 'cancelled' && order.cancelMessage && (
+                            <div className="mt-10 p-6 bg-red-500/5 border border-red-500/10 rounded-3xl text-left">
+                                <p className="text-red-500 font-black uppercase text-[10px] tracking-widest mb-2 flex items-center gap-2">
+                                    <XCircle className="w-4 h-4" />
+                                    Motif d'annulation
+                                </p>
+                                <p className="text-gray-400 font-bold text-xs italic leading-relaxed">
+                                    "{order.cancelMessage}"
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                 </div>
@@ -210,6 +231,19 @@ export default function OrderDetailsPage() {
                             <span className="font-black uppercase text-xs tracking-widest mb-1">Total Payé</span>
                             <span className="text-4xl font-black italic tracking-tighter">{order.finalTotal.toFixed(1)} <span className="text-sm not-italic opacity-40">DT</span></span>
                         </div>
+
+                        {/* Loyalty Points Section */}
+                        {order.status !== 'cancelled' && (
+                            <div className="mt-8 pt-6 border-t border-black/10 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="p-2 bg-black/10 rounded-lg">
+                                        <Star className="w-4 h-4 fill-current" />
+                                    </div>
+                                    <span className="font-bold uppercase text-[10px] tracking-widest opacity-60">Points Fidélité</span>
+                                </div>
+                                <span className="font-black text-xl italic">+{Math.floor(order.finalTotal)}</span>
+                            </div>
+                        )}
 
                         <div className="mt-6 pt-6 border-t border-black/10 text-center">
                             <p className="font-bold uppercase text-[10px] tracking-widest opacity-60">

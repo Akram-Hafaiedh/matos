@@ -12,7 +12,9 @@ export async function GET() {
                 id: true,
                 name: true,
                 image: true,
-                loyaltyPoints: true
+                loyaltyPoints: true,
+                selectedFrame: true,
+                selectedBg: true
             },
             orderBy: {
                 loyaltyPoints: 'desc'
@@ -20,11 +22,11 @@ export async function GET() {
             take: 10
         });
 
-        // Add some mock "winners" if data is low
+        // Add some mock "winners" if data is low - reflecting site launch
         const hallOfFame = [
-            { month: 'Janvier 2026', winner: 'Yassine K.', points: 4250, award: 'Champion Platine' },
-            { month: 'Décembre 2025', winner: 'Sonia M.', points: 3890, award: 'Elite Gold' },
-            { month: 'Novembre 2025', winner: 'Mehdi R.', points: 3560, award: 'Fidèle du mois' },
+            { month: 'Janvier 2026', winner: 'Bientôt...', points: 0, award: 'Lancement du Club Matos' },
+            { month: 'Décembre 2025', winner: 'Beta Test', points: 0, award: 'Période de Rodage' },
+            { month: 'Novembre 2025', winner: 'Pré-Ouverture', points: 0, award: 'Bienvenue au Club' },
         ];
 
         return NextResponse.json({

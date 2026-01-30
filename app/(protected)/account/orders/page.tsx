@@ -1,8 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Package, Clock, CheckCircle2, Loader2, ChevronRight, ShoppingBag, Search, Filter, ChevronLeft } from 'lucide-react';
+import { Package, Clock, CheckCircle2, Loader2, ChevronRight, ShoppingBag, Search, Filter, ChevronLeft, Store, Truck, XCircle, Star } from 'lucide-react';
 import Link from 'next/link';
+
+const getStatusLabel = (status: string) => {
+    switch (status) {
+        case 'pending': return 'En attente';
+        case 'confirmed': return 'Confirmée';
+        case 'preparing': return 'En préparation';
+        case 'ready': return 'Prête';
+        case 'out_for_delivery': return 'En livraison';
+        case 'delivered': return 'Terminée';
+        case 'cancelled': return 'Annulée';
+        default: return status;
+    }
+};
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState<any[]>([]);
@@ -72,16 +85,23 @@ export default function OrdersPage() {
             </div>
 
             <div className="flex flex-wrap gap-2 pb-4">
-                {['all', 'pending', 'confirmed', 'delivering', 'delivered', 'cancelled'].map((s) => (
+                {[
+                    { val: 'all', label: 'Toutes' },
+                    { val: 'pending', label: 'En attente' },
+                    { val: 'confirmed', label: 'Confirmées' },
+                    { val: 'preparing', label: 'En préparation' },
+                    { val: 'delivered', label: 'Terminées' },
+                    { val: 'cancelled', label: 'Annulées' }
+                ].map((s) => (
                     <button
-                        key={s}
-                        onClick={() => { setStatus(s); setPage(1); }}
-                        className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${status === s
+                        key={s.val}
+                        onClick={() => { setStatus(s.val); setPage(1); }}
+                        className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${status === s.val
                             ? 'bg-yellow-400 border-yellow-400 text-gray-950 shadow-lg shadow-yellow-400/10'
                             : 'bg-gray-900/50 border-gray-800 text-gray-500 hover:border-gray-700'
                             }`}
                     >
-                        {s === 'all' ? 'Tous' : s}
+                        {s.label}
                     </button>
                 ))}
             </div>
@@ -102,21 +122,24 @@ export default function OrdersPage() {
                     </Link>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-6 text-left">
                     {orders.map((order) => (
                         <Link href={`/account/orders/${order.orderNumber}`} key={order.id} className="block bg-gray-900/60 p-8 rounded-[2.5rem] border border-gray-800 hover:border-yellow-400/30 transition-all duration-500 group relative overflow-hidden backdrop-blur-xl">
-                            {/* ... previous content ... */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 blur-[60px] -mr-16 -mt-16 pointer-events-none group-hover:bg-yellow-400/10 transition-all duration-500"></div>
 
-                            <div className="flex flex-col md:flex-row justify-between gap-8 relative z-10 text-left">
+                            <div className="flex flex-col md:flex-row justify-between gap-8 relative z-10">
                                 <div className="space-y-6 flex-1">
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex flex-wrap items-center gap-4">
                                         <div className="bg-yellow-400/10 text-yellow-500 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-yellow-400/20">
-                                            {order.orderNumber}
+                                            #{order.orderNumber}
                                         </div>
                                         <div className="flex items-center gap-2 text-gray-500 text-[10px] font-black uppercase tracking-widest">
-                                            <Clock className="w-3 h-3" />
+                                            <Clock className="w-3.5 h-3.5" />
                                             {new Date(order.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+                                        </div>
+                                        <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border-2 border-opacity-20 ${order.orderType === 'pickup' ? 'border-pink-500 bg-pink-500/10 text-pink-400' : 'border-blue-500 bg-blue-500/10 text-blue-400'}`}>
+                                            {order.orderType === 'pickup' ? <Store className="w-3 h-3" /> : <Truck className="w-3 h-3" />}
+                                            {order.orderType === 'pickup' ? 'A Emporter' : 'Livraison'}
                                         </div>
                                     </div>
 
@@ -127,18 +150,36 @@ export default function OrdersPage() {
                                             </span>
                                         ))}
                                     </div>
+
+                                    {order.status === 'cancelled' && order.cancelMessage && (
+                                        <div className="p-4 bg-red-500/5 border border-red-500/10 rounded-2xl max-w-md">
+                                            <p className="text-[8px] font-black text-red-500 uppercase tracking-widest mb-1 flex items-center gap-1">
+                                                <XCircle className="w-2.5 h-2.5" />
+                                                Motif d'annulation
+                                            </p>
+                                            <p className="text-gray-500 font-bold text-[10px] italic line-clamp-1">"{order.cancelMessage}"</p>
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div className="flex flex-row md:flex-col justify-between md:items-end gap-4 border-t md:border-t-0 md:border-l border-gray-800/50 pt-6 md:pt-0 md:pl-8">
-                                    <div className="text-3xl font-black text-white italic tracking-tighter">{order.finalTotal.toFixed(1)} <span className="text-sm uppercase not-italic text-yellow-400/50">DT</span></div>
+                                <div className="flex flex-row md:flex-col justify-between md:items-end gap-4 border-t md:border-t-0 md:border-l border-gray-800/50 pt-6 md:pt-0 md:pl-8 min-w-[180px]">
+                                    <div className="space-y-1 text-right">
+                                        <div className="text-3xl font-black text-white italic tracking-tighter">{order.finalTotal.toFixed(1)} <span className="text-sm uppercase not-italic text-yellow-400/50">DT</span></div>
+                                        {order.status !== 'cancelled' && (
+                                            <div className="text-[10px] font-black text-yellow-500 uppercase tracking-widest flex items-center justify-end gap-1.5 bg-yellow-400/5 py-1 px-3 rounded-lg border border-yellow-400/10 w-fit ml-auto">
+                                                <Star className="w-3 h-3" />
+                                                +{Math.floor(order.finalTotal)} Points
+                                            </div>
+                                        )}
+                                    </div>
                                     <div className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border ${order.status === 'delivered'
                                         ? 'bg-green-500/10 text-green-400 border-green-500/20'
                                         : order.status === 'cancelled'
                                             ? 'bg-red-500/10 text-red-500 border-red-500/20'
                                             : 'bg-yellow-400/10 text-yellow-500 border-yellow-400/20'
                                         }`}>
-                                        {order.status === 'delivered' ? <CheckCircle2 className="w-3 h-3" /> : <Loader2 className="w-3 h-3 animate-spin" />}
-                                        {order.status}
+                                        {order.status === 'delivered' ? <CheckCircle2 className="w-3 h-3" /> : (order.status === 'cancelled' ? <XCircle className="w-3 h-3" /> : <Loader2 className="w-3 h-3 animate-spin" />)}
+                                        {getStatusLabel(order.status)}
                                     </div>
                                 </div>
                             </div>
