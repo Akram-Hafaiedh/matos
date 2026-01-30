@@ -22,6 +22,8 @@
   --animate-spin-slow: spin 10s linear infinite;
   --animate-fade-in-up: fade-in-up 1s ease-out forwards;
   --animate-scroll-indicator: scroll-indicator 2s cubic-bezier(0.76, 0, 0.24, 1) infinite;
+  --animate-slide-in-right: slide-in-right 0.5s ease-out forwards;
+  --animate-slide-out-right: slide-out-right 0.5s ease-in forwards;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -153,6 +155,28 @@ body {
 
   100% {
     transform: translateY(100%);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
   }
 }
 

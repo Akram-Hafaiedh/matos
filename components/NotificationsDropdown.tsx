@@ -34,11 +34,29 @@ export default function NotificationsDropdown() {
 
     const markAllAsRead = async () => {
         try {
-            await fetch('/api/notifications/mark-read', { method: 'POST' });
+            await fetch('/api/notifications', {
+                method: 'PATCH',
+                body: JSON.stringify({ all: true })
+            });
             setUnreadNotifications(0);
             setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
         } catch (error) {
             console.error('Failed to mark notifications as read');
+        }
+    };
+
+    const markRead = async (e: React.MouseEvent, id: number) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+            await fetch('/api/notifications', {
+                method: 'PATCH',
+                body: JSON.stringify({ id })
+            });
+            setUnreadNotifications(prev => Math.max(0, prev - 1));
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+        } catch (error) {
+            console.error('Failed to mark notification as read');
         }
     };
 
@@ -80,16 +98,25 @@ export default function NotificationsDropdown() {
                                         key={notif.id}
                                         href={notif.link || '/account/notifications'}
                                         onClick={() => setIsNotifOpen(false)}
-                                        className={`flex items-start gap-4 px-6 py-4 hover:bg-white/5 transition border-b border-gray-900 last:border-0 ${!notif.isRead ? 'bg-yellow-400/5' : ''}`}
+                                        className={`flex items-start gap-4 px-6 py-4 hover:bg-white/5 transition border-b border-gray-900 last:border-0 relative group/item ${!notif.isRead ? 'bg-yellow-400/5' : ''}`}
                                     >
                                         <div className={`p-2 rounded-xl flex-shrink-0 ${notif.type === 'ticket_response' ? 'bg-blue-500/10 text-blue-400' : 'bg-yellow-400/10 text-yellow-400'}`}>
                                             <Bell size={16} />
                                         </div>
-                                        <div className="space-y-1">
+                                        <div className="space-y-1 flex-1 pr-6">
                                             <p className="text-xs font-black text-white leading-tight">{notif.title}</p>
                                             <p className="text-[10px] text-gray-500 font-bold leading-relaxed line-clamp-2">{notif.message}</p>
                                             <p className="text-[9px] text-gray-600 font-black uppercase tracking-widest">{new Date(notif.createdAt).toLocaleDateString()}</p>
                                         </div>
+                                        {!notif.isRead && (
+                                            <button
+                                                onClick={(e) => markRead(e, notif.id)}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-yellow-400/20 rounded-full opacity-0 group-hover/item:opacity-100 transition-all text-yellow-400"
+                                                title="Marquer comme lu"
+                                            >
+                                                <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full shadow-lg shadow-yellow-400"></div>
+                                            </button>
+                                        )}
                                     </Link>
                                 ))
                             ) : (
@@ -104,7 +131,7 @@ export default function NotificationsDropdown() {
                         <Link
                             href="/account/notifications"
                             onClick={() => setIsNotifOpen(false)}
-                            className="block py-4 text-center text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] hover:text-white hover:bg-white/5 transition border-t border-gray-800"
+                            className="block py-4 text-center text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] hover:text-white hover:bg-white/5 transition border-t border-gray-800 font-sans"
                         >
                             Voir tout
                         </Link>
