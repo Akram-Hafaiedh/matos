@@ -32,7 +32,9 @@ export async function GET(request: Request) {
         });
 
         // Calculate rank for each reviewer
-        const enrichedReviews = await Promise.all(reviews.map(async (review) => {
+        // We do this sequentially or in limited batches to avoid overwhelming the database proxy with 50+ concurrent queries
+        const enrichedReviews = [];
+        for (const review of reviews) {
             const rank = await prisma.user.count({
                 where: {
                     loyaltyPoints: {
@@ -40,11 +42,12 @@ export async function GET(request: Request) {
                     }
                 }
             }) + 1;
-            return {
+
+            enrichedReviews.push({
                 ...review,
                 user: { ...review.user, rank }
-            };
-        }));
+            });
+        }
 
         return NextResponse.json(enrichedReviews);
     } catch (error) {
