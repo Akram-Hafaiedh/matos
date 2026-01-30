@@ -80,7 +80,7 @@ export async function PATCH(
         const { status } = body;
 
         // Validate status
-        const validStatuses = ['pending', 'confirmed', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'];
+        const validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
         if (!validStatuses.includes(status)) {
             return NextResponse.json({
                 success: false,
@@ -93,6 +93,14 @@ export async function PATCH(
             status,
             updatedAt: new Date()
         };
+
+        // Set status-specific timestamps
+        if (status === 'confirmed') updateData.confirmedAt = new Date();
+        else if (status === 'preparing') updateData.preparingAt = new Date();
+        else if (status === 'ready') updateData.readyAt = new Date();
+        else if (status === 'out_for_delivery') updateData.outForDeliveryAt = new Date();
+        else if (status === 'delivered') updateData.deliveredAt = new Date();
+        else if (status === 'cancelled') updateData.cancelledAt = new Date();
 
 
         const orderId = parseInt(orderIdStr);
@@ -110,6 +118,7 @@ export async function PATCH(
                 'pending': 'en attente',
                 'confirmed': 'confirmée',
                 'preparing': 'en préparation',
+                'ready': 'prête pour retrait',
                 'out_for_delivery': 'en livraison',
                 'delivered': 'livrée',
                 'cancelled': 'annulée'

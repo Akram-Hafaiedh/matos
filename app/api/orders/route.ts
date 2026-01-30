@@ -1,4 +1,4 @@
-// app/api/orders/route.ts
+// app/api/orders/route.ts - Reload trigger
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '../auth/[...nextauth]/route';
@@ -7,10 +7,11 @@ import { prisma } from '@/lib/prisma';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { cart, deliveryInfo, paymentMethod, totalPrice, deliveryFee, finalTotal } = body;
+        const { cart, deliveryInfo, paymentMethod, totalPrice, deliveryFee, finalTotal, orderType } = body;
 
         // Generate unique order number
-        const orderNumber = `MAT${Date.now().toString().slice(-6)}`;
+        // Generate unique order number - More robust than just slice(-6)
+        const orderNumber = `MAT${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
 
         const session = await getServerSession(authOptions);
         const userId = session?.user ? (session.user as any).id : null;
@@ -43,10 +44,11 @@ export async function POST(request: NextRequest) {
         });
 
         // Create order in database
+        // Create order in database
         const order = await prisma.order.create({
             data: {
                 orderNumber,
-                userId,
+                ...(userId ? { user: { connect: { id: userId } } } : {}),
                 customerName: deliveryInfo.fullName,
                 customerPhone: deliveryInfo.phone,
                 customerEmail: deliveryInfo.email || null,
@@ -54,8 +56,15 @@ export async function POST(request: NextRequest) {
                 city: deliveryInfo.city,
                 notes: deliveryInfo.notes || null,
                 deliveryTime: deliveryInfo.deliveryTime,
-                scheduledTime: deliveryInfo.scheduledTime ? new Date(deliveryInfo.scheduledTime) : null,
+                scheduledTime: deliveryInfo.scheduledTime && deliveryInfo.deliveryTime === 'scheduled' ? (() => {
+                    const [hours, minutes] = deliveryInfo.scheduledTime.split(':').map(Number);
+                    if (isNaN(hours) || isNaN(minutes)) return null;
+                    const d = new Date();
+                    d.setHours(hours, minutes, 0, 0);
+                    return d;
+                })() : null,
                 paymentMethod,
+                orderType: orderType || 'delivery',
                 subtotal: totalPrice,
                 deliveryFee,
                 totalAmount: finalTotal,
@@ -99,11 +108,11 @@ export async function POST(request: NextRequest) {
             message: 'Commande créée avec succès'
         }, { status: 201 });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating order:', error);
         return NextResponse.json({
             success: false,
-            error: 'Erreur lors de la création de la commande'
+            error: error.message || 'Erreur lors de la création de la commande'
         }, { status: 500 });
     }
 }
@@ -123,17 +132,19 @@ export async function GET(request: NextRequest) {
 
         const isAdmin = (session.user as any)?.role === 'admin';
         const { searchParams } = new URL(request.url);
+        const search = searchParams.get('search');
         const status = searchParams.get('status');
-        const limit = searchParams.get('limit');
-        const userId = searchParams.get('userId'); // Admin can filter by userId
+        const page = parseInt(searchParams.get('page') || '1');
+        const limitParam = searchParams.get('limit');
+        const limit = parseInt(limitParam || '10');
+        const skip = (page - 1) * limit;
+        const userId = searchParams.get('userId');
 
         const where: any = {};
 
-        // If not admin, FORCE filter by own userId
         if (!isAdmin) {
             where.userId = (session.user as any).id;
         } else if (userId) {
-            // Admin can specifically filter by userId if provided
             where.userId = userId;
         }
 
@@ -141,28 +152,36 @@ export async function GET(request: NextRequest) {
             where.status = status;
         }
 
-        const orders = await prisma.order.findMany({
-            where,
-            include: {
-                orderItems: {
-                    include: {
-                        menuItem: true,
-                        promotion: true
+        if (search) {
+            where.orderNumber = { contains: search, mode: 'insensitive' };
+        }
+
+        const [totalItems, orders] = await Promise.all([
+            prisma.order.count({ where }),
+            prisma.order.findMany({
+                where,
+                include: {
+                    orderItems: {
+                        include: {
+                            menuItem: true,
+                            promotion: true
+                        }
+                    },
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true
+                        }
                     }
                 },
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true
-                    }
-                }
-            },
-            orderBy: {
-                createdAt: 'desc'
-            },
-            take: limit ? parseInt(limit) : undefined
-        });
+                orderBy: {
+                    createdAt: 'desc'
+                },
+                skip,
+                take: limit
+            })
+        ]);
 
 
         // Transform orders to match frontend expectations
@@ -183,6 +202,7 @@ export async function GET(request: NextRequest) {
             deliveryFee: order.deliveryFee,
             finalTotal: order.totalAmount,
             status: order.status,
+            orderType: (order as any).orderType,
             deliveryTime: order.deliveryTime,
             scheduledTime: order.scheduledTime,
             createdAt: order.createdAt.toISOString(),
@@ -193,7 +213,12 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
             success: true,
             orders: transformedOrders,
-            count: transformedOrders.length
+            pagination: {
+                totalItems,
+                totalPages: Math.ceil(totalItems / limit),
+                currentPage: page,
+                limit
+            }
         });
 
     } catch (error) {
