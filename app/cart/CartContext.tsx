@@ -11,12 +11,15 @@ interface CartContextType {
     clearCart: () => void;
     getTotalPrice: () => number;
     getTotalItems: () => number;
+    orderType: 'delivery' | 'pickup';
+    setOrderType: (type: 'delivery' | 'pickup') => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
     const [cart, setCart] = useState<{ [key: string]: CartItem }>({});
+    const [orderType, setOrderType] = useState<'delivery' | 'pickup'>('delivery');
 
     const addToCart = (item: any, type: 'menuItem' | 'promotion', size?: string, choices?: any) => {
         // Create unique key
@@ -102,7 +105,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 removeFromCart,
                 clearCart,
                 getTotalPrice,
-                getTotalItems
+                getTotalItems,
+                orderType,
+                setOrderType
             }}
         >
             {children}
