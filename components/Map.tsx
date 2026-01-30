@@ -46,7 +46,7 @@ export default function Map() {
     const position: [number, number] = [settings.lat || 36.8391486, settings.lng || 10.3200549];
 
     return (
-        <div className="w-full h-[500px] rounded-[3rem] overflow-hidden border-2 border-gray-800 shadow-3xl bg-gray-900/50 relative">
+        <div className="w-full h-[500px] md:h-[600px] rounded-[3.5rem] overflow-hidden border border-white/5 shadow-3xl bg-gray-950 relative group">
             <MapContainer
                 key={`${position[0]}-${position[1]}`}
                 center={position}
@@ -60,13 +60,16 @@ export default function Map() {
                 />
                 <Marker position={position}>
                     <Popup>
-                        <div className="text-gray-900 font-bold">
-                            Mato's Carthage<br />
-                            <span className="text-xs font-normal">{settings.address}</span>
+                        <div className="text-gray-900 font-bold p-1">
+                            <h3 className="text-sm font-black uppercase italic tracking-tighter text-yellow-500">Mato's Carthage</h3>
+                            <p className="text-[10px] font-medium leading-tight mt-1">{settings.address}</p>
                         </div>
                     </Popup>
                 </Marker>
             </MapContainer>
+
+            {/* Gloss Overlay */}
+            <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-white/10 rounded-[3.5rem] z-[10]"></div>
         </div>
     );
 }

@@ -43,7 +43,11 @@
 - [x] Fix Admin Dashboard Loading Screen (Yellow loader on black bg)
 - [x] Move User Dropdown to Global Header (Admin Layout)
 - [x] **Admin Account Page**: Allow admin to modify address/password.
-- [-] **Admin Impersonation**: Allow admin to login as a client to debug issues from their POV. management
+- [x] **New /cart Page**: Dedicated mobile-optimized cart experience.
+- [x] **Home Page Map**: Full-width interactive Leaflet map integration (Carthage).
+- [x] **Support Enhanced**: Typing indicators and Paste-to-upload functionality.
+- [ ] **Admin Global Settings**: Manage address, phone, and coordinates from dashboard.
+- [ ] **Admin Impersonation**: Allow admin to login as a client to debug issues.
 
 ## Future Roadmap Items
 - [ ] SMS notifications for order status

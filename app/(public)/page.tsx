@@ -24,7 +24,21 @@ export default function HomePage() {
   const [promoSlide, setPromoSlide] = useState(0);
   const [promos, setPromos] = useState<any[]>([]);
   const [mapVisible, setMapVisible] = useState(false);
+  const [settings, setSettings] = useState<any>(null);
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        if (data) setSettings(data);
+      } catch (error) {
+        console.error("Error loading settings:", error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     const fetchPromos = async () => {
@@ -109,72 +123,119 @@ export default function HomePage() {
   return (
     <main>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-black">
-        <div className="relative h-screen">
-          {heroSlides.map((slide, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
-                }`}
-            >
-              {/* Background Image */}
-              <div className="absolute inset-0">
-                <Image
-                  src={slide.image}
-                  alt={slide.title}
-                  fill
-                  className="object-cover"
-                  priority={index === 0}
-                  sizes="100vw"
-                />
-                <div className={`absolute inset-0 bg-gradient-to-br ${slide.color}`}></div>
-                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent"></div>
-              </div>
+      <section className="relative h-screen min-h-[700px] overflow-hidden bg-black flex items-center justify-center">
+        {heroSlides.map((slide, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-all duration-[2000ms] ease-out ${index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-110 pointer-events-none'
+              }`}
+          >
+            {/* Cinematic Background */}
+            <div className="absolute inset-0">
+              <Image
+                src={slide.image}
+                alt={slide.title}
+                fill
+                className="object-cover brightness-[0.4] contrast-[1.2] scale-105 group-hover:scale-110 transition-transform duration-[10000ms]"
+                priority={index === 0}
+                sizes="100vw"
+              />
+              {/* Dynamic Overlay Gradients */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/60"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-black/80"></div>
 
-              {/* Content */}
-              <div className="relative h-full flex items-center justify-center z-10 px-4">
-                <div className="text-center space-y-8 max-w-5xl">
-                  <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-yellow-400 text-gray-900 font-black text-sm uppercase tracking-widest shadow-2xl animate-bounce-slow">
-                    {slide.price}
+              {/* Technical Aesthetic Overlays */}
+              <div className="absolute inset-0 opacity-20 pointer-events-none">
+                <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                <div className="absolute left-1/4 top-0 w-px h-full bg-gradient-to-b from-transparent via-white/10 to-transparent"></div>
+                <div className="absolute right-1/4 top-0 w-px h-full bg-gradient-to-b from-transparent via-white/10 to-transparent"></div>
+              </div>
+            </div>
+
+            {/* Content Container */}
+            <div className="relative h-full container mx-auto px-4 flex flex-col items-center justify-center z-20">
+              <div className="space-y-12 text-center max-w-6xl">
+                {/* Floating Tag */}
+                <div className={`transition-all duration-1000 delay-300 ${index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+                  <div className="inline-flex items-center gap-3 px-8 py-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-3xl shadow-2xl">
+                    <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+                    <span className="text-yellow-400 font-black text-xs uppercase tracking-[0.4em]">{slide.price}</span>
                   </div>
-                  <h1 className="text-6xl md:text-[10rem] font-black text-white leading-none tracking-tighter drop-shadow-2xl italic">
-                    {slide.title}
+                </div>
+
+                {/* Hero Title */}
+                <div className={`space-y-4 transition-all duration-1000 delay-500 ${index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                  <h1 className="text-7xl md:text-[12rem] font-[1000] text-white leading-[0.85] tracking-[-0.05em] uppercase italic group">
+                    <span className="block">{slide.title.split(' ')[0]}</span>
+                    <span className="block text-transparent bg-clip-text bg-gradient-to-b from-yellow-400 to-orange-600 drop-shadow-[0_0_30px_rgba(250,204,21,0.2)]">
+                      {slide.title.split(' ').slice(1).join(' ')}
+                    </span>
                   </h1>
-                  <p className="text-2xl md:text-3xl text-white/70 font-bold max-w-2xl mx-auto line-clamp-2">
+                </div>
+
+                {/* Subtitle with High-End Layout */}
+                <div className={`flex flex-col md:flex-row items-center justify-center gap-8 transition-all duration-1000 delay-700 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}>
+                  <div className="hidden md:block w-24 h-px bg-white/10"></div>
+                  <p className="text-xl md:text-2xl text-gray-400 font-bold max-w-2xl uppercase tracking-widest leading-relaxed italic">
                     {slide.subtitle}
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
-                    <Link
-                      href="/menu"
-                      className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-12 py-6 rounded-2xl font-black text-xl transition-all shadow-2xl shadow-yellow-400/20 flex items-center justify-center gap-3 group active:scale-95"
-                    >
-                      Commander Maintenant
-                      <ChevronRight className="group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                    <Link
-                      href="/promos"
-                      className="bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 text-white px-12 py-6 rounded-2xl font-black text-xl transition-all shadow-2xl active:scale-95"
-                    >
-                      Nos Offres
-                    </Link>
-                  </div>
+                  <div className="hidden md:block w-24 h-px bg-white/10"></div>
+                </div>
+
+                {/* Glassmorphism Actions */}
+                <div className={`flex flex-col sm:flex-row gap-6 justify-center pt-12 transition-all duration-1000 delay-1000 ${index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                  <Link
+                    href="/menu"
+                    className="relative group bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-16 py-8 rounded-[2rem] font-black text-xl transition-all shadow-[0_20px_40px_-15px_rgba(250,204,21,0.4)] active:scale-95 flex items-center justify-center gap-4 overflow-hidden"
+                  >
+                    <span className="relative z-10 uppercase tracking-tighter">Signature Menu</span>
+                    <ChevronRight className="relative z-10 w-6 h-6 group-hover:translate-x-2 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  </Link>
+
+                  <Link
+                    href="/promos"
+                    className="group bg-white/5 backdrop-blur-3xl border-2 border-white/10 hover:border-yellow-400/50 text-white px-16 py-8 rounded-[2rem] font-black text-xl transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-4"
+                  >
+                    <span className="uppercase tracking-tighter group-hover:text-yellow-400 transition-colors">Offres Limitées</span>
+                    <Gift className="w-5 h-5 text-gray-500 group-hover:text-yellow-400 transition-all group-hover:scale-110" />
+                  </Link>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
 
-        {/* Slide indicators */}
-        <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 flex gap-4 z-20">
+        {/* Ambient Page Glows */}
+        <div className="absolute top-0 left-0 w-full h-[30vh] bg-gradient-to-b from-black to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-full h-[30vh] bg-gradient-to-t from-black to-transparent z-10 pointer-events-none"></div>
+
+        {/* Cinematic Indicators */}
+        <div className="absolute bottom-20 left-12 flex flex-col gap-6 z-30">
           {heroSlides.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`h-2 rounded-full transition-all duration-500 ${index === currentSlide ? 'bg-yellow-400 w-16' : 'bg-white/20 w-4'
-                }`}
+              className="group relative flex items-center gap-4"
               aria-label={`Go to slide ${index + 1}`}
-            />
+            >
+              <div className={`h-1.5 transition-all duration-700 rounded-full ${index === currentSlide ? 'bg-yellow-400 w-12' : 'bg-white/20 w-4 group-hover:bg-white/40'}`} />
+              <span className={`text-[10px] font-black tracking-[0.3em] uppercase transition-all duration-500 ${index === currentSlide ? 'text-yellow-400 translate-x-0 opacity-100' : 'text-white/0 -translate-x-4 opacity-0 pointer-events-none'}`}>
+                0{index + 1}
+              </span>
+            </button>
           ))}
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-12 right-12 z-30 hidden lg:flex flex-col items-center gap-6 group">
+          <div className="[writing-mode:vertical-lr] text-[10px] font-black text-gray-600 uppercase tracking-[0.5em] group-hover:text-yellow-400 transition-colors cursor-default">
+            Explore Mato's Spirit
+          </div>
+          <div className="w-px h-24 bg-gradient-to-b from-yellow-400 via-yellow-400/20 to-transparent relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1/2 bg-white animate-scroll-indicator"></div>
+          </div>
         </div>
       </section>
 
@@ -463,47 +524,31 @@ export default function HomePage() {
               <div className="w-12 h-1 bg-gradient-to-l from-transparent to-yellow-400 rounded-full"></div>
             </div>
             <h2 className="text-6xl md:text-9xl font-black text-white italic tracking-tighter uppercase leading-none">
-              Venez <span className="text-transparent bg-clip-text bg-gradient-to-b from-yellow-400 to-orange-600">Nous Voir</span>
+              Venez <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-yellow-400 to-orange-600">Nous Voir</span>
             </h2>
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-gray-500 font-bold uppercase text-[10px] tracking-widest leading-relaxed">
               <span className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full">
                 <Crosshair className="w-3 h-3 text-yellow-400" />
-                36.8529° N, 10.3307° E
+                {settings?.lat ? `${settings.lat.toFixed(4)}° N, ${settings.lng.toFixed(4)}° E` : "36.8391° N, 10.3200° E"}
               </span>
               <span className="hidden md:block w-20 h-px bg-white/10"></span>
-              <span>Le temple de la gourmandise vous attend à Carthage.</span>
+              <span>{settings?.address ? `Retrouvez-nous à ${settings.address}` : "Retrouvez-nous au cœur de Carthage."}</span>
             </div>
           </div>
+        </div>
 
-          <div className={`relative group transition-all duration-1000 delay-300 ${mapVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+        <div className={`w-full max-w-7xl mx-auto px-4 md:px-12 transition-all duration-1000 delay-300 relative z-10 ${mapVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+          <div className="relative group">
             {/* Technical Decorative Elements */}
-            <div className="absolute -top-10 -left-10 w-40 h-40 border-t-2 border-l-2 border-yellow-400/20 rounded-tl-[4rem] pointer-events-none group-hover:border-yellow-400/40 transition-colors"></div>
-            <div className="absolute -bottom-10 -right-10 w-40 h-40 border-b-2 border-r-2 border-yellow-400/20 rounded-br-[4rem] pointer-events-none group-hover:border-yellow-400/40 transition-colors"></div>
+            <div className="absolute -top-10 -left-10 w-40 h-40 border-t-2 border-l-2 border-yellow-400/20 rounded-tl-[3.5rem] pointer-events-none group-hover:border-yellow-400/40 transition-colors"></div>
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 border-b-2 border-r-2 border-yellow-400/20 rounded-br-[3.5rem] pointer-events-none group-hover:border-yellow-400/40 transition-colors"></div>
 
-            <div className="absolute -right-20 top-1/2 -translate-y-1/2 hidden xl:flex flex-col items-center gap-4 opacity-20 group-hover:opacity-40 transition-opacity">
-              <Compass className="w-12 h-12 text-yellow-400 animate-spin-slow" />
-              <div className="[writing-mode:vertical-lr] text-yellow-400 font-black tracking-[0.5em] text-xs uppercase">Navigation System</div>
-            </div>
-
-            {/* Map Container with Scanline and Glow */}
+            {/* Map Container with Glow */}
             <div className="relative rounded-[3.5rem] overflow-hidden border-2 border-white/5 bg-gray-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:border-yellow-400/20 transition-all duration-500 group-hover:shadow-yellow-400/5">
-              {/* Scanline Effect */}
-              <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
-                <div className="w-full h-[200%] bg-gradient-to-b from-transparent via-yellow-400/[0.03] to-transparent animate-scanline"></div>
-              </div>
-
               <div className="w-full relative z-10 transition-transform duration-700 group-hover:scale-[1.01]">
                 <InteractiveMap />
               </div>
-            </div>
-
-            {/* Visual Balance Bottom Labels */}
-            <div className="absolute -bottom-8 left-10 flex gap-8 items-center opacity-30 text-[9px] font-black uppercase text-yellow-400 tracking-[0.3em]">
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></div>
-                Live Status
-              </div>
-              <div>Carthage, Tunisia</div>
             </div>
           </div>
         </div>
