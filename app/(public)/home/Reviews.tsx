@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Star, ShieldCheck, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
+import UserAvatar from '@/components/UserAvatar';
 
 interface User {
     name: string | null;
@@ -122,14 +123,21 @@ export default function Reviews() {
                                         </p>
 
                                         <div className="flex items-center gap-4 pt-6 border-t border-white/5 mt-auto">
-                                            <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform shadow-2xl border border-white/5">
-                                                {review.user.image || '👤'}
+                                            <div className="group-hover:scale-110 transition-transform duration-500">
+                                                <UserAvatar
+                                                    image={(review.user as any).image}
+                                                    name={review.user.name}
+                                                    size="md"
+                                                    rank={(review.user as any).rank}
+                                                    backgroundColor={(review.user as any).selectedBg}
+                                                    className={`w-12 h-12 rounded-xl border-2 transition-all duration-300 ${(review.user as any).selectedFrame || 'border-white/10'}`}
+                                                />
                                             </div>
                                             <div>
                                                 <h4 className="text-white font-black text-lg italic uppercase">{review.user.name || 'Client Anonyme'}</h4>
                                                 <div className="flex items-center gap-1.5 text-yellow-500/80 font-bold text-[8px] uppercase tracking-widest mt-0.5">
                                                     <ShieldCheck className="w-2.5 h-2.5" />
-                                                    {review.user.role}
+                                                    Membre {review.user.role === 'admin' ? 'Admin' : 'Privilège'}
                                                 </div>
                                             </div>
                                         </div>
