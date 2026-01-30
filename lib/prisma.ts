@@ -6,8 +6,6 @@ import { Pool } from "pg";
 const connectionString = process.env.DATABASE_URL!;
 const pool = new Pool({ connectionString });
 
-
-
 // Create the Prisma adapter with the pool
 const adapter = new PrismaPg(pool);
 
@@ -16,9 +14,9 @@ const globalForPrisma = globalThis as unknown as {
     prisma: PrismaClient | undefined;
 };
 
-
-// Initialize PrismaClient with the adapter, or reuse the existing one
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
+// Initialize PrismaClient with the adapter
+// We bypass the global cache temporarily to ensure hot-reloads pick up the NEW generated client
+export const prisma = new PrismaClient({ adapter });
 
 // In development, save the client to the global object to prevent hot-reload issues
 if (process.env.NODE_ENV !== 'production') {
