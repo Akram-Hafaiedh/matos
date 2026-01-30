@@ -3,8 +3,8 @@
 
 import { useCart } from "../../cart/CartContext";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { MapPin, Phone, Clock, CreditCard, ShoppingBag, ArrowLeft, User, AlertCircle, Loader2, ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MapPin, Phone, Clock, CreditCard, ShoppingBag, ArrowLeft, User, AlertCircle, Loader2, ArrowRight, Store, Truck } from "lucide-react";
 
 interface DeliveryInfo {
     fullName: string;
@@ -16,30 +16,51 @@ interface DeliveryInfo {
     scheduledTime?: string;
 }
 
+import { useSession } from "next-auth/react";
+import { useToast } from "../../context/ToastContext";
+
 export default function CheckoutPage() {
     const router = useRouter();
-    const { cart, getTotalPrice, getTotalItems, clearCart } = useCart();
+    const { toast } = useToast();
+    const { data: session } = useSession();
+    const { cart, getTotalPrice, getTotalItems, clearCart, orderType, setOrderType } = useCart();
     const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
-        fullName: '',
-        phone: '',
+        fullName: session?.user?.name || '',
+        phone: session?.user?.phone || '',
         address: '',
         city: 'Tunis',
         notes: '',
         deliveryTime: 'asap'
     });
+
+    useEffect(() => {
+        if (session?.user) {
+            setDeliveryInfo(prev => ({
+                ...prev,
+                fullName: prev.fullName || session.user.name || '',
+                phone: prev.phone || session.user.phone || ''
+            }));
+        }
+    }, [session]);
+
     const [paymentMethod, setPaymentMethod] = useState<'cash' | 'd17'>('cash');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<Partial<DeliveryInfo>>({});
 
     const totalItems = getTotalItems();
     const totalPrice = getTotalPrice();
-    const deliveryFee = totalPrice > 30 ? 0 : 3; // Free delivery over 30 DT
+    const deliveryFee = orderType === 'pickup' ? 0 : (totalPrice > 30 ? 0 : 3); // Free if pickup or > 30 DT
     const finalTotal = totalPrice + deliveryFee;
 
     // Redirect if cart is empty
+    useEffect(() => {
+        if (totalItems === 0 && !isSubmitting) {
+            router.push('/menu');
+        }
+    }, [totalItems, router, isSubmitting]);
+
     if (totalItems === 0) {
-        router.push('/menu');
-        return null;
+        return null; // Don't render anything while redirecting
     }
 
     const validateForm = (): boolean => {
@@ -53,11 +74,14 @@ export default function CheckoutPage() {
         } else if (!/^[0-9]{8}$/.test(deliveryInfo.phone.replace(/\s/g, ''))) {
             newErrors.phone = 'Numéro invalide (8 chiffres requis)';
         }
-        if (!deliveryInfo.address.trim()) {
-            newErrors.address = 'L\'adresse est requise';
-        }
-        if (deliveryInfo.deliveryTime === 'scheduled' && !deliveryInfo.scheduledTime) {
-            newErrors.scheduledTime = 'Veuillez choisir une heure';
+
+        if (orderType === 'delivery') {
+            if (!deliveryInfo.address.trim()) {
+                newErrors.address = 'L\'adresse est requise';
+            }
+            if (deliveryInfo.deliveryTime === 'scheduled' && !deliveryInfo.scheduledTime) {
+                newErrors.scheduledTime = 'Veuillez choisir une heure';
+            }
         }
 
         setErrors(newErrors);
@@ -77,8 +101,13 @@ export default function CheckoutPage() {
             // Prepare order data
             const orderData = {
                 cart,
-                deliveryInfo,
+                deliveryInfo: {
+                    ...deliveryInfo,
+                    address: orderType === 'pickup' ? 'Retrait sur Place' : deliveryInfo.address,
+                    city: orderType === 'pickup' ? 'N/A' : deliveryInfo.city,
+                },
                 paymentMethod,
+                orderType,
                 totalPrice,
                 deliveryFee,
                 finalTotal,
@@ -100,17 +129,22 @@ export default function CheckoutPage() {
             }
 
             // For now, just store in localStorage and redirect
-            localStorage.setItem('lastOrder', JSON.stringify(orderData));
+            localStorage.setItem('lastOrder', JSON.stringify({ ...orderData, orderNumber: result.order.orderNumber }));
 
             // Clear cart
             clearCart();
 
-            // Redirect to confirmation
-            router.push(`/order-confirmation?orderNumber=${result.order.orderNumber}`);
+            // Show success toast
+            toast.success('Commande validée avec succès !');
+
+            // Delay redirect slightly for toast visibility
+            setTimeout(() => {
+                router.push(`/order-confirmation?orderNumber=${result.order.orderNumber}`);
+            }, 1500);
 
         } catch (error) {
             console.error('Error submitting order:', error);
-            alert('Une erreur est survenue. Veuillez réessayer.');
+            toast.error('Une erreur est survenue. Veuillez réessayer.');
         } finally {
             setIsSubmitting(false);
         }
@@ -138,7 +172,37 @@ export default function CheckoutPage() {
                     <h1 className="text-6xl md:text-7xl font-black text-white mb-4 uppercase italic tracking-tighter leading-none">
                         Finaliser la <span className="text-yellow-400">Commande</span>
                     </h1>
-                    <p className="text-gray-500 font-bold uppercase text-xs tracking-[0.3em]">Signature Mato's • Livraison Privilège</p>
+                    <p className="text-gray-500 font-bold uppercase text-xs tracking-[0.3em] mb-12">Signature Mato's • Livraison Privilège</p>
+
+                    {/* Order Type Toggle */}
+                    <div className="grid grid-cols-2 gap-4 max-w-2xl bg-gray-900/50 p-2 rounded-[2rem] border border-gray-800 backdrop-blur-md">
+                        <button
+                            onClick={() => setOrderType('delivery')}
+                            className={`flex flex-col md:flex-row items-center justify-center gap-3 py-6 rounded-[1.5rem] transition-all duration-500 relative overflow-hidden group ${orderType === 'delivery'
+                                ? 'bg-yellow-400 text-gray-900 shadow-xl shadow-yellow-400/20 scale-[1.02]'
+                                : 'text-gray-500 hover:bg-white/5 hover:text-white'
+                                }`}
+                        >
+                            <Truck className={`w-6 h-6 ${orderType === 'delivery' ? 'text-gray-900' : 'text-gray-500 group-hover:text-white'}`} />
+                            <div className="text-center md:text-left">
+                                <span className="block font-black uppercase text-xs tracking-widest">Livraison</span>
+                                <span className={`text-[9px] font-bold ${orderType === 'delivery' ? 'text-gray-800' : 'text-gray-600'}`}>À domicile</span>
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setOrderType('pickup')}
+                            className={`flex flex-col md:flex-row items-center justify-center gap-3 py-6 rounded-[1.5rem] transition-all duration-500 relative overflow-hidden group ${orderType === 'pickup'
+                                ? 'bg-yellow-400 text-gray-900 shadow-xl shadow-yellow-400/20 scale-[1.02]'
+                                : 'text-gray-500 hover:bg-white/5 hover:text-white'
+                                }`}
+                        >
+                            <Store className={`w-6 h-6 ${orderType === 'pickup' ? 'text-gray-900' : 'text-gray-500 group-hover:text-white'}`} />
+                            <div className="text-center md:text-left">
+                                <span className="block font-black uppercase text-xs tracking-widest">Sur Place</span>
+                                <span className={`text-[9px] font-bold ${orderType === 'pickup' ? 'text-gray-800' : 'text-gray-600'}`}>A emporter / Manger ici</span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-12">
@@ -194,58 +258,61 @@ export default function CheckoutPage() {
                                     </div>
                                 </div>
 
-                                {/* Address */}
-                                <div className="space-y-2">
-                                    <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Adresse Complète *</label>
-                                    <textarea
-                                        value={deliveryInfo.address}
-                                        onChange={(e) => setDeliveryInfo({ ...deliveryInfo, address: e.target.value })}
-                                        className={`w-full bg-gray-950 border-2 text-white px-6 py-4 rounded-2xl font-bold focus:outline-none transition-all h-24 resize-none placeholder:text-gray-800 ${errors.address ? 'border-red-500/50' : 'border-gray-800 focus:border-yellow-400/50'
-                                            }`}
-                                        placeholder="Rue, numéro, étage, code d'entrée..."
-                                    />
-                                    {errors.address && (
-                                        <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4 flex items-center gap-2">
-                                            <AlertCircle className="w-3 h-3" /> {errors.address}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    {/* City */}
+                                {/* Address & City - Only for Delivery */}
+                                <div className={`space-y-8 transition-all duration-500 overflow-hidden ${orderType === 'pickup' ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100'}`}>
                                     <div className="space-y-2">
-                                        <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Ville</label>
-                                        <select
-                                            value={deliveryInfo.city}
-                                            onChange={(e) => setDeliveryInfo({ ...deliveryInfo, city: e.target.value })}
-                                            className="w-full bg-gray-950 border-2 border-gray-800 text-white px-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all appearance-none"
-                                        >
-                                            <option value="Tunis">Tunis</option>
-                                            <option value="Ariana">Ariana</option>
-                                            <option value="Ben Arous">Ben Arous</option>
-                                            <option value="La Marsa">La Marsa</option>
-                                            <option value="Carthage">Carthage</option>
-                                        </select>
+                                        <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Adresse Complète *</label>
+                                        <textarea
+                                            value={deliveryInfo.address}
+                                            onChange={(e) => setDeliveryInfo({ ...deliveryInfo, address: e.target.value })}
+                                            className={`w-full bg-gray-950 border-2 text-white px-6 py-4 rounded-2xl font-bold focus:outline-none transition-all h-24 resize-none placeholder:text-gray-800 ${errors.address ? 'border-red-500/50' : 'border-gray-800 focus:border-yellow-400/50'
+                                                }`}
+                                            placeholder="Rue, numéro, étage, code d'entrée..."
+                                        />
+                                        {errors.address && (
+                                            <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4 flex items-center gap-2">
+                                                <AlertCircle className="w-3 h-3" /> {errors.address}
+                                            </p>
+                                        )}
                                     </div>
 
-                                    {/* Notes */}
-                                    <div className="space-y-2">
-                                        <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Instructions (optionnel)</label>
-                                        <input
-                                            type="text"
-                                            value={deliveryInfo.notes}
-                                            onChange={(e) => setDeliveryInfo({ ...deliveryInfo, notes: e.target.value })}
-                                            className="w-full bg-gray-950 border-2 border-gray-800 text-white px-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-800 text-sm"
-                                            placeholder="Allergies, pas d'oignons..."
-                                        />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {/* City */}
+                                        <div className="space-y-2">
+                                            <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Ville</label>
+                                            <select
+                                                value={deliveryInfo.city}
+                                                onChange={(e) => setDeliveryInfo({ ...deliveryInfo, city: e.target.value })}
+                                                className="w-full bg-gray-950 border-2 border-gray-800 text-white px-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all appearance-none"
+                                            >
+                                                <option value="Tunis">Tunis</option>
+                                                <option value="Ariana">Ariana</option>
+                                                <option value="Ben Arous">Ben Arous</option>
+                                                <option value="La Marsa">La Marsa</option>
+                                                <option value="Carthage">Carthage</option>
+                                                <option value="Manouba">Manouba</option>
+                                            </select>
+                                        </div>
+
+                                        {/* Notes */}
+                                        <div className="space-y-2">
+                                            <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Instructions (optionnel)</label>
+                                            <input
+                                                type="text"
+                                                value={deliveryInfo.notes}
+                                                onChange={(e) => setDeliveryInfo({ ...deliveryInfo, notes: e.target.value })}
+                                                className="w-full bg-gray-950 border-2 border-gray-800 text-white px-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-800 text-sm"
+                                                placeholder="Allergies, pas d'oignons..."
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </form>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                            {/* Delivery Time */}
-                            <div className="bg-gray-900/60 rounded-[3rem] p-10 border border-gray-800 backdrop-blur-3xl shadow-2xl">
+                            {/* Delivery Time - Only for Delivery */}
+                            <div className={`bg-gray-900/60 rounded-[3rem] p-10 border border-gray-800 backdrop-blur-3xl shadow-2xl transition-all duration-500 ${orderType === 'pickup' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                                 <h2 className="text-2xl font-black text-white mb-8 flex items-center gap-4 uppercase italic tracking-tight">
                                     <div className="w-10 h-10 bg-gray-950 rounded-xl border border-gray-800 flex items-center justify-center">
                                         <Clock className="w-5 h-5 text-yellow-400" />
