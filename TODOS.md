@@ -56,18 +56,28 @@
 - [x] **Retroactive Loyalty Script**: Fixed script to properly award points using `pointsAwarded` flag.
 - [x] **Admin Layout**: Fixed scrolling issues.
 - [x] **Menu Ordering**: Implemented `displayOrder` for manual menu item sorting.
+- [x] **Bug Fixes & URL Sync**: Resolved menu filter infinite loop and improved back-button history.
+- [x] **Promo Price Engine**: Fixed cart math for percentage-based discounts on promotions.
+- [x] **Authentication Flow**: Optimized redirects for customers (Account vs Home).
+- [x] **Notification Direct Links**: Ticket and Order updates now link to specific detail pages.
+- [x] **Legacy Cleanup**: Excluded category 14 items from public menu display.
+- [x] **Admin Aesthetic Upgrade**: Premium glassmorphism overhaul for Sidebar and Dashboard Stats.
+
+## Phase 2: Active Refinement (User Feedback)
+- [ ] **Admin Orders Page**: Redesign for high-intensity worker usage (Compact view, detailed order expander).
+- [ ] **Admin Customers**: Enable real avatars and fix functional links.
+- [ ] **Home Section Harmony**:
+    - [ ] Tone down Fidelity section (Subtle premium styling).
+    [ ] Fix Promotions section (Prevent emoji overflow and text hiding).
+    - [ ] Optimize Localisation section (Reduce empty vertical space).
+- [ ] **Notification Core**: Remove obsolete `tab=orders` query params from all triggers.
+- [ ] **Project Meta**: Update README.md and TODOS.md for progress tracking.
 
 ## Pending & Future Roadmap
-- [x] **Refinement & Consolidation**:
-    - [x] **Emoji Picker**: Create reusable component with tooltips and deduplication.
-    - [x] **Profile Merge**: Consolidate View and Edit profile pages into one.
-- [ ] **System Enhancements**:
-    - [ ] Improved Toast system (Persistence & Animations)
-    - [x] Admin Dashboard: Cancel reasons for orders
-    - [x] Admin Dashboard: Detailed customer profiles (Address, Total Revenue)
-    - [x] Tracking Page: Visual feedback on automated status changes
-- [ ] **Admin Impersonation**: Feature to login as client for debugging
-- [ ] **SMS Engine**: Automated notifications for order status
-- [ ] **Live Tracking**: Real-time delivery driver location (Map integration)
-- [ ] **Mobile App**: PWA/Native transition
-- [ ] **Online Payments**: Integration with Stripe/Local gateways
+- [ ] **Improved Toast system**: Persistence & Animations for better feedback.
+- [ ] **Tracking Page**: Visual feedback on automated status changes.
+- [ ] **Admin Impersonation**: Feature to login as client for debugging.
+- [ ] **SMS Engine**: Automated notifications for order status.
+- [ ] **Live Tracking**: Real-time delivery driver location (Map integration).
+- [ ] **Mobile App**: PWA/Native transition.
+- [ ] **Online Payments**: Integration with Stripe/Local gateways.

@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'matos-psi.vercel.app',
       },
+      {
+        protocol: 'https',
+        hostname: '*.vercel.app',
+      }
     ],
   },
 };
