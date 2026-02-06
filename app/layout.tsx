@@ -16,6 +16,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Mato's - Restaurant & Fast Food",
   description: "Pizza, Burgers, Tacos et plus encore!",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 import { Providers } from "./providers";
