@@ -29,7 +29,7 @@ export async function POST(
         }
 
         // Verify ticket existence and ownership
-        const ticket = await prisma.supportTicket.findUnique({
+        const ticket = await prisma.support_tickets.findUnique({
             where: { id: ticketId }
         });
 
@@ -42,23 +42,23 @@ export async function POST(
 
         const isAdmin = (session.user as any).role === 'admin';
 
-        if (!isAdmin && ticket.userId !== (session.user as any).id) {
+        if (!isAdmin && ticket.user_id !== (session.user as any).id) {
             return NextResponse.json({
                 success: false,
                 error: 'Accès non autorisé'
             }, { status: 403 });
         }
 
-        const newMessage = await prisma.ticketMessage.create({
+        const newMessage = await prisma.ticket_messages.create({
             data: {
                 message: message || '',
                 attachments: attachments || [],
-                ticketId,
-                userId: (session.user as any).id,
-                isAdmin: isAdmin
+                ticket_id: ticketId,
+                user_id: (session.user as any).id,
+                is_admin: isAdmin
             },
             include: {
-                user: {
+                users: {
                     select: {
                         name: true,
                         image: true
@@ -69,9 +69,9 @@ export async function POST(
 
         // Create notification for the user if an admin responded
         if (isAdmin) {
-            await prisma.notification.create({
+            await prisma.notifications.create({
                 data: {
-                    userId: ticket.userId!,
+                    user_id: ticket.user_id!,
                     title: 'Nouveau message de support',
                     message: `Un admin a répondu à votre ticket #${ticket.id}`,
                     type: 'ticket_response',
@@ -82,7 +82,7 @@ export async function POST(
 
         // Optionally update ticket status if user responds to a closed/resolved ticket
         if (!isAdmin && (ticket.status === 'resolved' || ticket.status === 'closed')) {
-            await prisma.supportTicket.update({
+            await prisma.support_tickets.update({
                 where: { id: ticketId },
                 data: { status: 'open' }
             });

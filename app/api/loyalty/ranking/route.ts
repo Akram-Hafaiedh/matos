@@ -22,12 +22,7 @@ export async function GET() {
             take: 10
         });
 
-        // Add some mock "winners" if data is low - reflecting site launch
-        const hallOfFame = [
-            { month: 'Janvier 2026', winner: 'Bientôt...', points: 0, award: 'Lancement du Club Matos' },
-            { month: 'Décembre 2025', winner: 'Beta Test', points: 0, award: 'Période de Rodage' },
-            { month: 'Novembre 2025', winner: 'Pré-Ouverture', points: 0, award: 'Bienvenue au Club' },
-        ];
+        const hallOfFame: any[] = [];
 
         return NextResponse.json({
             success: true,

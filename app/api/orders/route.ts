@@ -32,49 +32,54 @@ export async function POST(request: NextRequest) {
             }
 
             return {
-                menuItemId: type === 'menuItem' ? item.id : null,
-                promotionId: type === 'promotion' ? item.id : null,
-                itemName: item.name,
-                itemPrice,
+                menu_item_id: type === 'menuItem' ? item.id : null,
+                promotion_id: type === 'promotion' ? item.id : null,
+                item_name: item.name,
+                item_price: itemPrice,
                 quantity,
-                selectedSize: selectedSize || null,
+                selected_size: selectedSize || null,
                 choices: choices || null,
                 notes: null
             };
         });
 
         // Create order in database
-        // Create order in database
-        const order = await prisma.order.create({
+        const order = await prisma.orders.create({
             data: {
-                orderNumber,
-                ...(userId ? { user: { connect: { id: userId } } } : {}),
-                customerName: deliveryInfo.fullName,
-                customerPhone: deliveryInfo.phone,
-                customerEmail: deliveryInfo.email || null,
-                deliveryAddress: deliveryInfo.address,
+                order_number: orderNumber,
+                ...(userId ? { users: { connect: { id: userId } } } : {}),
+                customer_name: deliveryInfo.fullName,
+                customer_phone: deliveryInfo.phone,
+                customer_email: deliveryInfo.email || null,
+                delivery_address: deliveryInfo.address,
                 city: deliveryInfo.city,
                 notes: deliveryInfo.notes || null,
-                deliveryTime: deliveryInfo.deliveryTime,
-                scheduledTime: deliveryInfo.scheduledTime && deliveryInfo.deliveryTime === 'scheduled' ? (() => {
+                delivery_time: deliveryInfo.deliveryTime,
+                scheduled_time: deliveryInfo.scheduledTime && deliveryInfo.deliveryTime === 'scheduled' ? (() => {
                     const [hours, minutes] = deliveryInfo.scheduledTime.split(':').map(Number);
                     if (isNaN(hours) || isNaN(minutes)) return null;
                     const d = new Date();
                     d.setHours(hours, minutes, 0, 0);
                     return d;
                 })() : null,
-                paymentMethod,
-                orderType: orderType || 'delivery',
+                payment_method: paymentMethod,
+                order_type: orderType || 'delivery',
                 subtotal: totalPrice,
-                deliveryFee,
-                totalAmount: finalTotal,
+                delivery_fee: deliveryFee,
+                total_amount: finalTotal,
                 status: 'pending',
-                orderItems: {
+                updated_at: new Date(),
+                order_items: {
                     create: orderItems
                 }
             },
             include: {
-                orderItems: true
+                order_items: {
+                    include: {
+                        menu_items: true,
+                        promotions: true
+                    }
+                }
             }
         });
 
@@ -85,9 +90,9 @@ export async function POST(request: NextRequest) {
         });
 
         for (const admin of admins) {
-            await prisma.notification.create({
+            await prisma.notifications.create({
                 data: {
-                    userId: admin.id,
+                    user_id: admin.id,
                     title: 'Nouvelle commande',
                     message: `La commande #${orderNumber} a été passée par ${deliveryInfo.fullName}`,
                     type: 'order_update',
@@ -102,9 +107,24 @@ export async function POST(request: NextRequest) {
         // TODO: Send SMS confirmation to customer
         // await sendSMSToCustomer(order);
 
+        // Process Quests and Loyalty
+        let completedQuests: any[] = [];
+        if (userId) {
+            try {
+                // We run this asynchronously but await it here to return instant feedback
+                // In a high-scale app, this might be a background job
+                const { QuestService } = await import('@/lib/services/QuestService');
+                completedQuests = await QuestService.processOrderQuests(userId, order);
+            } catch (err) {
+                console.error('Quest processing error:', err);
+                // Don't fail the order if quest fails
+            }
+        }
+
         return NextResponse.json({
             success: true,
             order,
+            completedQuests,
             message: 'Commande créée avec succès'
         }, { status: 201 });
 
@@ -143,9 +163,9 @@ export async function GET(request: NextRequest) {
         const where: any = {};
 
         if (!isAdmin) {
-            where.userId = (session.user as any).id;
+            where.user_id = (session.user as any).id;
         } else if (userId) {
-            where.userId = userId;
+            where.user_id = userId;
         }
 
         if (status && status !== 'all') {
@@ -153,21 +173,21 @@ export async function GET(request: NextRequest) {
         }
 
         if (search) {
-            where.orderNumber = { contains: search, mode: 'insensitive' };
+            where.order_number = { contains: search, mode: 'insensitive' };
         }
 
         const [totalItems, orders] = await Promise.all([
-            prisma.order.count({ where }),
-            prisma.order.findMany({
+            prisma.orders.count({ where }),
+            prisma.orders.findMany({
                 where,
                 include: {
-                    orderItems: {
+                    order_items: {
                         include: {
-                            menuItem: true,
-                            promotion: true
+                            menu_items: true,
+                            promotions: true
                         }
                     },
-                    user: {
+                    users: {
                         select: {
                             id: true,
                             name: true,
@@ -176,7 +196,7 @@ export async function GET(request: NextRequest) {
                     }
                 },
                 orderBy: {
-                    createdAt: 'desc'
+                    created_at: 'desc'
                 },
                 skip,
                 take: limit
@@ -187,34 +207,34 @@ export async function GET(request: NextRequest) {
         // Transform orders to match frontend expectations
         const transformedOrders = (orders as any[]).map(order => ({
             id: order.id.toString(),
-            orderNumber: order.orderNumber,
+            orderNumber: order.order_number,
             deliveryInfo: {
-                fullName: order.customerName,
-                phone: order.customerPhone,
-                email: order.customerEmail,
-                address: order.deliveryAddress,
+                fullName: order.customer_name,
+                phone: order.customer_phone,
+                email: order.customer_email,
+                address: order.delivery_address,
                 city: order.city,
                 notes: order.notes
             },
-            cart: order.orderItems,
-            paymentMethod: order.paymentMethod,
+            cart: order.order_items,
+            paymentMethod: order.payment_method,
             totalPrice: order.subtotal,
-            deliveryFee: order.deliveryFee,
-            finalTotal: order.totalAmount,
+            deliveryFee: order.delivery_fee,
+            finalTotal: order.total_amount,
             status: order.status,
-            orderType: (order as any).orderType,
-            deliveryTime: order.deliveryTime,
-            scheduledTime: order.scheduledTime,
-            createdAt: order.createdAt.toISOString(),
-            updatedAt: order.updatedAt.toISOString(),
-            confirmedAt: order.confirmedAt,
-            preparingAt: order.preparingAt,
-            readyAt: order.readyAt,
-            outForDeliveryAt: order.outForDeliveryAt,
-            deliveredAt: order.deliveredAt,
-            cancelledAt: order.cancelledAt,
-            cancelMessage: order.cancelMessage,
-            user: order.user
+            orderType: (order as any).order_type,
+            deliveryTime: order.delivery_time,
+            scheduledTime: order.scheduled_time,
+            createdAt: order.created_at.toISOString(),
+            updatedAt: order.updated_at.toISOString(),
+            confirmedAt: order.confirmed_at,
+            preparingAt: order.preparing_at,
+            readyAt: order.ready_at,
+            outForDeliveryAt: order.out_for_delivery_at,
+            deliveredAt: order.delivered_at,
+            cancelledAt: order.cancelled_at,
+            cancelMessage: order.cancel_message,
+            user: order.users
         }));
 
         return NextResponse.json({

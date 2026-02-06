@@ -50,7 +50,8 @@ export const authOptions: NextAuthOptions = {
                     role: user.role,
                     phone: user.phone,
                     selectedBg: user.selectedBg,
-                    selectedFrame: user.selectedFrame
+                    selectedFrame: user.selectedFrame,
+                    loyaltyPoints: user.loyaltyPoints
                 };
             }
         })
@@ -65,6 +66,7 @@ export const authOptions: NextAuthOptions = {
                 token.phone = (user as any).phone;
                 token.selectedBg = (user as any).selectedBg;
                 token.selectedFrame = (user as any).selectedFrame;
+                token.loyaltyPoints = (user as any).loyaltyPoints;
             }
             // Logic to support session update
             if (trigger === "update" && session?.user) {
@@ -84,6 +86,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.phone = token.phone as string | null | undefined;
                 session.user.selectedBg = token.selectedBg as string | null | undefined;
                 session.user.selectedFrame = token.selectedFrame as string | null | undefined;
+                session.user.loyaltyPoints = token.loyaltyPoints as number | undefined;
             }
             return session;
         },

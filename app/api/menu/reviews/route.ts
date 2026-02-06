@@ -12,17 +12,17 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const reviews = await prisma.review.findMany({
-            where: { menuItemId: parseInt(menuItemId) },
+        const reviews = await prisma.reviews.findMany({
+            where: { menu_item_id: parseInt(menuItemId) },
             include: {
-                user: {
+                users: {
                     select: {
                         name: true,
                         image: true
                     }
                 }
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { created_at: 'desc' }
         });
 
         const averageRating = reviews.length > 0
@@ -50,34 +50,34 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if user already reviewed this item
-        const existingReview = await prisma.review.findFirst({
+        const existingReview = await prisma.reviews.findFirst({
             where: {
-                userId: (session.user as any).id,
-                menuItemId: parseInt(menuItemId)
+                user_id: (session.user as any).id,
+                menu_item_id: parseInt(menuItemId)
             }
         });
 
         if (existingReview) {
-            const updatedReview = await prisma.review.update({
+            const updatedReview = await prisma.reviews.update({
                 where: { id: existingReview.id },
                 data: { rating, comment }
             });
             return NextResponse.json({ success: true, review: updatedReview, message: 'Avis mis à jour' });
         }
 
-        const review = await prisma.review.create({
+        const review = await prisma.reviews.create({
             data: {
                 rating,
                 comment: comment || "",
-                menuItemId: parseInt(menuItemId),
-                userId: (session.user as any).id
+                menu_item_id: parseInt(menuItemId),
+                user_id: (session.user as any).id
             }
         });
 
         // Award loyalty points for reviews
         // Check how many reviews the user has already made
-        const userReviewCount = await prisma.review.count({
-            where: { userId: (session.user as any).id }
+        const userReviewCount = await prisma.reviews.count({
+            where: { user_id: (session.user as any).id }
         });
 
         let pointsToAward = 0;
@@ -112,9 +112,9 @@ export async function POST(request: NextRequest) {
             });
 
             // Create notification for points awarded
-            await prisma.notification.create({
+            await prisma.notifications.create({
                 data: {
-                    userId: (session.user as any).id,
+                    user_id: (session.user as any).id,
                     title: "Points gagnés ! 🎁",
                     message: `Vous avez reçu ${pointsToAward} points. ${awardReason}`,
                     type: "loyalty_update"

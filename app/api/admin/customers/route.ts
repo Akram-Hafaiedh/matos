@@ -28,11 +28,13 @@ export async function GET(req: Request) {
                 email: true,
                 phone: true,
                 address: true,
+                image: true,
                 loyaltyPoints: true,
+                tokens: true,
                 createdAt: true,
                 orders: {
                     select: {
-                        totalAmount: true
+                        total_amount: true
                     }
                 },
                 _count: {
@@ -44,10 +46,10 @@ export async function GET(req: Request) {
             }
         });
 
-        const formattedCustomers = customers.map(c => ({
+        const formattedCustomers = customers.map((c: any) => ({
             ...c,
             totalOrders: c._count.orders,
-            totalRevenue: c.orders.reduce((acc, o) => acc + o.totalAmount, 0)
+            totalRevenue: c.orders.reduce((acc: number, o: any) => acc + (o.total_amount || 0), 0)
         }));
 
         return NextResponse.json({ success: true, customers: formattedCustomers });
@@ -64,15 +66,23 @@ export async function PATCH(req: Request) {
     }
 
     try {
-        const { userId, loyaltyPoints } = await req.json();
+        const { userId, loyaltyPoints, tokens } = await req.json();
 
-        if (!userId || loyaltyPoints === undefined) {
-            return NextResponse.json({ success: false, error: 'Missing data' }, { status: 400 });
+        if (!userId) {
+            return NextResponse.json({ success: false, error: 'Missing userId' }, { status: 400 });
+        }
+
+        const data: any = {};
+        if (loyaltyPoints !== undefined) data.loyaltyPoints = parseInt(loyaltyPoints);
+        if (tokens !== undefined) data.tokens = parseInt(tokens);
+
+        if (Object.keys(data).length === 0) {
+            return NextResponse.json({ success: false, error: 'No data to update' }, { status: 400 });
         }
 
         const updatedUser = await prisma.user.update({
             where: { id: userId },
-            data: { loyaltyPoints: parseInt(loyaltyPoints) }
+            data
         });
 
         return NextResponse.json({ success: true, user: updatedUser });

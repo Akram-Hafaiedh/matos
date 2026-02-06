@@ -3,23 +3,23 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
     try {
-        const reviews = await prisma.review.findMany({
+        const reviews = await prisma.reviews.findMany({
             include: {
-                user: {
+                users: {
                     select: {
                         name: true,
                         role: true,
                         image: true,
                     }
                 },
-                menuItem: {
+                menu_items: {
                     select: {
                         name: true,
                     }
                 }
             },
             orderBy: {
-                createdAt: 'desc'
+                created_at: 'desc'
             }
         });
 
@@ -35,9 +35,9 @@ export async function PATCH(request: Request) {
         const body = await request.json();
         const { id, showOnHome } = body;
 
-        const updatedReview = await prisma.review.update({
+        const updatedReview = await prisma.reviews.update({
             where: { id },
-            data: { showOnHome }
+            data: { show_on_home: showOnHome }
         });
 
         return NextResponse.json(updatedReview);

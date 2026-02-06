@@ -7,27 +7,34 @@ import { prisma } from '@/lib/prisma';
 export async function GET(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session) {
+        if (!session || !(session.user as any).id) {
             return NextResponse.json({
                 success: false,
                 error: 'Non autorisé'
             }, { status: 401 });
         }
 
+        const userId = (session.user as any).id;
         const user = await prisma.user.findUnique({
-            where: { id: (session.user as any).id },
+            where: { id: userId },
             select: {
                 id: true,
                 name: true,
                 email: true,
                 loyaltyPoints: true,
+                tokens: true,
                 phone: true,
                 address: true,
                 role: true,
                 image: true,
                 selectedFrame: true,
                 selectedBg: true,
-                createdAt: true
+                selectedTitle: true,
+                createdAt: true,
+                inventory: true,
+                _count: {
+                    select: { orders: true }
+                }
             }
         });
 
@@ -50,7 +57,7 @@ export async function GET(request: NextRequest) {
             success: true,
             user: { ...user, rank }
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching user profile:', error);
         return NextResponse.json({
             success: false,
@@ -74,7 +81,7 @@ export async function PATCH(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { name, phone, address, image, selectedFrame, selectedBg } = body;
+        const { name, phone, address, image, selectedFrame, selectedBg, selectedTitle } = body;
 
         const updatedUser = await prisma.user.update({
             where: { id: (session.user as any).id },
@@ -84,7 +91,8 @@ export async function PATCH(request: NextRequest) {
                 address,
                 image,
                 selectedFrame,
-                selectedBg
+                selectedBg,
+                selectedTitle
             },
             select: {
                 id: true,
@@ -94,7 +102,8 @@ export async function PATCH(request: NextRequest) {
                 address: true,
                 image: true,
                 selectedFrame: true,
-                selectedBg: true
+                selectedBg: true,
+                selectedTitle: true
             }
         });
 

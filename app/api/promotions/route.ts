@@ -18,14 +18,14 @@ export async function GET(request: NextRequest) {
 
         // Status handling
         if (status === 'active') {
-            where.isActive = true;
+            where.is_active = true;
         } else if (status === 'inactive') {
-            where.isActive = false;
+            where.is_active = false;
         } else if (onlyActive) {
-            where.isActive = true;
+            where.is_active = true;
             where.OR = [
-                { endDate: null },
-                { endDate: { gte: new Date() } }
+                { end_date: null },
+                { end_date: { gte: new Date() } }
             ];
         }
 
@@ -38,11 +38,11 @@ export async function GET(request: NextRequest) {
         }
 
         const [totalItems, promotions] = await Promise.all([
-            prisma.promotion.count({ where }),
-            prisma.promotion.findMany({
+            prisma.promotions.count({ where }),
+            prisma.promotions.findMany({
                 where,
                 orderBy: {
-                    createdAt: 'desc'
+                    created_at: 'desc'
                 },
                 skip,
                 take: limit
@@ -85,17 +85,19 @@ export async function POST(request: NextRequest) {
             name,
             description,
             price,
-            originalPrice,
+            originalPrice: original_price,
             discount,
-            imageUrl,
+            imageUrl: image_url,
             emoji,
-            badgeText,
-            badgeColor,
-            isActive,
-            startDate,
-            endDate,
+            badgeText: badge_text,
+            badgeColor: badge_color,
+            isActive: is_active,
+            isHot: is_hot,
+            tag,
+            startDate: start_date,
+            endDate: end_date,
             conditions,
-            selectionRules
+            selectionRules: selection_rules
         } = body;
 
         if (!name) {
@@ -105,22 +107,24 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
 
-        const promotion = await prisma.promotion.create({
+        const promotion = await prisma.promotions.create({
             data: {
                 name,
                 description,
                 price: price ? parseFloat(price) : null,
-                originalPrice: originalPrice ? parseFloat(originalPrice) : null,
+                original_price: original_price ? parseFloat(original_price) : null,
                 discount: discount ? parseInt(discount) : null,
-                imageUrl,
+                image_url,
                 emoji,
-                badgeText,
-                badgeColor,
-                isActive: isActive !== undefined ? isActive : true,
-                startDate: startDate ? new Date(startDate) : null,
-                endDate: endDate ? new Date(endDate) : null,
+                badge_text,
+                badge_color,
+                is_active: is_active !== undefined ? is_active : true,
+                is_hot: is_hot !== undefined ? is_hot : false,
+                tag,
+                start_date: start_date ? new Date(start_date) : null,
+                end_date: end_date ? new Date(end_date) : null,
                 conditions,
-                selectionRules
+                selection_rules
             }
         });
 

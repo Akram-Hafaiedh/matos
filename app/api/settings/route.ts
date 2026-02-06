@@ -6,7 +6,7 @@ import { authOptions } from '../auth/[...nextauth]/route';
 
 export async function GET() {
     try {
-        const settings = await prisma.globalSettings.findFirst();
+        const settings = await prisma.global_settings.findFirst();
 
         // Return default settings if none exist
         if (!settings) {
@@ -18,7 +18,8 @@ export async function GET() {
                 facebook: "",
                 instagram: "",
                 tiktok: "",
-                whatsapp: ""
+                whatsapp: "",
+                google_maps_url: ""
             });
         }
 
@@ -56,7 +57,7 @@ export async function PUT(req: Request) {
 
         // Upsert settings (update if exists, create if not)
         // We assume ID 1 for global settings as per schema default
-        const settings = await prisma.globalSettings.upsert({
+        const settings = await prisma.global_settings.upsert({
             where: { id: 1 },
             update: {
                 address: data.address,
@@ -67,6 +68,8 @@ export async function PUT(req: Request) {
                 instagram: data.instagram || null,
                 tiktok: data.tiktok || null,
                 whatsapp: data.whatsapp || null,
+                google_maps_url: data.googleMapsUrl || null,
+                updated_at: new Date()
             },
             create: {
                 id: 1,
@@ -78,6 +81,8 @@ export async function PUT(req: Request) {
                 instagram: data.instagram || null,
                 tiktok: data.tiktok || null,
                 whatsapp: data.whatsapp || null,
+                google_maps_url: data.googleMapsUrl || null,
+                updated_at: new Date()
             },
         });
 

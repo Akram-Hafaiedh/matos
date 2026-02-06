@@ -10,13 +10,13 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false }, { status: 401 });
         }
 
-        await prisma.notification.updateMany({
+        await prisma.notifications.updateMany({
             where: {
-                userId: (session.user as any).id,
-                isRead: false
+                user_id: (session.user as any).id,
+                is_read: false
             },
             data: {
-                isRead: true
+                is_read: true
             }
         });
 

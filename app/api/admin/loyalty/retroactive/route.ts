@@ -29,11 +29,11 @@ export async function POST(request: NextRequest) {
 
         // Part 2: Award points for delivered orders
         // Find all delivered orders that haven't been awarded points yet
-        const ordersToAward = await prisma.order.findMany({
+        const ordersToAward = await prisma.orders.findMany({
             where: {
                 status: 'delivered',
-                pointsAwarded: false,
-                userId: { not: null }
+                points_awarded: false,
+                user_id: { not: null }
             }
         });
 
@@ -41,21 +41,21 @@ export async function POST(request: NextRequest) {
         let totalPoints = 0;
 
         for (const order of ordersToAward) {
-            const points = Math.floor(order.totalAmount);
-            if (points > 0 && order.userId) {
+            const points = Math.floor(order.total_amount);
+            if (points > 0 && order.user_id) {
                 await prisma.$transaction([
                     prisma.user.update({
-                        where: { id: order.userId },
+                        where: { id: order.user_id },
                         data: {
                             loyaltyPoints: {
                                 increment: points
                             }
                         }
                     }),
-                    prisma.order.update({
+                    prisma.orders.update({
                         where: { id: order.id },
                         data: {
-                            pointsAwarded: true
+                            points_awarded: true
                         }
                     })
                 ]);

@@ -36,12 +36,41 @@ export async function PUT(
             }, { status: 400 });
         }
 
+        // Fetch current state to check if order changed
+        const currentCategory = await prisma.category.findUnique({ where: { id } });
+        if (!currentCategory) {
+            return NextResponse.json({ success: false, error: 'Catégorie non trouvée' }, { status: 404 });
+        }
+
+        const newOrder = displayOrder ? parseInt(displayOrder) : 0;
+        const oldOrder = currentCategory.displayOrder;
+
+        if (newOrder !== oldOrder && newOrder > 0) {
+            if (newOrder < oldOrder) {
+                // Moving UP: Shift items between new and old orders DOWN
+                await prisma.category.updateMany({
+                    where: {
+                        displayOrder: { gte: newOrder, lt: oldOrder }
+                    },
+                    data: { displayOrder: { increment: 1 } }
+                });
+            } else {
+                // Moving DOWN: Shift items between old and new orders UP
+                await prisma.category.updateMany({
+                    where: {
+                        displayOrder: { gt: oldOrder, lte: newOrder }
+                    },
+                    data: { displayOrder: { decrement: 1 } }
+                });
+            }
+        }
+
         const category = await prisma.category.update({
             where: { id },
             data: {
                 name,
                 emoji,
-                displayOrder: displayOrder || 0
+                displayOrder: newOrder
             }
         });
 

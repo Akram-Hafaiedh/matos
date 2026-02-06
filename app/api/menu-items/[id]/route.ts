@@ -17,10 +17,10 @@ export async function GET(
     }
 
     try {
-        const menuItem = await prisma.menuItem.findUnique({
+        const menuItem = await prisma.menu_items.findUnique({
             where: { id },
             include: {
-                category: true
+                categories: true
             }
         });
 
@@ -72,9 +72,9 @@ export async function PUT(
             description,
             price,
             categoryId,
-            imageUrl,
+            image_url: imageUrl,
             ingredients,
-            isActive,
+            is_active: isActive,
             popular,
             bestseller,
             hot,
@@ -85,8 +85,8 @@ export async function PUT(
             name,
             description,
             price,
-            imageUrl,
-            isActive,
+            image_url: imageUrl,
+            is_active: isActive,
             popular,
             bestseller,
             hot,
@@ -94,7 +94,7 @@ export async function PUT(
         };
 
         if (categoryId) {
-            updateData.category = {
+            updateData.categories = {
                 connect: { id: parseInt(categoryId) }
             };
         }
@@ -107,11 +107,11 @@ export async function PUT(
             updateData.ingredients = ingredientsArray;
         }
 
-        const menuItem = await prisma.menuItem.update({
+        const menuItem = await prisma.menu_items.update({
             where: { id },
             data: updateData,
             include: {
-                category: true
+                categories: true
             }
         });
 
@@ -151,7 +151,7 @@ export async function DELETE(
             }, { status: 401 });
         }
 
-        await prisma.menuItem.delete({
+        await prisma.menu_items.delete({
             where: { id }
         });
 

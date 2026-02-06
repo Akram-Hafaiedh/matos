@@ -16,25 +16,25 @@ export async function GET(request: NextRequest) {
         const skip = (page - 1) * limit;
 
         const [notifications, totalItems, unreadCount] = await Promise.all([
-            prisma.notification.findMany({
+            prisma.notifications.findMany({
                 where: {
-                    userId: (session.user as any).id,
+                    user_id: (session.user as any).id,
                 },
                 orderBy: {
-                    createdAt: 'desc'
+                    created_at: 'desc'
                 },
                 skip,
                 take: limit
             }),
-            prisma.notification.count({
+            prisma.notifications.count({
                 where: {
-                    userId: (session.user as any).id,
+                    user_id: (session.user as any).id,
                 }
             }),
-            prisma.notification.count({
+            prisma.notifications.count({
                 where: {
-                    userId: (session.user as any).id,
-                    isRead: false
+                    user_id: (session.user as any).id,
+                    is_read: false
                 }
             })
         ]);
@@ -68,23 +68,23 @@ export async function PATCH(request: NextRequest) {
         const { id, all } = body;
 
         if (all) {
-            await prisma.notification.updateMany({
+            await prisma.notifications.updateMany({
                 where: {
-                    userId: (session.user as any).id,
-                    isRead: false
+                    user_id: (session.user as any).id,
+                    is_read: false
                 },
                 data: {
-                    isRead: true
+                    is_read: true
                 }
             });
         } else if (id) {
-            await prisma.notification.update({
+            await prisma.notifications.update({
                 where: {
                     id: parseInt(id),
-                    userId: (session.user as any).id
+                    user_id: (session.user as any).id
                 },
                 data: {
-                    isRead: true
+                    is_read: true
                 }
             });
         }

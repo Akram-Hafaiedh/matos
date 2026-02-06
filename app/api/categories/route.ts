@@ -20,11 +20,11 @@ export async function GET(request: NextRequest) {
         }
 
         const [totalItems, categories] = await Promise.all([
-            prisma.category.count({ where }),
-            prisma.category.findMany({
+            prisma.categories.count({ where }),
+            prisma.categories.findMany({
                 where,
                 orderBy: {
-                    displayOrder: 'asc'
+                    display_order: 'asc'
                 },
                 skip,
                 take: limit
@@ -73,11 +73,21 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
 
-        const category = await prisma.category.create({
+        const newOrder = displayOrder ? parseInt(displayOrder) : 0;
+
+        // Shift existing categories if needed
+        if (newOrder > 0) {
+            await prisma.categories.updateMany({
+                where: { display_order: { gte: newOrder } },
+                data: { display_order: { increment: 1 } }
+            });
+        }
+
+        const category = await prisma.categories.create({
             data: {
                 name,
                 emoji,
-                displayOrder: displayOrder || 0
+                display_order: newOrder
             }
         });
 

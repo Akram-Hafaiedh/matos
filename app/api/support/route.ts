@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
         // If not admin, only show user's own tickets
         if ((session.user as any).role !== 'admin') {
-            where.userId = (session.user as any).id;
+            where.user_id = (session.user as any).id;
         }
 
         if (status && status !== 'all') {
@@ -41,24 +41,25 @@ export async function GET(request: NextRequest) {
         }
 
         const [totalItems, tickets] = await Promise.all([
-            prisma.supportTicket.count({ where }),
-            prisma.supportTicket.findMany({
+            prisma.support_tickets.count({ where }),
+            prisma.support_tickets.findMany({
                 where,
                 include: {
-                    user: {
+                    users: {
                         select: {
                             name: true,
-                            email: true
+                            email: true,
+                            image: true
                         }
                     },
-                    order: {
+                    orders: {
                         select: {
-                            orderNumber: true
+                            order_number: true
                         }
                     }
                 },
                 orderBy: {
-                    createdAt: 'desc'
+                    created_at: 'desc'
                 },
                 skip,
                 take: limit
@@ -102,14 +103,15 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
 
-        const ticket = await prisma.supportTicket.create({
+        const ticket = await prisma.support_tickets.create({
             data: {
                 subject,
                 description,
-                orderId: orderId ? parseInt(orderId) : null,
-                userId: session?.user ? (session.user as any).id : null,
+                order_id: orderId ? parseInt(orderId) : null,
+                user_id: session?.user ? (session.user as any).id : null,
                 priority: priority || 'medium',
-                status: 'open'
+                status: 'open',
+                updated_at: new Date()
             }
         });
 

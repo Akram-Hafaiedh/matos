@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 
+import { LoyaltyService } from '@/lib/services/LoyaltyService';
+
 // GET - Fetch single order
 export async function GET(
     request: NextRequest,
@@ -20,15 +22,15 @@ export async function GET(
             }, { status: 401 });
         }
 
-        const order = await prisma.order.findUnique({
+        const order = await prisma.orders.findUnique({
             where: { id: parseInt(orderIdStr) },
             include: {
-                orderItems: {
+                order_items: {
                     include: {
-                        menuItem: true
+                        menu_items: true
                     }
                 },
-                user: {
+                users: {
                     select: {
                         id: true,
                         name: true,
@@ -91,28 +93,28 @@ export async function PATCH(
         // Update order
         const updateData: any = {
             status,
-            updatedAt: new Date()
+            updated_at: new Date()
         };
 
         if (cancelMessage) {
-            updateData.cancelMessage = cancelMessage;
+            updateData.cancel_message = cancelMessage;
         }
 
         // Set status-specific timestamps
-        if (status === 'confirmed') updateData.confirmedAt = new Date();
-        else if (status === 'preparing') updateData.preparingAt = new Date();
-        else if (status === 'ready') updateData.readyAt = new Date();
-        else if (status === 'out_for_delivery') updateData.outForDeliveryAt = new Date();
-        else if (status === 'delivered') updateData.deliveredAt = new Date();
+        if (status === 'confirmed') updateData.confirmed_at = new Date();
+        else if (status === 'preparing') updateData.preparing_at = new Date();
+        else if (status === 'ready') updateData.ready_at = new Date();
+        else if (status === 'out_for_delivery') updateData.out_for_delivery_at = new Date();
+        else if (status === 'delivered') updateData.delivered_at = new Date();
         else if (status === 'cancelled') {
-            updateData.cancelledAt = new Date();
+            updateData.cancelled_at = new Date();
         }
 
 
         const orderId = parseInt(orderIdStr);
 
         // Get current order to check previous status
-        const currentOrder = await prisma.order.findUnique({
+        const currentOrder = await prisma.orders.findUnique({
             where: { id: orderId }
         });
 
@@ -120,34 +122,40 @@ export async function PATCH(
             return NextResponse.json({ success: false, error: 'Commande introuvable' }, { status: 404 });
         }
 
-        const order = await prisma.order.update({
+        const order = await prisma.orders.update({
             where: { id: orderId },
             data: updateData,
             include: {
-                user: true
+                users: true
             }
         });
 
         // Award loyalty points if newly delivered
-        if (status === 'delivered' && !currentOrder.pointsAwarded && order.userId) {
+        if (status === 'delivered' && !currentOrder.points_awarded && order.user_id) {
+
+            // Calculate Multiplier
+            const { multiplier } = await LoyaltyService.getXPMultiplier(order.user_id);
+            const basePoints = Math.floor(order.total_amount);
+            const finalPoints = Math.floor(basePoints * multiplier);
+
             await prisma.$transaction([
                 prisma.user.update({
-                    where: { id: order.userId },
+                    where: { id: order.user_id },
                     data: {
                         loyaltyPoints: {
-                            increment: Math.floor(order.totalAmount)
+                            increment: finalPoints
                         }
                     }
                 }),
-                prisma.order.update({
+                prisma.orders.update({
                     where: { id: orderId },
-                    data: { pointsAwarded: true }
+                    data: { points_awarded: true }
                 })
             ]);
         }
 
         // Create notification for the user
-        if (order.userId) {
+        if (order.user_id) {
             const statusLabels: { [key: string]: string } = {
                 'pending': 'en attente',
                 'confirmed': 'confirmée',
@@ -158,13 +166,13 @@ export async function PATCH(
                 'cancelled': 'annulée'
             };
 
-            await prisma.notification.create({
+            await prisma.notifications.create({
                 data: {
-                    userId: order.userId,
+                    user_id: order.user_id,
                     title: `Commande ${statusLabels[status] || status}`,
-                    message: `Le statut de votre commande #${order.orderNumber} est passé à: ${statusLabels[status] || status}`,
+                    message: `Le statut de votre commande #${order.order_number} est passé à: ${statusLabels[status] || status}`,
                     type: 'order_update',
-                    link: `/account?tab=orders`,
+                    link: `/account/orders/${order.id}`,
                 }
             });
         }
@@ -201,7 +209,7 @@ export async function DELETE(
             }, { status: 401 });
         }
 
-        await prisma.order.delete({
+        await prisma.orders.delete({
             where: { id: parseInt(id) }
         });
 
