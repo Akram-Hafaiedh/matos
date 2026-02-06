@@ -31,6 +31,17 @@ export async function POST(req: Request) {
                 throw new Error('Jetons insuffisants');
             }
 
+            // Start expiration check logic
+            let expires_at: Date | null = null;
+            if (shopItem.type === 'Boosters') {
+                const durationMatch = shopItem.name.match(/\((\d+)h\)/i);
+                if (durationMatch) {
+                    const hours = parseInt(durationMatch[1]);
+                    expires_at = new Date();
+                    expires_at.setHours(expires_at.getHours() + hours);
+                }
+            }
+
             // Check if already owned
             const existing = await tx.user_inventory.findUnique({
                 where: {
@@ -42,29 +53,58 @@ export async function POST(req: Request) {
             });
 
             if (existing) {
-                throw new Error('Item déjà possédé');
+                // Check if expired using logic similar to client-side isItemExpired
+                let isExpired = false;
+                if (existing.expires_at) {
+                    isExpired = new Date(existing.expires_at) < new Date();
+                } else if (existing.type === 'Boosters' && existing.unlocked_at) {
+                    // Fallback check
+                    const match = existing.name.match(/\((\d+)h\)/i);
+                    if (match) {
+                        const hours = parseInt(match[1]);
+                        const start = new Date(existing.unlocked_at);
+                        const expiryDate = new Date(start.getTime() + hours * 60 * 60 * 1000);
+                        isExpired = expiryDate < new Date();
+                    }
+                }
+
+                if (!isExpired) {
+                    throw new Error('Item déjà possédé');
+                }
+
+                // If expired, UPDATE the existing record instead of creating new
+                const updatedItem = await tx.user_inventory.update({
+                    where: {
+                        user_id_item_id: {
+                            user_id: userId,
+                            item_id: shopItem.id
+                        }
+                    },
+                    data: {
+                        unlocked_at: new Date(),
+                        expires_at: expires_at // Set new expiration
+                    }
+                });
+
+                // Deduct tokens only after checks pass
+                await tx.user.update({
+                    where: { id: userId },
+                    data: { tokens: { decrement: shopItem.price } }
+                });
+
+                return updatedItem;
             }
 
-            // Deduct tokens
+            // Deduct tokens (New Purchase)
             await tx.user.update({
                 where: { id: userId },
                 data: { tokens: { decrement: shopItem.price } }
             });
 
-            // Add to inventory
-            let expires_at: Date | null = null;
-            if (shopItem.type === 'Boosters') {
-                const durationMatch = shopItem.name.match(/\((\d+)h\)/i);
-                if (durationMatch) {
-                    const hours = parseInt(durationMatch[1]);
-                    expires_at = new Date();
-                    expires_at.setHours(expires_at.getHours() + hours);
-                }
-            }
-
+            // Create new inventory item
             const newItem = await tx.user_inventory.create({
                 data: {
-                    id: `${userId}-${shopItem.id}-${Date.now()}`, // Added ID as it is required in schema
+                    id: `${userId}-${shopItem.id}-${Date.now()}`,
                     user_id: userId,
                     item_id: shopItem.id,
                     name: shopItem.name,

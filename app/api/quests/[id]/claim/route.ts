@@ -19,7 +19,7 @@ export async function POST(
         const userId = (session.user as any).id;
 
         // Calculate Multiplier
-        const { multiplier } = await LoyaltyService.getXPMultiplier(userId);
+        const { xpMultiplier, tokenMultiplier } = await LoyaltyService.getLoyaltyBoosts(userId);
 
         // Transaction to ensure atomicity
         const result = await prisma.$transaction(async (tx: any) => {
@@ -35,8 +35,6 @@ export async function POST(
             if (userQuest.status !== 'COMPLETED') {
                 throw new Error('Quest not completed');
             }
-            // Add a status for 'CLAIMED' to prevent double claims. 
-            // If strict enum wasn't used in DB, we rely on string check.
             if (userQuest.status === 'CLAIMED') {
                 throw new Error('Reward already claimed');
             }
@@ -52,12 +50,14 @@ export async function POST(
             let rewardAmount = userQuest.quests.rewardAmount;
 
             if (rewardType === 'XP') {
-                rewardAmount = Math.floor(rewardAmount * multiplier);
+                rewardAmount = Math.floor(rewardAmount * xpMultiplier);
                 await tx.user.update({
                     where: { id: userId },
                     data: { loyaltyPoints: { increment: rewardAmount } }
                 });
             } else if (rewardType === 'TOKEN') {
+                // Apply token multiplier to quest token rewards
+                rewardAmount = Math.floor(rewardAmount * tokenMultiplier);
                 await tx.user.update({
                     where: { id: userId },
                     data: { tokens: { increment: rewardAmount } }

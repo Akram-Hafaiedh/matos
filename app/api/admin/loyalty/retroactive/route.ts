@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '../../../auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
+import { LoyaltyService } from '@/lib/services/LoyaltyService';
 
 export async function POST(request: NextRequest) {
     try {
@@ -41,26 +42,31 @@ export async function POST(request: NextRequest) {
         let totalPoints = 0;
 
         for (const order of ordersToAward) {
-            const points = Math.floor(order.total_amount);
-            if (points > 0 && order.user_id) {
-                await prisma.$transaction([
-                    prisma.user.update({
-                        where: { id: order.user_id },
-                        data: {
-                            loyaltyPoints: {
-                                increment: points
+            if (order.user_id) {
+                // Fetch boosters for each user
+                const { xpMultiplier, tokenMultiplier } = await LoyaltyService.getLoyaltyBoosts(order.user_id);
+                const baseAmount = Math.floor(order.total_amount);
+
+                const finalXP = Math.floor(baseAmount * xpMultiplier);
+                const finalTokens = Math.floor(baseAmount * tokenMultiplier);
+
+                if (finalXP > 0 || finalTokens > 0) {
+                    await prisma.$transaction([
+                        prisma.user.update({
+                            where: { id: order.user_id },
+                            data: {
+                                loyaltyPoints: { increment: finalXP },
+                                tokens: { increment: finalTokens }
                             }
-                        }
-                    }),
-                    prisma.orders.update({
-                        where: { id: order.id },
-                        data: {
-                            points_awarded: true
-                        }
-                    })
-                ]);
-                totalAwarded++;
-                totalPoints += points;
+                        }),
+                        prisma.orders.update({
+                            where: { id: order.id },
+                            data: { points_awarded: true }
+                        })
+                    ]);
+                    totalAwarded++;
+                    totalPoints += finalXP;
+                }
             }
         }
 

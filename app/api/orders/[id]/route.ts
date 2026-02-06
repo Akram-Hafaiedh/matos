@@ -169,18 +169,24 @@ export async function PATCH(
         // Award loyalty points if newly delivered
         if (status === 'delivered' && !currentOrder.points_awarded && order.user_id) {
 
-            // Calculate Multiplier
-            const { multiplier } = await LoyaltyService.getXPMultiplier(order.user_id);
-            const basePoints = Math.floor(order.total_amount);
-            const finalPoints = Math.floor(basePoints * multiplier);
+            // Calculate Multipliers from Database
+            const { xpMultiplier, tokenMultiplier } = await LoyaltyService.getLoyaltyBoosts(order.user_id);
+            const baseAmount = Math.floor(order.total_amount);
+
+            // 1. Calculate XP (Loyalty Points)
+            const finalXP = Math.floor(baseAmount * xpMultiplier);
+
+            // 2. Calculate Tokens (Jetons) - For purchases, we award tokens if tokenMultiplier > 1
+            // e.g. Token Magnet (3.0) adds 2 bonus tokens per TND.
+            const tokenRate = Math.max(0, tokenMultiplier - 1);
+            const finalTokens = Math.floor(baseAmount * tokenRate);
 
             await prisma.$transaction([
                 prisma.user.update({
                     where: { id: order.user_id },
                     data: {
-                        loyaltyPoints: {
-                            increment: finalPoints
-                        }
+                        loyaltyPoints: { increment: finalXP },
+                        tokens: { increment: finalTokens }
                     }
                 }),
                 prisma.orders.update({
@@ -202,11 +208,18 @@ export async function PATCH(
                 'cancelled': 'annulée'
             };
 
+            const isPickup = order.order_type === 'pickup';
+            const statusLabel = status === 'delivered'
+                ? (isPickup ? 'retirée' : 'livrée')
+                : (statusLabels[status] || status);
+
             await prisma.notifications.create({
                 data: {
                     user_id: order.user_id,
-                    title: `Commande ${statusLabels[status] || status}`,
-                    message: `Le statut de votre commande #${order.order_number} est passé à: ${statusLabels[status] || status}`,
+                    title: status === 'delivered'
+                        ? (isPickup ? 'Signal Terminé - Commande Retirée' : 'Signal Terminé - Commande Livrée')
+                        : `Commande ${statusLabel}`,
+                    message: `Le statut de votre commande #${order.order_number} est passé à: ${statusLabel}`,
                     type: 'order_update',
                     link: `/account/orders/${order.id}`,
                 }
