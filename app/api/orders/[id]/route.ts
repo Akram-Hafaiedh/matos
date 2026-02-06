@@ -49,7 +49,43 @@ export async function GET(
 
         return NextResponse.json({
             success: true,
-            order
+            order: {
+                id: order.id.toString(),
+                orderNumber: order.order_number,
+                deliveryInfo: {
+                    fullName: order.customer_name,
+                    phone: order.customer_phone,
+                    email: order.customer_email,
+                    address: order.delivery_address,
+                    city: order.city,
+                    notes: order.notes
+                },
+                cart: order.order_items.map((oi: any) => ({
+                    ...oi,
+                    name: oi.item_name,
+                    itemPrice: oi.item_price,
+                    selectedSize: oi.selected_size,
+                    menuItem: oi.menu_items
+                })),
+                paymentMethod: order.payment_method,
+                totalPrice: order.subtotal,
+                deliveryFee: order.delivery_fee,
+                finalTotal: order.total_amount,
+                status: order.status,
+                orderType: (order as any).order_type,
+                deliveryTime: order.delivery_time,
+                scheduledTime: order.scheduled_time,
+                createdAt: order.created_at.toISOString(),
+                updatedAt: order.updated_at.toISOString(),
+                confirmedAt: order.confirmed_at,
+                preparingAt: order.preparing_at,
+                readyAt: order.ready_at,
+                outForDeliveryAt: order.out_for_delivery_at,
+                deliveredAt: order.delivered_at,
+                cancelledAt: order.cancelled_at,
+                cancelMessage: order.cancel_message,
+                user: order.users
+            }
         });
 
     } catch (error) {
@@ -179,7 +215,42 @@ export async function PATCH(
 
         return NextResponse.json({
             success: true,
-            order,
+            order: {
+                id: order.id.toString(),
+                orderNumber: order.order_number,
+                deliveryInfo: {
+                    fullName: order.customer_name,
+                    phone: order.customer_phone,
+                    email: order.customer_email,
+                    address: order.delivery_address,
+                    city: order.city,
+                    notes: order.notes
+                },
+                cart: (order as any).order_items?.map((oi: any) => ({
+                    ...oi,
+                    name: oi.item_name,
+                    itemPrice: oi.item_price,
+                    selectedSize: oi.selected_size
+                })),
+                paymentMethod: order.payment_method,
+                totalPrice: order.subtotal,
+                deliveryFee: order.delivery_fee,
+                finalTotal: order.total_amount,
+                status: order.status,
+                orderType: (order as any).order_type,
+                deliveryTime: order.delivery_time,
+                scheduledTime: order.scheduled_time,
+                createdAt: order.created_at.toISOString(),
+                updatedAt: order.updated_at.toISOString(),
+                confirmedAt: order.confirmed_at,
+                preparingAt: order.preparing_at,
+                readyAt: order.ready_at,
+                outForDeliveryAt: order.out_for_delivery_at,
+                deliveredAt: order.delivered_at,
+                cancelledAt: order.cancelled_at,
+                cancelMessage: order.cancel_message,
+                user: order.users
+            },
             message: 'Statut mis à jour avec succès'
         });
 

@@ -216,7 +216,14 @@ export async function GET(request: NextRequest) {
                 city: order.city,
                 notes: order.notes
             },
-            cart: order.order_items,
+            cart: order.order_items.map((oi: any) => ({
+                ...oi,
+                name: oi.item_name,
+                itemPrice: oi.item_price,
+                selectedSize: oi.selected_size,
+                menuItem: oi.menu_items,
+                promotion: oi.promotions
+            })),
             paymentMethod: order.payment_method,
             totalPrice: order.subtotal,
             deliveryFee: order.delivery_fee,
