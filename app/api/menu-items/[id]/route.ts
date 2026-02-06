@@ -33,7 +33,13 @@ export async function GET(
 
         return NextResponse.json({
             success: true,
-            menuItem
+            menuItem: {
+                ...menuItem,
+                imageUrl: (menuItem as any).image_url,
+                displayOrder: (menuItem as any).display_order,
+                categoryId: (menuItem as any).category_id,
+                isActive: (menuItem as any).is_active
+            }
         });
     } catch (error) {
         console.error('Error fetching menu item:', error);
@@ -117,7 +123,13 @@ export async function PUT(
 
         return NextResponse.json({
             success: true,
-            menuItem
+            menuItem: {
+                ...menuItem,
+                imageUrl: (menuItem as any).image_url,
+                displayOrder: (menuItem as any).display_order,
+                categoryId: (menuItem as any).category_id,
+                isActive: (menuItem as any).is_active
+            }
         });
 
     } catch (error) {

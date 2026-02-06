@@ -65,6 +65,10 @@ export async function GET(request: NextRequest) {
                 // Flatten for frontend
                 const result = {
                     ...menuItem,
+                    imageUrl: menuItem.image_url,
+                    displayOrder: menuItem.display_order,
+                    categoryId: menuItem.category_id,
+                    isActive: menuItem.is_active,
                     likeCount: displayLikeCount,
                     isLiked: (menuItem as any).menu_likes?.length > 0,
                     rating: avgRating,
@@ -153,6 +157,10 @@ export async function GET(request: NextRequest) {
 
             return {
                 ...item,
+                imageUrl: item.image_url,
+                displayOrder: item.display_order,
+                categoryId: item.category_id,
+                isActive: item.is_active,
                 likeCount: displayLikeCount,
                 reviewCount: displayReviewCount,
                 rating: avgRating,

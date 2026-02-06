@@ -66,6 +66,9 @@ export async function GET(request: Request) {
                         rank: 5 + (i * 2),
                         image: null,
                         role: 'customer'
+                    },
+                    menuItem: {
+                        name: "Produit Mato's" // Fallback name for simulated reviews
                     }
                 });
             }
@@ -85,7 +88,8 @@ export async function GET(request: Request) {
 
             enrichedReviews.push({
                 ...review,
-                user: { ...review.users, rank }
+                user: { ...review.users, rank },
+                menuItem: review.menu_items // Alias for frontend compatibility
             });
         }
 
