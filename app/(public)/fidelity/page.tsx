@@ -1,12 +1,40 @@
 'use client';
 
-import { Trophy, Crown, Gem, ShieldCheck, Zap, ArrowLeft, Star, Medal, Users, LogIn, Gift } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
+import { motion, useScroll, useTransform } from 'framer-motion';
+import {
+    Target, Skull, Crown, Sword, Lock, CheckCircle2,
+    ChevronRight, Star, Shield, Trophy, Flame, Gift,
+    Key, X, Sparkles, Zap, Timer, TrendingUp,
+    Fingerprint, Scan, ShieldAlert, Coins, Palette,
+    Layout, Smile, User, Camera, Bell, ArrowRight
+} from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import AmbientBackground from '@/components/AmbientBackground';
+import SectionHeader from '@/components/SectionHeader';
 import UserAvatar from "@/components/UserAvatar";
-import { TIERS, getUserTier } from "@/lib/loyalty";
+
+// --- DATA ---
+const ACTS = [
+    { id: 'I', name: 'INITIATION', tiers: ['Recrue', 'Soldat'], reward: 'Border Bronze' },
+    { id: 'II', name: 'ASCENSION', tiers: ['Caporal', 'Sergent', 'Lieutenant'], reward: 'Chest Silver' },
+    { id: 'III', name: 'POUVOIR', tiers: ['Capitaine', 'Baron', 'Gouverneur'], reward: 'Neon Background' },
+    { id: 'IV', name: 'LÉGENDE', tiers: ['Sultan', 'Immortal'], reward: 'King Flair' },
+];
+
+const QUESTS = [
+    { title: 'Le festin du Baron', desc: 'Commander 3 Pizzas Signature', reward: 50, icon: <Flame className="w-4 h-4" /> },
+    { title: 'Soutien Logistique', desc: 'Laisser 2 avis détaillés', reward: 20, icon: <CheckCircle2 className="w-4 h-4" /> },
+    { title: 'Infiltration Nocturne', desc: 'Commander après 22h', reward: 30, icon: <Zap className="w-4 h-4" /> },
+];
+
+const SHOP_ITEMS = [
+    { category: 'Borders', name: 'Neon Yellow', price: 100, preview: <div className="w-12 h-12 rounded-full border-2 border-yellow-400 shadow-[0_0_10px_yellow]" /> },
+    { category: 'Borders', name: 'Glitch Effect', price: 250, preview: <div className="w-12 h-12 rounded-full border-2 border-purple-500 animate-pulse" /> },
+    { category: 'Backgrounds', name: 'Cyberpunk Red', price: 150, preview: <div className="w-12 h-12 rounded-lg bg-red-900/30 border border-red-500" /> },
+    { category: 'Emojis', name: 'Sultan Pack', price: 80, preview: <div className="text-2xl pt-2">👑👳‍♂️💎</div> },
+];
 
 interface RankUser {
     id: string;
@@ -16,18 +44,15 @@ interface RankUser {
     selectedFrame: string | null;
 }
 
-interface HallOfFameItem {
-    month: string;
-    winner: string;
-    points: number;
-    award: string;
-}
-
 export default function FidelityPage() {
     const { data: session, status } = useSession();
     const [ranking, setRanking] = useState<RankUser[]>([]);
-    const [hallOfFame, setHallOfFame] = useState<HallOfFameItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const containerRef = useRef(null);
+    const { scrollYProgress } = useScroll({ target: containerRef });
+
+    const headerY = useTransform(scrollYProgress, [0, 0.1], [0, -30]);
+    const headerOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0.8]);
 
     useEffect(() => {
         fetch('/api/loyalty/ranking')
@@ -35,334 +60,267 @@ export default function FidelityPage() {
             .then(data => {
                 if (data.success) {
                     setRanking(data.ranking);
-                    setHallOfFame(data.hallOfFame);
                 }
                 setLoading(false);
             });
     }, []);
 
-    const levels = TIERS.map(tier => {
-        let icon;
-        if (tier.name === 'Bronze') icon = <ShieldCheck className="w-8 h-8 text-orange-400" />;
-        else if (tier.name === 'Silver') icon = <Trophy className="w-8 h-8 text-gray-300" />;
-        else if (tier.name === 'Gold') icon = <Crown className="w-8 h-8 text-yellow-500" />;
-        else icon = <Gem className="w-8 h-8 text-cyan-400" />;
-
-        return {
-            ...tier,
-            icon,
-            points: tier.max === Infinity ? `${tier.min}+` : `${tier.min}-${tier.max}`,
-            perc: '100%' // Just for display in the grid, we might want to calculate real progress if user is logged in
-        };
-    });
+    const userPoints = (session?.user as any)?.loyaltyPoints || 0;
 
     return (
-        <div className="min-h-screen bg-black py-16 md:py-20 pb-32 relative overflow-hidden">
-            {/* Ambient Background */}
-            <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-gray-900/50 to-transparent pointer-events-none" />
+        <div ref={containerRef} className="min-h-screen bg-transparent text-white font-sans selection:bg-yellow-500/30 overflow-x-hidden pb-40">
+            <AmbientBackground />
 
-            <div className="max-w-7xl mx-auto px-6 md:px-8 space-y-24 relative z-10">
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                    <div className="space-y-4">
-                        <div>
-                            <h1 className="text-5xl md:text-8xl font-[1000] text-white italic tracking-tighter uppercase leading-[0.85] mb-4">
-                                Mato's <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Privilege</span>
+            {/* HERO SECTION */}
+            <section className="relative pt-40 pb-20 px-6 flex flex-col items-center text-center">
+                <div className="space-y-12 relative z-10 w-full max-w-5xl">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="inline-flex items-center gap-4 px-6 py-2 rounded-full bg-yellow-400/5 border border-yellow-400/10 backdrop-blur-sm shadow-2xl"
+                    >
+                        <Scan className="w-4 h-4 text-yellow-500 animate-pulse" />
+                        <span className="text-yellow-400 font-black text-[10px] uppercase tracking-[0.5em] italic">Syndicate Protocol</span>
+                    </motion.div>
+
+                    <motion.div
+                        style={{ y: headerY, opacity: headerOpacity }}
+                        className="relative group flex flex-col items-center"
+                    >
+                        <div className="absolute -inset-40 bg-yellow-400/5 blur-[160px] opacity-100 animate-pulse"></div>
+
+                        <div className="relative bg-yellow-400 py-10 px-16 md:px-24 -rotate-1 hover:rotate-0 transition-all duration-700 shadow-[20px_20px_0_rgba(0,0,0,1)] border-4 border-black group overflow-hidden">
+                            <h1 className="text-5xl md:text-[8rem] font-[1000] italic uppercase tracking-tighter text-black leading-none inline-block relative z-10 pr-[0.4em]">
+                                LE PACTE
                             </h1>
-                            <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em] max-w-lg leading-relaxed">
-                                Le programme de fidélité le plus exclusif de Tunis. <br className="hidden md:block" />
-                                Cumulez des points, débloquez des récompenses.
-                            </p>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    {status === 'authenticated' ? (
-                        <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 md:p-8 flex items-center gap-6 backdrop-blur-md relative overflow-hidden group hover:border-white/20 transition-colors">
-                            <UserAvatar
-                                image={session?.user?.image}
-                                name={session?.user?.name}
-                                size="lg"
-                                className="w-16 h-16 rounded-2xl border border-white/10 shadow-2xl"
-                            />
-                            <div>
-                                <div className="text-gray-500 text-[9px] font-black uppercase tracking-[0.2em] mb-1">Vos Points Club</div>
-                                <div className="text-4xl font-[1000] text-white italic tracking-tighter">
-                                    {(session?.user as any)?.loyaltyPoints || 1482}
-                                    <span className="text-xs text-yellow-500 uppercase not-italic font-bold ml-1">PTS</span>
+                    <p className="max-w-xl mx-auto text-gray-400 font-bold uppercase tracking-[0.2em] leading-relaxed text-xs italic py-6 opacity-60">
+                        Honneur • Territoire • Butins. <br />
+                        Accédez aux rangs supérieurs et personnalisez votre légende.
+                    </p>
+
+                    {status === 'authenticated' && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex flex-col items-center gap-4"
+                        >
+                            <div className="flex items-center gap-6 p-4 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl">
+                                <UserAvatar image={session.user?.image} name={session.user?.name} className="w-12 h-12" />
+                                <div className="text-left">
+                                    <h4 className="font-black uppercase text-xs tracking-widest">{session.user?.name}</h4>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+                                        <span className="text-yellow-400 font-black italic text-xl">{userPoints} pts</span>
+                                    </div>
                                 </div>
+                                <Link href="/account/loyalty" className="ml-4 w-10 h-10 rounded-xl bg-yellow-400 text-black flex items-center justify-center hover:scale-110 transition-transform">
+                                    <ChevronRight size={20} />
+                                </Link>
                             </div>
-                        </div>
-                    ) : (
-                        <Link href="/login" className="bg-white text-black hover:bg-gray-100 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.15em] flex items-center gap-3 transition-all shadow-xl hover:scale-105 active:scale-95 group">
-                            <LogIn className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                            Rejoindre le Club
-                        </Link>
+                        </motion.div>
                     )}
                 </div>
+            </section>
 
-                {/* Rewards & How to earn points */}
-                <div className="grid md:grid-cols-2 gap-10 bg-gray-900/40 p-10 md:p-14 rounded-[3rem] border border-gray-800 backdrop-blur-3xl relative overflow-hidden group">
-                    <div className="space-y-8 relative z-10">
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-yellow-500 font-black text-[9px] uppercase tracking-[0.3em]">
-                                <Star className="w-4 h-4 fill-yellow-400" />
-                                Gagner des Points
-                            </div>
-                            <h2 className="text-4xl font-[1000] text-white italic uppercase tracking-tighter">Votre Appétit <br /><span className="text-yellow-400">Récompensé</span></h2>
-                        </div>
+            {/* SECTION 1: THE PATH (ACTS & TIERS) */}
+            <section className="py-20 px-6 max-w-7xl mx-auto">
+                <SectionHeader
+                    badge="L'Ascension Digitale"
+                    title={<>Système <span className="text-yellow-500">d'Actes</span></>}
+                    description="Votre progression est jalonnée de 4 actes majeurs, répartis en 10 paliers de prestige."
+                    sideDescription={true}
+                />
 
-                        <div className="space-y-6">
-                            <div className="flex items-start gap-5 group/item">
-                                <div className="w-12 h-12 bg-yellow-400/10 border border-yellow-400/20 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover/item:bg-yellow-400 group-hover/item:text-black transition-all">
-                                    <Gift className="w-6 h-6" />
+                <div className="mt-12 space-y-4">
+                    {ACTS.map((act, i) => (
+                        <motion.div
+                            key={act.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                            className="group relative bg-[#0a0a0a] border border-white/5 rounded-[3rem] p-8 hover:border-yellow-500/20 transition-all"
+                        >
+                            <div className="flex flex-col md:flex-row md:items-center gap-8 md:gap-16">
+                                <div className="text-6xl font-[1000] italic text-yellow-500/10 group-hover:text-yellow-500 transition-colors w-20">
+                                    {act.id}
                                 </div>
-                                <div>
-                                    <h4 className="text-white font-black uppercase text-sm italic tracking-tight mb-1">Bienvenue au Club</h4>
-                                    <p className="text-gray-500 text-xs font-medium leading-relaxed">
-                                        Commencez votre aventure avec <span className="text-yellow-400 font-bold">10 Points offerts</span> immédiatement à la création de votre compte !
-                                    </p>
+                                <div className="flex-1">
+                                    <h3 className="text-2xl font-black uppercase tracking-tighter italic text-white mb-2">{act.name}</h3>
+                                    <div className="flex flex-wrap gap-3">
+                                        {act.tiers.map((tier, idx) => (
+                                            <span key={idx} className="px-4 py-1.5 rounded-full bg-white/5 border border-white/5 text-[9px] font-black uppercase tracking-widest text-gray-500 group-hover:text-white transition-colors">
+                                                {tier}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div className="flex items-start gap-5 group/item">
-                                <div className="w-12 h-12 bg-yellow-400/10 border border-yellow-400/20 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover/item:bg-yellow-400 group-hover/item:text-black transition-all">
-                                    <Zap className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h4 className="text-white font-black uppercase text-sm italic tracking-tight mb-1">Commandez & Savourez</h4>
-                                    <p className="text-gray-500 text-xs font-medium leading-relaxed">
-                                        Gagnez <span className="text-white font-bold">1 Point par DT</span> dépensé. Vos points se cumulent automatiquement après chaque livraison.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-5 group/item">
-                                <div className="w-12 h-12 bg-yellow-400/10 border border-yellow-400/20 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover/item:bg-yellow-400 group-hover/item:text-black transition-all">
-                                    <Medal className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h4 className="text-white font-black uppercase text-sm italic tracking-tight mb-1">Donnez votre Avis</h4>
-                                    <p className="text-gray-500 text-xs font-medium leading-relaxed">
-                                        Gagnez <span className="text-yellow-500 font-bold">25 Points</span> pour vos 3 premiers avis. Les avis détaillés sont récompensés jusqu'à <span className="text-white font-bold">25 Points</span> supplémentaires !
-                                    </p>
+                                <div className="md:text-right">
+                                    <div className="text-[9px] font-black uppercase tracking-widest text-yellow-500/40 mb-1">Act Unlock</div>
+                                    <div className="flex items-center gap-3 md:justify-end">
+                                        <span className="text-xs font-black uppercase italic tracking-tighter">{act.reward}</span>
+                                        <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-500">
+                                            <Gift size={14} />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div className="space-y-8 relative z-10 border-l border-gray-800/50 pl-0 md:pl-10">
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-yellow-500 font-black text-[9px] uppercase tracking-[0.3em]">
-                                <Trophy className="w-4 h-4" />
-                                Avantages Club
-                            </div>
-                            <h2 className="text-4xl font-[1000] text-white italic uppercase tracking-tighter">Plus qu'un <br /><span className="text-yellow-400">Programme</span></h2>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-black/40 border border-white/5 p-5 rounded-2xl space-y-2">
-                                <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Réductions</div>
-                                <div className="text-xl font-black text-white italic tracking-tighter">-5% à -20%</div>
-                                <p className="text-[8px] text-gray-600 font-bold leading-tight">Remise permanente selon votre palier.</p>
-                            </div>
-                            <div className="bg-black/40 border border-white/5 p-5 rounded-2xl space-y-2 relative overflow-hidden group/bonus">
-                                <div className="absolute inset-0 bg-yellow-400/5 animate-pulse"></div>
-                                <div className="text-[10px] font-black text-yellow-500 uppercase tracking-widest">Bonus Bienvenue</div>
-                                <div className="text-xl font-black text-white italic tracking-tighter">+10 Points</div>
-                                <p className="text-[8px] text-gray-400 font-bold leading-tight">Offerts immédiatement à la création du compte.</p>
-                            </div>
-                        </div>
-                    </div>
+                        </motion.div>
+                    ))}
                 </div>
+            </section>
 
-                {/* Levels Section */}
-                <div className="space-y-12">
-                    <div className="text-center space-y-4">
-                        <div className="flex items-center justify-center gap-3 text-yellow-500 font-black text-[9px] uppercase tracking-[0.4em]">
-                            <Gem className="w-4 h-4" />
-                            Progression Mato's
-                        </div>
-                        <h2 className="text-5xl md:text-7xl font-[1000] text-white italic uppercase tracking-tighter leading-none">
-                            Dominez la <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Hiérarchie</span>
-                        </h2>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {levels.map((level, idx) => (
-                            <div
-                                key={idx}
-                                className={`group relative rounded-3xl p-8 overflow-hidden hover:scale-[1.02] transition-all duration-500 flex flex-col border ${level.borderColor}`}
-                            >
-                                <div className={`absolute inset-0 bg-gradient-to-br ${level.color} opacity-80 group-hover:opacity-100 transition-opacity duration-700`}></div>
-                                <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                                <div className="relative z-10 space-y-6 flex flex-col h-full">
-                                    <div className="flex justify-between items-start">
-                                        <div className={`p-3 rounded-2xl bg-black/20 backdrop-blur-md border border-white/10 group-hover:scale-110 transition-transform duration-500`}>
-                                            {level.icon}
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-white/60 text-[9px] font-black uppercase tracking-[0.2em] mb-1">Palier</div>
-                                            <div className="text-lg font-black text-white italic tracking-tight">{level.points}</div>
-                                        </div>
+            {/* SECTION 2: QUESTS & TOKENS */}
+            <section className="py-20 px-6 max-w-7xl mx-auto">
+                <div className="grid lg:grid-cols-2 gap-20 items-center">
+                    <div>
+                        <SectionHeader
+                            badge="Mission Board"
+                            title={<>Quêtes & <span className="text-yellow-500">Jetons</span></>}
+                            description="Chaque contrat rempli vous rapproche de l'Atelier. Amassez des Jetons Mato's pour débloquer l'exclusif."
+                        />
+                        <div className="space-y-4">
+                            {QUESTS.map((quest, i) => (
+                                <div key={i} className="flex items-center gap-6 p-6 rounded-[2.5rem] bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all group">
+                                    <div className="w-12 h-12 rounded-2xl bg-yellow-500/5 flex items-center justify-center text-yellow-500 border border-yellow-500/10 group-hover:bg-yellow-400 group-hover:text-black transition-all">
+                                        {quest.icon}
                                     </div>
-                                    <div className="space-y-2 flex-1">
-                                        <h3 className="text-2xl font-[1000] text-white italic uppercase tracking-tighter">{level.name}</h3>
-                                        <p className="text-white/80 font-bold text-[10px] uppercase tracking-wider leading-relaxed border-t border-white/10 pt-4 mt-2">
-                                            {level.benefit}
-                                        </p>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="font-black uppercase tracking-tight text-sm truncate">{quest.title}</h4>
+                                        <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest opacity-60 mt-1">{quest.desc}</p>
                                     </div>
-
-                                    {status === 'authenticated' && (
-                                        <div className="pt-6 mt-auto">
-                                            <div className="h-1 bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">
-                                                <div
-                                                    className="h-full bg-white rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-                                                    style={{ width: level.perc }}
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Leaderboard & Hall of Fame Grid */}
-                <div className="grid lg:grid-cols-3 gap-6">
-                    {/* Ranking / Leaderboard */}
-                    <div className="lg:col-span-2 bg-white/[0.02] rounded-[2.5rem] border border-white/5 p-8 md:p-10 relative overflow-hidden">
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-3 text-yellow-500 font-black text-[9px] uppercase tracking-[0.3em]">
-                                    <Users className="w-3.5 h-3.5" />
-                                    Classement Général
-                                </div>
-                                <h2 className="text-4xl font-[1000] text-white italic uppercase tracking-tighter">Top <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Members</span></h2>
-                            </div>
-                        </div>
-
-                        <div className="space-y-3">
-                            {loading ? (
-                                [...Array(5)].map((_, i) => (
-                                    <div key={i} className="h-20 bg-white/5 rounded-2xl animate-pulse"></div>
-                                ))
-                            ) : ranking.map((user, idx) => {
-                                const tier = getUserTier(user.loyaltyPoints);
-                                return (
-                                    <div key={user.id} className={`flex items-center justify-between p-4 bg-black/20 border ${tier.borderColor} rounded-2xl hover:bg-white/5 hover:border-white/10 transition-all group/item overflow-hidden relative`}>
-                                        {idx < 3 && <div className={`absolute left-0 top-0 bottom-0 w-1 ${idx === 0 ? 'bg-yellow-400' : idx === 1 ? 'bg-gray-400' : 'bg-orange-500'}`}></div>}
-                                        <div className="flex items-center gap-5">
-                                            <div className={`w-8 font-black text-xl italic text-right ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-400' : idx === 2 ? 'text-orange-500' : 'text-gray-700'}`}>
-                                                #{idx + 1}
-                                            </div>
-                                            <div className="relative group/avatar">
-                                                {/* Unified Border Wrapper with Tier Logic */}
-                                                <div className={`p-[3px] rounded-2xl bg-gradient-to-br ${tier.color} shadow-lg relative`}>
-                                                    <UserAvatar
-                                                        image={user.image}
-                                                        name={user.name}
-                                                        size="md"
-                                                        rank={idx + 1}
-                                                        backgroundColor={(user as any).selectedBg}
-                                                        className={`w-12 h-12 rounded-2xl transition-all duration-300 relative z-10 border-2 
-                                                            ${user.selectedFrame || (idx === 0 ? 'border-yellow-400' : idx === 1 ? 'border-gray-400' : idx === 2 ? 'border-orange-500' : 'border-black/50')}`}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <div className="text-white font-black text-base italic uppercase tracking-tight">{user.name || 'Anonyme'}</div>
-                                                <div className={`text-[9px] ${tier.textColor} font-bold uppercase tracking-widest mt-0.5`}>
-                                                    {tier.name}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right pr-2">
-                                            <div className="text-lg font-black text-white italic tracking-tight">{user.loyaltyPoints.toLocaleString()} <span className="text-[9px] text-gray-600 uppercase not-italic font-bold">PTS</span></div>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </div>
-
-                    {/* Wall of Fame */}
-                    <div className="bg-gradient-to-b from-gray-900 via-gray-900 to-black rounded-[2.5rem] border border-white/5 p-8 flex flex-col space-y-8 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03]"></div>
-                        <div className="relative z-10 space-y-2">
-                            <div className="flex items-center gap-2.5 text-orange-500 font-black text-[9px] uppercase tracking-[0.3em]">
-                                <Medal className="w-3.5 h-3.5" />
-                                Hall of Fame
-                            </div>
-                            <h2 className="text-3xl font-[1000] text-white italic uppercase tracking-tighter leading-none">Légendes <br /> du <span className="text-orange-500">Mois</span></h2>
-                        </div>
-
-                        <div className="relative z-10 space-y-6 flex-1">
-                            {/* Current Month Placeholder teaser */}
-                            <div className="flex gap-4 items-center group relative p-4 rounded-2xl bg-white/[0.03] border border-white/5 border-dashed overflow-hidden">
-                                <div className="absolute inset-0 bg-orange-500/5 animate-pulse"></div>
-                                <div className="w-12 h-12 bg-gray-800 border border-white/10 rounded-2xl flex items-center justify-center flex-shrink-0 relative z-10">
-                                    <Trophy className="w-5 h-5 text-gray-600 animate-bounce" />
-                                </div>
-                                <div className="relative z-10">
-                                    <div className="text-[8px] font-black text-yellow-500 uppercase tracking-widest mb-0.5">Février 2026</div>
-                                    <h4 className="text-sm font-black text-gray-400 italic truncate uppercase tracking-tight">Candidat du mois...</h4>
-                                    <p className="text-[9px] text-gray-700 font-bold uppercase tracking-wider">Qui sera la légende ?</p>
-                                </div>
-                            </div>
-
-                            {hallOfFame.map((item, idx) => (
-                                <div key={idx} className="flex gap-4 items-center group">
-                                    <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/10 group-hover:border-orange-500/30 transition-colors">
-                                        <Medal className={`w-5 h-5 ${idx === 0 ? 'text-yellow-400' : 'text-gray-500'}`} />
-                                    </div>
-                                    <div>
-                                        <div className="text-[8px] font-black text-orange-500 uppercase tracking-widest mb-0.5">{item.month}</div>
-                                        <h4 className="text-sm font-black text-white italic truncate uppercase tracking-tight">{item.winner}</h4>
-                                        <p className="text-[9px] text-gray-600 font-bold uppercase tracking-wider">{item.points} pts</p>
+                                    <div className="flex flex-col items-end shrink-0">
+                                        <div className="text-yellow-500 font-black italic">+{quest.reward}</div>
+                                        <div className="text-[7px] font-black uppercase tracking-widest text-gray-700">M-TOKENS</div>
                                     </div>
                                 </div>
                             ))}
                         </div>
+                    </div>
 
-                        <div className="relative z-10 bg-white/[0.03] p-6 rounded-2xl border border-white/5 text-center space-y-3 backdrop-blur-md">
-                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider leading-relaxed">Devenez la légende de ce mois-ci.</p>
-                            <Link href="/register" className="inline-block text-[10px] font-black text-white border-b border-white/20 hover:border-white hover:text-yellow-400 transition-all uppercase tracking-[0.2em] pb-1">En savoir plus</Link>
+                    <div className="bg-[#0c0c0c] border border-white/5 rounded-[4rem] p-12 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/5 blur-[100px] -mr-32 -mt-32"></div>
+                        <div className="relative z-10 flex flex-col items-center text-center space-y-8">
+                            <div className="w-24 h-24 bg-yellow-400 rounded-[2.5rem] flex items-center justify-center shadow-2xl animate-float">
+                                <Coins className="w-12 h-12 text-black" />
+                            </div>
+                            <div className="space-y-2">
+                                <span className="text-yellow-500 font-black text-[10px] uppercase tracking-[0.4em] italic">Votre Solde Actuel</span>
+                                <h3 className="text-6xl font-[1000] italic tracking-tighter uppercase">540</h3>
+                                <div className="text-[10px] font-black uppercase tracking-widest text-gray-500">Jetons Mato's Collectés</div>
+                            </div>
+                            <Link href="/account/loyalty" className="bg-white text-black px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all">Aller à l'Atelier</Link>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                {/* Footer CTA */}
-                <div className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-[2rem] p-10 md:p-14 relative overflow-hidden group shadow-2xl">
-                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-yellow-400/5 blur-[120px] rounded-full pointer-events-none group-hover:bg-yellow-400/10 transition-colors duration-700"></div>
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
-                        <div className="space-y-4 max-w-xl">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-yellow-400/10 border border-yellow-400/20 rounded-full text-yellow-400 font-black text-[9px] uppercase tracking-[0.2em]">
-                                <Zap className="w-3 h-3 fill-yellow-400" />
-                                1 DT = 1 Point
+            {/* SECTION 3: THE ATELIER (PERSONALIZATION) */}
+            <section className="py-20 px-6 max-w-7xl mx-auto">
+                <SectionHeader
+                    badge="L'Atelier du Sultan"
+                    title={<>Shop de <span className="text-yellow-500">Légende</span></>}
+                    description="Dépensez vos jetons pour personnaliser votre identité sur le réseau Mato's."
+                    align="center"
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {SHOP_ITEMS.map((item, i) => (
+                        <div key={i} className="bg-black/40 backdrop-blur-xl border border-white/5 p-8 rounded-[3rem] hover:border-yellow-500/30 transition-all group relative">
+                            <div className="text-[9px] font-black uppercase text-gray-600 tracking-[0.2em] mb-6">{item.category}</div>
+                            <div className="w-full h-32 bg-white/[0.02] rounded-[2rem] flex items-center justify-center mb-8 border border-white/5 group-hover:scale-105 transition-transform">
+                                {item.preview}
                             </div>
-                            <h2 className="text-4xl md:text-5xl font-[1000] text-white italic uppercase tracking-tighter leading-[0.9]">
-                                Récompensez <br /> votre <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Appétit</span>
-                            </h2>
-                            <p className="font-medium text-sm text-gray-500 leading-relaxed max-w-sm">
-                                Chaque commande vous rapproche de récompenses exclusives. Rejoignez le club Mato's maintenant.
-                            </p>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h4 className="font-black uppercase tracking-tighter text-sm italic">{item.name}</h4>
+                                    <div className="flex items-center gap-1.5 mt-1">
+                                        <Coins size={10} className="text-yellow-500" />
+                                        <span className="text-[10px] font-black text-white/40">{item.price} M-TOKENS</span>
+                                    </div>
+                                </div>
+                                <button className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-yellow-400 hover:text-black transition-all">
+                                    <ChevronRight size={18} />
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                            <Link href="/menu" className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-8 py-4 rounded-xl font-black text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all text-center shadow-lg shadow-yellow-400/20">
-                                Commander
-                            </Link>
-                            {status !== 'authenticated' && (
-                                <Link href="/register" className="bg-transparent border-2 border-white/10 text-white px-8 py-4 rounded-xl font-black text-xs uppercase tracking-[0.15em] hover:bg-white hover:text-black transition-all text-center">
-                                    Créer un compte
-                                </Link>
+                    ))}
+                </div>
+            </section>
+
+            {/* SECTION 4: HAUTE TABLE (CONNECTED TO API) */}
+            <section className="py-20 px-6 max-w-5xl mx-auto">
+                <SectionHeader
+                    badge="Syndicate Elite"
+                    title={<>La Haute <span className="text-yellow-500">Table</span></>}
+                    description="Le classement en temps réel des légendes du Syndicat."
+                    align="center"
+                />
+
+                <div className="bg-[#080808]/60 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] p-4">
+                    {loading ? (
+                        <div className="flex items-center justify-center py-20">
+                            <div className="w-8 h-8 border-t-2 border-yellow-400 rounded-full animate-spin" />
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-1">
+                            {ranking.length > 0 ? ranking.slice(0, 10).map((user, idx) => (
+                                <div key={user.id} className="p-4 rounded-xl hover:bg-white/[0.03] transition-all group flex items-center gap-6 border-b border-white/[0.02] last:border-0 text-left">
+                                    <span className="text-xl font-[1000] italic text-white/5 group-hover:text-yellow-500/30 w-8">{idx + 1}</span>
+                                    <div className="flex-1 flex items-center gap-4">
+                                        <UserAvatar image={user.image} name={user.name} className="w-8 h-8" />
+                                        <div>
+                                            <h4 className="text-sm font-black uppercase tracking-tight italic">{user.name || 'Anonyme'}</h4>
+                                            <span className="text-[8px] font-bold uppercase tracking-widest text-gray-600 italic">Prestige Level</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-sm font-[1000] italic text-yellow-500">{user.loyaltyPoints.toLocaleString()}</div>
+                                        <div className="text-[7px] font-black uppercase tracking-widest opacity-20">Points d'Honneur</div>
+                                    </div>
+                                </div>
+                            )) : (
+                                <div className="py-20 text-center uppercase font-black text-xs text-gray-700 tracking-widest italic">
+                                    Aucune donnée disponible
+                                </div>
                             )}
                         </div>
-                    </div>
+                    )}
                 </div>
-            </div>
+            </section>
+
+            {/* FOOTER CTA: SLANTED & REFINED */}
+            <section className="relative mt-20">
+                <div
+                    className="absolute inset-0 z-0 bg-yellow-400"
+                    style={{ clipPath: 'polygon(0 20%, 100% 0, 100% 100%, 0 100%)' }}
+                >
+                    <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(black 1px, transparent 1px)', backgroundSize: '10px 10px' }}></div>
+                </div>
+
+                <div className="relative z-10 pt-48 pb-24 flex flex-col items-center text-center text-black">
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }} className="space-y-12">
+                        <h2 className="text-5xl md:text-[7rem] font-[1000] uppercase italic tracking-tighter leading-[0.7]">
+                            REJOIGNEZ LE <br />
+                            <span className="relative">SYNDICAT</span>
+                        </h2>
+
+                        <div className="pt-6">
+                            <Link href="/register" className="relative group overflow-hidden px-12 py-5 bg-black text-white font-[1000] uppercase italic tracking-widest rounded-full text-xs hover:scale-105 transition-all shadow-2xl inline-block">
+                                <span className="relative z-10">Valider le Pacte</span>
+                                <div className="absolute inset-0 flex items-center justify-center bg-white text-black translate-y-full group-hover:translate-y-0 transition-transform duration-500 z-20 font-black uppercase text-xs">Accès Immédiat</div>
+                            </Link>
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
+
+            <style jsx global>{`
+                .shadow-glow { filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.4)); }
+                .text-shadow-glow { text-shadow: 0 0 30px rgba(0, 0, 0, 0.1); }
+            `}</style>
         </div>
     );
 }
