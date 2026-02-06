@@ -137,24 +137,7 @@ export function getDetailedProgress(points: number) {
     };
 }
 
-export const QUESTS = [
-    { id: 'q1', title: 'Tactical Lunch', description: 'Commande entre 12:00 et 14:00 (Mar-Sam)', reward: '150 XP', progress: 0.5, type: 'TIME', minAct: 0 },
-    { id: 'q2', title: 'Weekender Protocol', description: 'Une commande le Vendredi ou Samedi', reward: '300 XP', progress: 0, type: 'STREAK', minAct: 0 },
-    { id: 'q3', title: 'Signature Hunter', description: 'Essayez 5 items différents du menu', reward: '500 XP', progress: 0.8, type: 'COLLECTION', minAct: 1 },
-    { id: 'q4', title: 'Syndicate Recruit', description: 'Invitez un ami à rejoindre le rang', reward: '100 Jetons', progress: 0, type: 'SOCIAL', minAct: 1 },
-];
 
-/**
- * Returns a descriptive text for a booster if the database description is missing.
- */
-export function getBoosterDescription(name: string): string {
-    const lowerName = name.toLowerCase();
-    if (lowerName.includes('xp overdrive')) return 'Double XP sur toutes les commandes et quêtes.';
-    if (lowerName.includes('token magnet')) return 'Gagnez plus de jetons par TND dépensé.';
-    if (lowerName.includes('lucky drop')) return 'Augmente vos chances d\'obtenir du loot rare.';
-    if (lowerName.includes('protocol hack')) return 'Accès facilité aux protocoles de quêtes.';
-    return 'Booster actif augmentant vos performances.';
-}
 
 export function getUserTier(points: number) {
     const tier = TIERS.find(tier => points >= tier.min && points <= tier.max);
@@ -183,62 +166,29 @@ export function getNextTier(points: number) {
 
 export const ITEM_TYPES = ['Loot Boxes', 'Auras', 'Frames', 'Titles', 'Boosters', 'Exclusive'];
 
-export const SHOP_ITEMS = [
-    // LOOT BOXES
-    { id: 1, name: 'Shadow Crate', type: 'Loot Boxes', price: 500, act: 1, level: 1, rarity: 'Common', emoji: '📦' },
-    { id: 2, name: 'Operative Cache', type: 'Loot Boxes', price: 1200, act: 1, level: 5, rarity: 'Uncommon', emoji: '🎁' },
-    { id: 3, name: 'Sultan Chest', type: 'Loot Boxes', price: 3000, act: 2, level: 2, rarity: 'Rare', emoji: '🎖️' },
-    { id: 4, name: 'Syndicate Vault', type: 'Loot Boxes', price: 7500, act: 3, level: 1, rarity: 'Epic', emoji: '🔒' },
-    { id: 5, name: 'Obsidian Case', type: 'Loot Boxes', price: 15000, act: 4, level: 5, rarity: 'Legendary', emoji: '💎' },
+// Export only necessary types/constants if needed by other files, but usually SHOP_ITEMS is database driven.
+// Getting rid of hardcoded SHOP_ITEMS here to avoid confusion with seed.ts
 
-    // AURAS (Backgrounds)
-    { id: 6, name: 'Neon Pulse', type: 'Auras', price: 800, act: 1, level: 3, rarity: 'Common', emoji: '🌈' },
-    { id: 7, name: 'Acid Rain', type: 'Auras', price: 1500, act: 2, level: 1, rarity: 'Uncommon', emoji: '🧪' },
-    { id: 8, name: 'Digital Ghost', type: 'Auras', price: 2500, act: 2, level: 4, rarity: 'Rare', emoji: '👻' },
-    { id: 9, name: 'Solar Flare', type: 'Auras', price: 5000, act: 3, level: 3, rarity: 'Epic', emoji: '🌞' },
-    { id: 10, name: 'Void Matter', type: 'Auras', price: 12000, act: 4, level: 2, rarity: 'Legendary', emoji: '🌑' },
+/**
+ * Standardized check to see if an inventory item has expired.
+ * Includes fallback logic for items where expires_at might be missing but have a duration in name.
+ */
+export function isItemExpired(item: any): boolean {
+    let expiry: Date | null = null;
 
-    // FRAMES
-    { id: 11, name: 'Steel Wire', type: 'Frames', price: 600, act: 1, level: 2, rarity: 'Common', emoji: '🖼️' },
-    { id: 12, name: 'Carbon Fiber', type: 'Frames', price: 1800, act: 2, level: 1, rarity: 'Uncommon', emoji: '⬛' },
-    { id: 13, name: 'Gold Trim', type: 'Frames', price: 4000, act: 2, level: 5, rarity: 'Rare', emoji: '✨' },
-    { id: 14, name: 'Plasma Glow', type: 'Frames', price: 8000, act: 3, level: 4, rarity: 'Epic', emoji: '🟣' },
-    { id: 15, name: 'Reality Glitch', type: 'Frames', price: 20000, act: 4, level: 4, rarity: 'Legendary', emoji: '🌀' },
+    if (item.expires_at || item.expiresAt) {
+        expiry = new Date(item.expires_at || item.expiresAt);
+    } else if (item.name && item.type === 'Boosters' && (item.unlocked_at || item.unlockedAt)) {
+        // Fallback: Try to parse duration from name (e.g., "(1h)")
+        const match = item.name.match(/\((\d+)h\)/i);
+        if (match) {
+            const hours = parseInt(match[1]);
+            const start = new Date(item.unlocked_at || item.unlockedAt);
+            expiry = new Date(start.getTime() + hours * 60 * 60 * 1000);
+        }
+    }
 
-    // TITLES
-    { id: 16, name: 'Shadow', type: 'Titles', price: 300, act: 1, level: 1, rarity: 'Common', emoji: '👤' },
-    { id: 17, name: 'Runner', type: 'Titles', price: 900, act: 1, level: 4, rarity: 'Uncommon', emoji: '🏃' },
-    { id: 18, name: 'Mastermind', type: 'Titles', price: 2200, act: 2, level: 3, rarity: 'Rare', emoji: '🧠' },
-    { id: 19, name: 'Ghost in Shell', type: 'Titles', price: 5500, act: 3, level: 2, rarity: 'Epic', emoji: '🛸' },
-    { id: 20, name: 'True Prophet', type: 'Titles', price: 15000, act: 4, level: 1, rarity: 'Legendary', emoji: '👁️' },
+    if (!expiry) return false;
+    return expiry < new Date();
+}
 
-    // BOOSTERS
-    { id: 21, name: 'XP Overdrive (1h)', type: 'Boosters', price: 400, act: 1, level: 1, rarity: 'Common', emoji: '⚡' },
-    { id: 22, name: 'Token Magnet (3h)', type: 'Boosters', price: 1100, act: 2, level: 1, rarity: 'Uncommon', emoji: '🧲' },
-    { id: 23, name: 'Lucky Drop (24h)', type: 'Boosters', price: 3500, act: 2, level: 5, rarity: 'Rare', emoji: '🍀' },
-    { id: 24, name: 'Protocol Hack', type: 'Boosters', price: 7000, act: 3, level: 3, rarity: 'Epic', emoji: '💻' },
-
-    // EXCLUSIVE
-    { id: 25, name: 'VIP Pass - Act I', type: 'Exclusive', price: 1000, act: 1, level: 5, rarity: 'Epic', emoji: '🎟️' },
-    { id: 26, name: 'Mato\'s Secret Sauce', type: 'Exclusive', price: 5000, act: 2, level: 10, rarity: 'Legendary', emoji: '🥫' },
-];
-
-// Seed random items
-const SEEDED_ITEMS = Array.from({ length: 34 }, (_, i) => {
-    const id = i + 27;
-    const act = Math.floor(Math.random() * 4) + 1;
-    const level = Math.floor(Math.random() * 10) + 1;
-    const type = ITEM_TYPES[Math.floor(Math.random() * ITEM_TYPES.length)];
-    return {
-        id,
-        name: `${type.slice(0, -1)} Protocole #${id}`,
-        type,
-        price: id * 250,
-        act,
-        level,
-        rarity: id > 50 ? 'Legendary' : id > 40 ? 'Epic' : id > 30 ? 'Rare' : 'Common',
-        emoji: '🔧'
-    };
-});
-
-SHOP_ITEMS.push(...SEEDED_ITEMS);
