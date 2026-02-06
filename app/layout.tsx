@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://matos-psi.vercel.app'),
   title: "Mato's - Restaurant & Fast Food",
   description: "Pizza, Burgers, Tacos et plus encore!",
   icons: {

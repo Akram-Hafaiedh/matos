@@ -11,11 +11,16 @@ const globalForPrisma = globalThis as unknown as {
 // Initialize or reuse the PostgreSQL connection pool
 // For Prisma Postgres, we limit the pool size to avoid overwhelming the proxy
 // Trigger reload after schema update
+const connectionString = process.env.DATABASE_URL;
+const finalConnectionString = connectionString?.includes('?')
+    ? `${connectionString}&uselibpqcompat=true`
+    : `${connectionString}?uselibpqcompat=true`;
+
 export const pool = globalForPrisma.pool ?? new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: finalConnectionString,
     max: 10,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    connectionTimeoutMillis: 10000,
 });
 
 // Create the Prisma adapter with the pool
