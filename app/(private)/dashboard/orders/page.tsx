@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Package, Clock, CheckCircle, Truck, XCircle, RefreshCw, Store, Users, ChevronRight, Hash, Activity, MapPin, Phone, MessageSquare, ArrowRight, Loader2, Signal } from 'lucide-react';
 import { useToast } from '@/app/context/ToastContext';
 import ConfirmModal from '@/components/ConfirmModal';
+import SideDrawer from '@/components/SideDrawer';
 
 interface Order {
     id: string;
@@ -121,7 +122,7 @@ export default function AdminOrdersPage() {
     ];
 
     return (
-        <div className="w-full pb-20 space-y-12 animate-in fade-in duration-700">
+        <div className="w-full pb-20 animate-in fade-in duration-700">
             {/* Cancellation Modal */}
             <ConfirmModal
                 isOpen={!!cancellingOrder}
@@ -152,180 +153,165 @@ export default function AdminOrdersPage() {
                 )}
             </ConfirmModal>
 
-            {/* Order Details Sliding Panel */}
-            <div className={`fixed inset-y-0 right-0 w-full md:w-[700px] bg-[#080808] border-l border-white/5 z-[60] shadow-[0_0_100px_rgba(0,0,0,0.8)] transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] transform ${selectedOrder ? 'translate-x-0' : 'translate-x-full'}`}>
-                {selectedOrder && (
-                    <div className="h-full flex flex-col relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-full h-full bg-yellow-400/[0.01] pointer-events-none"></div>
-
-                        <div className="p-12 border-b border-white/5 flex items-center justify-between bg-black/40 backdrop-blur-3xl sticky top-0 z-10">
-                            <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Hash size={12} className="text-yellow-400" />
-                                    <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic leading-none">Transmission Protocol</span>
-                                </div>
-                                <h3 className="text-4xl font-[1000] text-white italic tracking-tighter uppercase leading-none">ORDER <span className="text-yellow-400">#{selectedOrder.orderNumber}</span></h3>
-                            </div>
-                            <button
-                                onClick={() => setSelectedOrder(null)}
-                                className="w-16 h-16 bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 rounded-3xl text-gray-500 hover:text-white transition-all flex items-center justify-center group"
-                            >
-                                <ChevronRight className="w-8 h-8 group-hover:translate-x-1 transition-transform" />
-                            </button>
+            <SideDrawer
+                isOpen={!!selectedOrder}
+                onClose={() => setSelectedOrder(null)}
+                title={selectedOrder ? (
+                    <>ORDER <span className="text-yellow-400">#{selectedOrder.orderNumber}</span></>
+                ) : ''}
+                footer={selectedOrder && (
+                    <>
+                        <div className="flex gap-6">
+                            {selectedOrder.status === 'pending' && (
+                                <button
+                                    onClick={() => updateOrderStatus(selectedOrder.id, 'confirmed')}
+                                    className="flex-1 bg-yellow-400 text-black px-10 py-6 rounded-[2.5rem] font-[1000] uppercase text-xs tracking-[0.3em] italic shadow-[0_20px_40px_rgba(250,204,21,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4"
+                                >
+                                    Autoriser Commande
+                                    <CheckCircle size={20} strokeWidth={3} />
+                                </button>
+                            )}
+                            {selectedOrder.status === 'confirmed' && (
+                                <button
+                                    onClick={() => updateOrderStatus(selectedOrder.id, 'preparing')}
+                                    className="flex-1 bg-white text-black px-10 py-6 rounded-[2.5rem] font-[1000] uppercase text-xs tracking-[0.3em] italic shadow-[0_20px_40px_rgba(255,255,255,0.1)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4"
+                                >
+                                    Initier Préparation
+                                    <ArrowRight size={20} strokeWidth={3} />
+                                </button>
+                            )}
+                            {selectedOrder.status === 'preparing' && (
+                                <button
+                                    onClick={() => updateOrderStatus(selectedOrder.id, selectedOrder.orderType === 'pickup' ? 'ready' : 'out_for_delivery')}
+                                    className="flex-1 bg-yellow-400 text-black px-10 py-6 rounded-[2.5rem] font-[1000] uppercase text-xs tracking-[0.3em] italic shadow-[0_20px_40px_rgba(250,204,21,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4"
+                                >
+                                    {selectedOrder.orderType === 'pickup' ? 'MARQUER PRET [PICKUP]' : 'LANCER LOGISTIQUE [LIVRAISON]'}
+                                    <Signal size={20} strokeWidth={3} />
+                                </button>
+                            )}
+                            {['ready', 'out_for_delivery'].includes(selectedOrder.status) && (
+                                <button
+                                    onClick={() => updateOrderStatus(selectedOrder.id, 'delivered')}
+                                    className="flex-1 bg-green-500 text-white px-10 py-6 rounded-[2.5rem] font-[1000] uppercase text-xs tracking-[0.3em] italic shadow-[0_20px_40px_rgba(34,197,94,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4"
+                                >
+                                    Clôturer Mission
+                                    <CheckCircle size={20} strokeWidth={3} />
+                                </button>
+                            )}
                         </div>
+                        <button
+                            onClick={() => {
+                                setCancellingOrder(selectedOrder);
+                                setSelectedOrder(null);
+                            }}
+                            className="w-full bg-white/[0.03] hover:bg-red-500/10 text-gray-600 hover:text-red-500 border border-white/5 hover:border-red-500/20 px-8 py-5 rounded-[2.5rem] font-[1000] uppercase text-[10px] tracking-[0.4em] italic transition-all active:scale-95"
+                        >
+                            ABORT MISSION / ANNULER
+                        </button>
+                    </>
+                )}
+            >
+                {selectedOrder && (
+                    <>
+                        {/* Client Intelligence */}
+                        <section className="space-y-8">
+                            <div className="flex items-center gap-4">
+                                <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]"></div>
+                                <h4 className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic">Client Intelligence</h4>
+                            </div>
+                            <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-10 space-y-8 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/[0.01] blur-[100px] -mr-32 -mt-32 pointer-events-none group-hover:bg-yellow-400/[0.03] transition-all"></div>
 
-                        <div className="flex-1 overflow-y-auto p-12 custom-scrollbar space-y-16 pb-40 relative z-10">
-                            {/* Client Intelligence */}
-                            <section className="space-y-8">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]"></div>
-                                    <h4 className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic">Client Intelligence</h4>
-                                </div>
-                                <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-10 space-y-8 relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/[0.01] blur-[100px] -mr-32 -mt-32 pointer-events-none group-hover:bg-yellow-400/[0.03] transition-all"></div>
-
-                                    <div className="flex justify-between items-start relative z-10">
-                                        <div className="space-y-2">
-                                            <p className="text-3xl font-[1000] text-white uppercase tracking-tighter italic">{selectedOrder.deliveryInfo.fullName}</p>
-                                            <div className="flex items-center gap-3 text-gray-400">
-                                                <Phone size={14} className="text-yellow-400" />
-                                                <p className="font-black text-xs tracking-widest">{selectedOrder.deliveryInfo.phone}</p>
-                                            </div>
-                                        </div>
-                                        <div className={`p-6 rounded-[2rem] border transition-colors ${selectedOrder.orderType === 'pickup' ? 'bg-pink-500/5 border-pink-500/20 text-pink-400' : 'bg-blue-500/5 border-blue-400/20 text-blue-400'}`}>
-                                            {selectedOrder.orderType === 'pickup' ? <Store size={32} /> : <Truck size={32} />}
-                                        </div>
-                                    </div>
-
-                                    <div className="pt-8 border-t border-white/5 relative z-10 space-y-4">
-                                        <div className="flex items-center gap-3">
-                                            <MapPin size={14} className="text-gray-600" />
-                                            <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] italic">Target Vector</p>
-                                        </div>
-                                        <p className="text-white font-[1000] uppercase italic tracking-widest text-sm leading-relaxed">
-                                            {selectedOrder.deliveryInfo.address}, <span className="text-yellow-400/50">{selectedOrder.deliveryInfo.city}</span>
-                                        </p>
-                                    </div>
-
-                                    {selectedOrder.deliveryInfo.notes && (
-                                        <div className="pt-8 border-t border-white/5 relative z-10 bg-yellow-400/[0.02] -mx-10 -mb-10 p-10 mt-8 border-dashed border-yellow-400/10">
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <MessageSquare size={14} className="text-yellow-400/50" />
-                                                <p className="text-[10px] font-black text-yellow-400/50 uppercase tracking-[0.3em] italic">Tactical Briefing</p>
-                                            </div>
-                                            <p className="text-gray-400 text-xs font-black uppercase italic tracking-widest leading-relaxed">"{selectedOrder.deliveryInfo.notes}"</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </section>
-
-                            {/* Signal Manifest (CartItems) */}
-                            <section className="space-y-8">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]"></div>
-                                    <h4 className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic">Signal Manifest</h4>
-                                </div>
-                                <div className="grid gap-4">
-                                    {selectedOrder.cart.map((item: any, idx: number) => (
-                                        <div key={idx} className="bg-white/[0.01] border border-white/5 rounded-[2.5rem] p-8 flex items-center justify-between group hover:bg-white/[0.03] hover:border-white/10 transition-all duration-500">
-                                            <div className="flex items-center gap-8">
-                                                <div className="w-16 h-16 bg-black border border-white/5 rounded-2xl flex items-center justify-center font-[1000] text-yellow-400 text-lg shadow-2xl italic">
-                                                    {item.quantity}X
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-white font-[1000] uppercase text-base italic tracking-tight group-hover:text-yellow-400 transition-colors uppercase">{item.name || item.itemName}</p>
-                                                    <p className="text-[10px] text-gray-600 font-black uppercase tracking-[0.2em] mt-0.5 italic">
-                                                        {item.selectedSize ? `VARIANT: ${item.selectedSize}` : (item.type === 'promotion' ? 'MENU PROMOTIONNEL' : 'STANDARD PROTOCOL')}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-2xl font-[1000] text-white italic group-hover:scale-110 transition-transform tracking-tighter">{(item.price || item.itemPrice).toFixed(1)} <span className="text-[12px] opacity-40 not-italic uppercase ml-1">DT</span></p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-
-                            {/* Fiscal Status */}
-                            <section className="bg-yellow-400/5 border border-yellow-400/10 rounded-[3.5rem] p-12 space-y-6 relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-full h-full bg-yellow-400/[0.02] -skew-x-12 translate-x-1/2 pointer-events-none transition-transform group-hover:translate-x-1/3 duration-1000"></div>
-
-                                <div className="flex justify-between items-center text-gray-500 font-black uppercase text-[10px] tracking-[0.3em] relative z-10">
-                                    <span>Base Revenue</span>
-                                    <span>{(selectedOrder.finalTotal - 0).toFixed(1)} DT</span>
-                                </div>
-                                <div className="flex justify-between items-center text-gray-500 font-black uppercase text-[10px] tracking-[0.3em] relative z-10">
-                                    <span>Logistics Tax</span>
-                                    <span className="text-green-500 italic">SYSTEM OVERRRIDE: 0.0 DT</span>
-                                </div>
-                                <div className="pt-8 border-t border-yellow-400/10 flex justify-between items-end relative z-10">
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
-                                            <p className="text-gray-400 font-black uppercase text-xs tracking-[0.4em] italic leading-none">Net Output</p>
+                                <div className="flex justify-between items-start relative z-10">
+                                    <div className="space-y-2">
+                                        <p className="text-3xl font-[1000] text-white uppercase tracking-tighter italic">{selectedOrder.deliveryInfo.fullName}</p>
+                                        <div className="flex items-center gap-3 text-gray-400">
+                                            <Phone size={14} className="text-yellow-400" />
+                                            <p className="font-black text-xs tracking-widest">{selectedOrder.deliveryInfo.phone}</p>
                                         </div>
                                     </div>
-                                    <p className="text-6xl font-[1000] text-white tracking-tighter italic leading-none">
-                                        {selectedOrder.finalTotal.toFixed(1)} <span className="text-2xl text-yellow-400 not-italic uppercase ml-2">DT</span>
+                                    <div className={`p-6 rounded-[2rem] border transition-colors ${selectedOrder.orderType === 'pickup' ? 'bg-pink-500/5 border-pink-500/20 text-pink-400' : 'bg-blue-500/5 border-blue-400/20 text-blue-400'}`}>
+                                        {selectedOrder.orderType === 'pickup' ? <Store size={32} /> : <Truck size={32} />}
+                                    </div>
+                                </div>
+
+                                <div className="pt-8 border-t border-white/5 relative z-10 space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <MapPin size={14} className="text-gray-600" />
+                                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] italic">Target Vector</p>
+                                    </div>
+                                    <p className="text-white font-[1000] uppercase italic tracking-widest text-sm leading-relaxed">
+                                        {selectedOrder.deliveryInfo.address}, <span className="text-yellow-400/50">{selectedOrder.deliveryInfo.city}</span>
                                     </p>
                                 </div>
-                            </section>
-                        </div>
 
-                        {/* Tactical Controls */}
-                        <div className="p-12 bg-black/60 backdrop-blur-4xl border-t border-white/5 space-y-6 shadow-[0_-30px_60px_rgba(0,0,0,0.8)] sticky bottom-0 z-20">
-                            <div className="flex gap-6">
-                                {selectedOrder.status === 'pending' && (
-                                    <button
-                                        onClick={() => updateOrderStatus(selectedOrder.id, 'confirmed')}
-                                        className="flex-1 bg-yellow-400 text-black px-10 py-6 rounded-[2.5rem] font-[1000] uppercase text-xs tracking-[0.3em] italic shadow-[0_20px_40px_rgba(250,204,21,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4"
-                                    >
-                                        Autoriser Commande
-                                        <CheckCircle size={20} strokeWidth={3} />
-                                    </button>
-                                )}
-                                {selectedOrder.status === 'confirmed' && (
-                                    <button
-                                        onClick={() => updateOrderStatus(selectedOrder.id, 'preparing')}
-                                        className="flex-1 bg-white text-black px-10 py-6 rounded-[2.5rem] font-[1000] uppercase text-xs tracking-[0.3em] italic shadow-[0_20px_40px_rgba(255,255,255,0.1)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4"
-                                    >
-                                        Initier Préparation
-                                        <ArrowRight size={20} strokeWidth={3} />
-                                    </button>
-                                )}
-                                {selectedOrder.status === 'preparing' && (
-                                    <button
-                                        onClick={() => updateOrderStatus(selectedOrder.id, selectedOrder.orderType === 'pickup' ? 'ready' : 'out_for_delivery')}
-                                        className="flex-1 bg-yellow-400 text-black px-10 py-6 rounded-[2.5rem] font-[1000] uppercase text-xs tracking-[0.3em] italic shadow-[0_20px_40px_rgba(250,204,21,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4"
-                                    >
-                                        {selectedOrder.orderType === 'pickup' ? 'MARQUER PRET [PICKUP]' : 'LANCER LOGISTIQUE [LIVRAISON]'}
-                                        <Signal size={20} strokeWidth={3} />
-                                    </button>
-                                )}
-                                {['ready', 'out_for_delivery'].includes(selectedOrder.status) && (
-                                    <button
-                                        onClick={() => updateOrderStatus(selectedOrder.id, 'delivered')}
-                                        className="flex-1 bg-green-500 text-white px-10 py-6 rounded-[2.5rem] font-[1000] uppercase text-xs tracking-[0.3em] italic shadow-[0_20px_40px_rgba(34,197,94,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4"
-                                    >
-                                        Clôturer Mission
-                                        <CheckCircle size={20} strokeWidth={3} />
-                                    </button>
+                                {selectedOrder.deliveryInfo.notes && (
+                                    <div className="pt-8 border-t border-white/5 relative z-10 bg-yellow-400/[0.02] -mx-10 -mb-10 p-10 mt-8 border-dashed border-yellow-400/10">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <MessageSquare size={14} className="text-yellow-400/50" />
+                                            <p className="text-[10px] font-black text-yellow-400/50 uppercase tracking-[0.3em] italic">Tactical Briefing</p>
+                                        </div>
+                                        <p className="text-gray-400 text-xs font-black uppercase italic tracking-widest leading-relaxed">"{selectedOrder.deliveryInfo.notes}"</p>
+                                    </div>
                                 )}
                             </div>
-                            <button
-                                onClick={() => {
-                                    setCancellingOrder(selectedOrder);
-                                    setSelectedOrder(null);
-                                }}
-                                className="w-full bg-white/[0.03] hover:bg-red-500/10 text-gray-600 hover:text-red-500 border border-white/5 hover:border-red-500/20 px-8 py-5 rounded-[2.5rem] font-[1000] uppercase text-[10px] tracking-[0.4em] italic transition-all active:scale-95"
-                            >
-                                ABORT MISSION / ANNULER
-                            </button>
-                        </div>
-                    </div>
+                        </section>
+
+                        {/* Signal Manifest (CartItems) */}
+                        <section className="space-y-8">
+                            <div className="flex items-center gap-4">
+                                <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]"></div>
+                                <h4 className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic">Signal Manifest</h4>
+                            </div>
+                            <div className="grid gap-4">
+                                {selectedOrder.cart.map((item: any, idx: number) => (
+                                    <div key={idx} className="bg-white/[0.01] border border-white/5 rounded-[2.5rem] p-8 flex items-center justify-between group hover:bg-white/[0.03] hover:border-white/10 transition-all duration-500">
+                                        <div className="flex items-center gap-8">
+                                            <div className="w-16 h-16 bg-black border border-white/5 rounded-2xl flex items-center justify-center font-[1000] text-yellow-400 text-lg shadow-2xl italic">
+                                                {item.quantity}X
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-white font-[1000] uppercase text-base italic tracking-tight group-hover:text-yellow-400 transition-colors uppercase">{item.name || item.itemName}</p>
+                                                <p className="text-[10px] text-gray-600 font-black uppercase tracking-[0.2em] mt-0.5 italic">
+                                                    {item.selectedSize ? `VARIANT: ${item.selectedSize}` : (item.type === 'promotion' ? 'MENU PROMOTIONNEL' : 'STANDARD PROTOCOL')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-2xl font-[1000] text-white italic group-hover:scale-110 transition-transform tracking-tighter">{(item.price || item.itemPrice).toFixed(1)} <span className="text-[12px] opacity-40 not-italic uppercase ml-1">DT</span></p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+
+                        {/* Fiscal Status */}
+                        <section className="bg-yellow-400/5 border border-yellow-400/10 rounded-[3.5rem] p-12 space-y-6 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-full h-full bg-yellow-400/[0.02] -skew-x-12 translate-x-1/2 pointer-events-none transition-transform group-hover:translate-x-1/3 duration-1000"></div>
+
+                            <div className="flex justify-between items-center text-gray-500 font-black uppercase text-[10px] tracking-[0.3em] relative z-10">
+                                <span>Base Revenue</span>
+                                <span>{selectedOrder.finalTotal.toFixed(1)} DT</span>
+                            </div>
+                            <div className="flex justify-between items-center text-gray-500 font-black uppercase text-[10px] tracking-[0.3em] relative z-10">
+                                <span>Logistics Tax</span>
+                                <span className="text-green-500 italic">SYSTEM OVERRRIDE: 0.0 DT</span>
+                            </div>
+                            <div className="pt-8 border-t border-yellow-400/10 flex justify-between items-end relative z-10">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+                                        <p className="text-gray-400 font-black uppercase text-xs tracking-[0.4em] italic leading-none">Net Output</p>
+                                    </div>
+                                </div>
+                                <p className="text-6xl font-[1000] text-white tracking-tighter italic leading-none">
+                                    {selectedOrder.finalTotal.toFixed(1)} <span className="text-2xl text-yellow-400 not-italic uppercase ml-2">DT</span>
+                                </p>
+                            </div>
+                        </section>
+                    </>
                 )}
-            </div>
+            </SideDrawer>
 
             <div className="space-y-12">
                 {/* Header */}
