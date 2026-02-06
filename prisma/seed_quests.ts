@@ -221,10 +221,16 @@ async function main() {
     // Optional: await prisma.quest.deleteMany({}); 
 
     for (const q of quests) {
-        await prisma.quest.upsert({
+        await prisma.quests.upsert({
             where: { id: q.id },
-            update: q,
-            create: q,
+            update: {
+                ...q,
+                updatedAt: new Date()
+            },
+            create: {
+                ...q,
+                updatedAt: new Date()
+            },
         });
     }
 

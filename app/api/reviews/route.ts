@@ -60,7 +60,7 @@ export async function GET(request: Request) {
                     id: `sim-${itemId}-${i}`,
                     rating: 5,
                     comment: FAKE_MESSAGES[(itemId + i) % FAKE_MESSAGES.length],
-                    createdAt: new Date(Date.now() - (i + 1) * 86400000 * (itemId % 5 + 1)).toISOString(),
+                    created_at: new Date(Date.now() - (i + 1) * 86400000 * (itemId % 5 + 1)).toISOString(),
                     user: {
                         name: FAKE_NAMES[(itemId + i) % FAKE_NAMES.length],
                         rank: 5 + (i * 2),

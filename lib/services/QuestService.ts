@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { Quest, UserQuest } from '@/app/generated/prisma';
+import { quests as Quest, user_quests as UserQuest } from '@/app/generated/prisma';
 
 export class QuestService {
 
@@ -11,7 +11,7 @@ export class QuestService {
         const completedQuests: Quest[] = [];
 
         // 1. Fetch all active global quests
-        const activeQuests = await prisma.quest.findMany({
+        const activeQuests = await prisma.quests.findMany({
             where: { isActive: true }
         });
 
@@ -21,8 +21,8 @@ export class QuestService {
         for (const quest of activeQuests) {
 
             // Check if already completed/claimed
-            const userQuest = await prisma.userQuest.findUnique({
-                where: { userId_questId: { userId, questId: quest.id } }
+            const userQuest = await prisma.user_quests.findUnique({
+                where: { user_id_quest_id: { user_id: userId, quest_id: quest.id } }
             });
 
             if (userQuest?.status === 'CLAIMED' || userQuest?.status === 'COMPLETED') {
@@ -39,7 +39,7 @@ export class QuestService {
             switch (quest.type) {
                 case 'TIME':
                     // e.g. "Night Owl" or "Lunch"
-                    if (this.checkTimeRequirement(order.createdAt, config)) {
+                    if (this.checkTimeRequirement(order.created_at, config)) {
                         progressMade = 100; // Instant
                         isCompleted = true;
                     }
@@ -49,7 +49,7 @@ export class QuestService {
                     // e.g. "3 orders in 7 days" or "Weekender" (Fri/Sat)
                     if (config.timeframe && config.targetCount) {
                         // Multi-order streak logic
-                        const isValidNow = this.checkDayRequirement(order.createdAt, config);
+                        const isValidNow = this.checkDayRequirement(order.created_at, config);
                         if (isValidNow) {
                             // Check history count in timeframe
                             const count = await this.countOrdersInTimeframe(userId, config.timeframe);
@@ -63,7 +63,7 @@ export class QuestService {
                         }
                     } else {
                         // Simple "Hit this condition once" streak (like Weekender currently)
-                        if (this.checkDayRequirement(order.createdAt, config)) {
+                        if (this.checkDayRequirement(order.created_at, config)) {
                             progressMade = 100;
                             isCompleted = true;
                         }
@@ -73,14 +73,14 @@ export class QuestService {
                 case 'COLLECTION':
                     // e.g. "Order > 80 TND" or "10 Different Items" or "Ordered specific Promo"
                     if (config.minOrderValue) {
-                        if (order.totalAmount >= config.minOrderValue) {
+                        if (order.total_amount >= config.minOrderValue) {
                             progressMade = 100;
                             isCompleted = true;
                         }
                     } else if (config.promoName) {
                         // Check if order contains the specific promo or item
-                        const hasPromo = order.orderItems.some((oi: any) =>
-                            oi.itemName === config.promoName ||
+                        const hasPromo = order.order_items.some((oi: any) =>
+                            oi.item_name === config.promoName ||
                             oi.promotion?.name === config.promoName
                         );
                         if (hasPromo) {
@@ -108,7 +108,7 @@ export class QuestService {
 
                     if (config.spendAmount) {
                         // Cumulative TND spend
-                        progressMade = Math.floor(order.totalAmount);
+                        progressMade = Math.floor(order.total_amount);
                         if (currentProgress + progressMade >= config.spendAmount) {
                             isCompleted = true;
                         }
@@ -149,21 +149,22 @@ export class QuestService {
             // If isCompleted, force max? No, keep real numbers often better.
 
             if (progressMade > 0 || isCompleted || (quest.type === 'STREAK' && config.timeframe)) {
-                const updated = await prisma.userQuest.upsert({
-                    where: { userId_questId: { userId, questId: quest.id } },
+                const updated = await prisma.user_quests.upsert({
+                    where: { user_id_quest_id: { user_id: userId, quest_id: quest.id } },
                     create: {
-                        userId,
-                        questId: quest.id,
+                        id: `uq_${userId}_${quest.id}`,
+                        user_id: userId,
+                        quest_id: quest.id,
                         progress: isCompleted ? (target) : newProgressVal,
                         status: isCompleted ? 'COMPLETED' : 'IN_PROGRESS',
-                        lastProgressAt: new Date(),
-                        completedAt: isCompleted ? new Date() : null
+                        last_progress_at: new Date(),
+                        completed_at: isCompleted ? new Date() : null
                     },
                     update: {
                         progress: isCompleted ? (target) : newProgressVal,
                         status: isCompleted ? 'COMPLETED' : undefined,
-                        lastProgressAt: new Date(),
-                        completedAt: isCompleted ? new Date() : undefined
+                        last_progress_at: new Date(),
+                        completed_at: isCompleted ? new Date() : undefined
                     }
                 });
 
@@ -223,21 +224,21 @@ export class QuestService {
         const since = new Date();
         since.setDate(since.getDate() - days);
 
-        const count = await prisma.order.count({
+        const count = await prisma.orders.count({
             where: {
-                userId,
-                createdAt: { gte: since }
+                user_id: userId,
+                created_at: { gte: since }
             }
         });
         return count;
     }
 
     private static async countUniqueItemsOrdered(userId: string): Promise<number> {
-        const result = await prisma.orderItem.groupBy({
-            by: ['menuItemId'],
+        const result = await prisma.order_items.groupBy({
+            by: ['menu_item_id'],
             where: {
-                order: { userId },
-                menuItemId: { not: null }
+                orders: { user_id: userId },
+                menu_item_id: { not: null }
             }
         });
         return result.length;

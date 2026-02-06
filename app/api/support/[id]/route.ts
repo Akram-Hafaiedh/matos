@@ -26,12 +26,12 @@ export async function GET(
             }, { status: 400 });
         }
 
-        const ticket = await prisma.supportTicket.findUnique({
+        const ticket = await prisma.support_tickets.findUnique({
             where: { id: ticketId },
             include: {
-                messages: {
+                ticket_messages: {
                     include: {
-                        user: {
+                        users: {
                             select: {
                                 name: true,
                                 image: true
@@ -39,20 +39,20 @@ export async function GET(
                         }
                     },
                     orderBy: {
-                        createdAt: 'asc'
+                        created_at: 'asc'
                     }
                 },
-                user: {
+                users: {
                     select: {
                         name: true,
                         email: true,
                         image: true
                     }
                 },
-                order: {
+                orders: {
                     select: {
-                        orderNumber: true,
-                        totalAmount: true,
+                        order_number: true,
+                        total_amount: true,
                         status: true
                     }
                 }
@@ -67,7 +67,7 @@ export async function GET(
         }
 
         // Security: Ensure only the ticket owner or an admin can see the ticket
-        if ((session.user as any).role !== 'admin' && ticket.userId !== (session.user as any).id) {
+        if ((session.user as any).role !== 'admin' && ticket.user_id !== (session.user as any).id) {
             return NextResponse.json({
                 success: false,
                 error: 'Accès non autorisé'
@@ -101,7 +101,7 @@ export async function PATCH(
         const body = await request.json();
         const { status } = body;
 
-        const ticket = await prisma.supportTicket.update({
+        const ticket = await prisma.support_tickets.update({
             where: { id: parseInt(id) },
             data: { status }
         });

@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
         // Create user in database
         const user = await prisma.user.create({
             data: {
+                id: `user_${Math.random().toString(36).slice(2, 11)}`,
                 email: email.toLowerCase().trim(),
                 password: hashedPassword,
                 name,

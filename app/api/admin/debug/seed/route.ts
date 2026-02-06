@@ -32,6 +32,7 @@ export async function POST() {
                 where: { email },
                 update: { loyaltyPoints },
                 create: {
+                    id: `user_${Math.random().toString(36).slice(2, 11)}`,
                     name,
                     email,
                     password: hashedPassword,

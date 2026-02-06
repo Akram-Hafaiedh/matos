@@ -10,12 +10,15 @@ export async function GET(
 
         // Find order by order number
         // We select minimal fields associated with public tracking to ensure privacy
-        const order = await prisma.order.findUnique({
-            where: { orderNumber },
+        const order = await prisma.orders.findUnique({
+            where: { order_number: orderNumber },
             include: {
-                orderItems: {
-                    include: {
-                        menuItem: true
+                order_items: {
+                    select: {
+                        item_name: true,
+                        item_price: true,
+                        quantity: true,
+                        selected_size: true
                     }
                 }
             }
@@ -32,36 +35,32 @@ export async function GET(
         return NextResponse.json({
             success: true,
             order: {
-                orderNumber: order.orderNumber,
+                orderNumber: order.order_number,
                 status: order.status,
-                orderType: order.orderType,
-                createdAt: order.createdAt,
-                confirmedAt: order.confirmedAt,
-                preparingAt: order.preparingAt,
-                readyAt: order.readyAt,
-                outForDeliveryAt: order.outForDeliveryAt,
-                deliveredAt: order.deliveredAt,
-                cancelledAt: order.cancelledAt,
-                cancelMessage: order.cancelMessage,
-                deliveryFee: order.deliveryFee,
-                totalAmount: order.totalAmount,
-                paymentMethod: order.paymentMethod,
+                orderType: order.order_type,
+                createdAt: order.created_at,
+                confirmedAt: order.confirmed_at,
+                preparingAt: order.preparing_at,
+                readyAt: order.ready_at,
+                outForDeliveryAt: order.out_for_delivery_at,
+                deliveredAt: order.delivered_at,
+                cancelledAt: order.cancelled_at,
+                cancelMessage: order.cancel_message,
+                deliveryFee: order.delivery_fee,
+                totalAmount: order.total_amount,
+                paymentMethod: order.payment_method,
                 deliveryInfo: {
-                    // Start thinking about masking here, or leave it to frontend if we trust the channel
-                    // For now, we return full info because the frontend does the masking. 
-                    // ideally we should mask here too for robust logic but existing frontend component expects full fields to slice.
-                    // We will send it as is to avoid breaking frontend masking logic, but for a real secure app we'd mask here.
-                    fullName: order.customerName,
-                    phone: order.customerPhone,
-                    address: order.deliveryAddress,
+                    fullName: order.customer_name,
+                    phone: order.customer_phone,
+                    address: order.delivery_address,
                     city: order.city
                 },
-                cart: order.orderItems.map(item => ({
+                cart: order.order_items.map(item => ({
                     quantity: item.quantity,
-                    selectedSize: item.selectedSize,
+                    selectedSize: item.selected_size,
                     item: {
-                        name: item.itemName,
-                        price: item.itemPrice
+                        name: item.item_name,
+                        price: item.item_price
                     }
                 }))
             }

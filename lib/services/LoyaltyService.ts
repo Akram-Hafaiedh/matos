@@ -27,15 +27,15 @@ export class LoyaltyService {
             if (item.type !== 'Boosters') return false;
 
             // 1. Check strict expiration if exists
-            if (item.expiresAt && new Date(item.expiresAt) > now) return true;
+            if (item.expires_at && new Date(item.expires_at) > now) return true;
 
             // 2. Check fallback duration from name if expiresAt is missing
             // This mirrors the client-side fallback logic
-            if (!item.expiresAt) {
+            if (!item.expires_at) {
                 const match = item.name.match(/\((\d+)h\)/i);
                 if (match) {
                     const hours = parseInt(match[1]);
-                    const start = new Date(item.unlockedAt); // Assuming unlockedAt exists on inventory items
+                    const start = new Date(item.unlocked_at); // Assuming unlockedAt exists on inventory items
                     const expiry = new Date(start.getTime() + hours * 60 * 60 * 1000);
                     return expiry > now;
                 }

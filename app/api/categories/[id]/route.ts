@@ -37,40 +37,40 @@ export async function PUT(
         }
 
         // Fetch current state to check if order changed
-        const currentCategory = await prisma.category.findUnique({ where: { id } });
+        const currentCategory = await prisma.categories.findUnique({ where: { id } });
         if (!currentCategory) {
             return NextResponse.json({ success: false, error: 'Catégorie non trouvée' }, { status: 404 });
         }
 
         const newOrder = displayOrder ? parseInt(displayOrder) : 0;
-        const oldOrder = currentCategory.displayOrder;
+        const oldOrder = currentCategory.display_order;
 
         if (newOrder !== oldOrder && newOrder > 0) {
             if (newOrder < oldOrder) {
                 // Moving UP: Shift items between new and old orders DOWN
-                await prisma.category.updateMany({
+                await prisma.categories.updateMany({
                     where: {
-                        displayOrder: { gte: newOrder, lt: oldOrder }
+                        display_order: { gte: newOrder, lt: oldOrder }
                     },
-                    data: { displayOrder: { increment: 1 } }
+                    data: { display_order: { increment: 1 } }
                 });
             } else {
                 // Moving DOWN: Shift items between old and new orders UP
-                await prisma.category.updateMany({
+                await prisma.categories.updateMany({
                     where: {
-                        displayOrder: { gt: oldOrder, lte: newOrder }
+                        display_order: { gt: oldOrder, lte: newOrder }
                     },
-                    data: { displayOrder: { decrement: 1 } }
+                    data: { display_order: { decrement: 1 } }
                 });
             }
         }
 
-        const category = await prisma.category.update({
+        const category = await prisma.categories.update({
             where: { id },
             data: {
                 name,
                 emoji,
-                displayOrder: newOrder
+                display_order: newOrder
             }
         });
 
@@ -111,8 +111,8 @@ export async function DELETE(
         }
 
         // Check if category has menu items
-        const menuItemsCount = await prisma.menuItem.count({
-            where: { categoryId: id }
+        const menuItemsCount = await prisma.menu_items.count({
+            where: { category_id: id }
         });
 
         if (menuItemsCount > 0) {
@@ -122,7 +122,7 @@ export async function DELETE(
             }, { status: 400 });
         }
 
-        await prisma.category.delete({
+        await prisma.categories.delete({
             where: { id }
         });
 

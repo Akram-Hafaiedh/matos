@@ -19,11 +19,11 @@ export async function POST(
         const isAdmin = (session.user as any).role === 'admin';
         const now = new Date();
 
-        await prisma.supportTicket.update({
+        await prisma.support_tickets.update({
             where: { id: ticketId },
             data: isAdmin
-                ? { lastAdminTypingAt: now }
-                : { lastUserTypingAt: now }
+                ? { last_admin_typing_at: now }
+                : { last_user_typing_at: now }
         });
 
         return NextResponse.json({ success: true });

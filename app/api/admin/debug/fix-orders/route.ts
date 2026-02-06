@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'Non autorisé' }, { status: 401 });
         }
 
-        // Logic: Sort categories logically and assign displayOrder
-        const categories = await prisma.category.findMany();
+        // Logic: Sort categories logically and assign display_order
+        const categories = await prisma.categories.findMany();
 
         // Desired order based on common restaurant patterns
         const desiredOrder = [
@@ -52,9 +52,9 @@ export async function GET(request: NextRequest) {
         });
 
         const updates = sorted.map((cat, index) => {
-            return prisma.category.update({
+            return prisma.categories.update({
                 where: { id: cat.id },
-                data: { displayOrder: (index + 1) * 10 } // Use 10, 20, 30... for flexibility
+                data: { display_order: (index + 1) * 10 } // Use 10, 20, 30... for flexibility
             });
         });
 

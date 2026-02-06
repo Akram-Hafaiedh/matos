@@ -16,7 +16,7 @@ export async function GET(
     }
 
     try {
-        const promotion = await prisma.promotion.findUnique({
+        const promotion = await prisma.promotions.findUnique({
             where: { id }
         });
 
@@ -68,40 +68,40 @@ export async function PUT(
             name,
             description,
             price,
-            originalPrice,
+            originalPrice: original_price,
             discount,
-            imageUrl,
+            imageUrl: image_url,
             emoji,
-            badgeText,
-            badgeColor,
-            isActive,
-            isHot,
+            badgeText: badge_text,
+            badgeColor: badge_color,
+            isActive: is_active,
+            isHot: is_hot,
             tag,
-            startDate,
-            endDate,
+            startDate: start_date,
+            endDate: end_date,
             conditions,
-            selectionRules
+            selectionRules: selection_rules
         } = body;
 
-        const promotion = await prisma.promotion.update({
+        const promotion = await prisma.promotions.update({
             where: { id },
             data: {
                 name,
                 description,
                 price: price !== undefined ? (price ? parseFloat(price) : null) : undefined,
-                originalPrice: originalPrice !== undefined ? (originalPrice ? parseFloat(originalPrice) : null) : undefined,
+                original_price: original_price !== undefined ? (original_price ? parseFloat(original_price) : null) : undefined,
                 discount: discount !== undefined ? (discount ? parseInt(discount) : null) : undefined,
-                imageUrl,
+                image_url: image_url,
                 emoji,
-                badgeText,
-                badgeColor,
-                isActive,
-                isHot,
+                badge_text: badge_text,
+                badge_color: badge_color,
+                is_active: is_active,
+                is_hot: is_hot,
                 tag,
-                startDate: startDate ? new Date(startDate) : (startDate === null ? null : undefined),
-                endDate: endDate ? new Date(endDate) : (endDate === null ? null : undefined),
+                start_date: start_date ? new Date(start_date) : (start_date === null ? null : undefined),
+                end_date: end_date ? new Date(end_date) : (end_date === null ? null : undefined),
                 conditions,
-                selectionRules
+                selection_rules: selection_rules
             }
         });
 
@@ -141,7 +141,7 @@ export async function DELETE(
             }, { status: 401 });
         }
 
-        await prisma.promotion.delete({
+        await prisma.promotions.delete({
             where: { id }
         });
 
