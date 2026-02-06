@@ -39,6 +39,8 @@ Open [http://localhost:3000](http://localhost:3000) to see the result.
 - [x] **Quest System Engine**: Transitioned to a fully database-driven system with advanced validation (streaks, cumulative spend, temporal constraints).
 - [x] **Dynamic Loyalty Identity**: Real-time sync for user stats, tier-based acts, and verified histories on the Identity page.
 - [x] **Workshop Personalization**: Profile integration for custom frames, icons, and backgrounds with tier-gating and grandfathered access.
+- [x] **Database-Oriented Boosters**: Migrated legacy hardcoded multipliers to a dynamic schema-driven system supporting stacked XP and Token rewards.
+- [x] **SideDrawer UI Engine**: Implementation of a premium, animated reusable drawer component for complex administrative and user workflows.
 - [x] **Synced Header Ecosystem**: Native `UserProfileHeader` for instant visual feedback on personalization across the entire app.
 
 ### 🛒 Commerce & UX Optimization
@@ -59,6 +61,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the result.
 - [x] **Universal Layout Standard**: Unified all public pages to the `max-w-7xl` boutique spatial standard.
 - [x] **Admin Command Center**: Visual stats dashboard and management overhaul (Initial Phase Complete).
 - [x] **Immersive 404 Experience**: Premium, branded "Not Found" page matching the signature split-screen design.
+- [ ] **Tunisian Tax Engine**: Specialized module for localized tax calculations (VAT/Stamp duty) following Tunisian fiscal standards.
 
 ## 🛠️ Developer Utilities & Scripts
 

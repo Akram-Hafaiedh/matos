@@ -28,6 +28,7 @@
 - [x] Redesign Cart and PromotionConfigModal (Glassmorphism)
 - [x] Home Page Map: Full-width interactive Leaflet map (Carthage)
 - [x] Premium Success Toast during checkout transitions
+- [x] **Reusable SideDrawer System**: Premium, animated sliding panel engine for complex content delivery.
 
 ## Advanced User Experience & Checkout Flow
 - [x] Dedicated Client Dashboard & Profile editing
@@ -55,6 +56,7 @@
 - [x] **Fidelity Overhaul**: Complete redesign with 10-tier Act system, Quests, and Token Shop.
 - [x] **Avatar Personalization**: High-end showcase for custom borders, kinetic backgrounds, and exclusive emojis.
 - [x] **Database-Driven Quest System**: Automated validation logic for streaks, spending thresholds, and temporal bonuses.
+- [x] **Database-Oriented Booster Engine**: Scalable multiplier logic for XP and Tokens stored within shop item records.
 - [x] **Real-time Identity Profile**: Dynamic sync for user status, medals of service, and verified operation history.
 - [x] **Header Dropdown Sync**: Native `UserProfileHeader` for seamless visual persistence of customization across routes.
 
@@ -67,9 +69,10 @@
 - **Todo**: Research reliable responsive clip-path strategies or CSS skew transformations.
 
 ## Pending & Future Roadmap
-- [ ] **Admin Orders Page**: Redesign for high-intensity worker usage (Compact view, detailed order expander).
+- [x] **Admin Orders Page**: Redesigned with 'SideDrawer' expander for high-intensity worker usage and tactical status controls.
 - [ ] **Admin Dashboard Polish**: Further refine UI consistency and ergonomics.
 - [ ] **Quest Celebration FX**: Particle effects and cinematic overlays for quest completion.
 - [ ] **SMS Engine**: Automated notifications for order status.
 - [ ] **Tracking Page**: High-fidelity visual feedback for real-time status transitions.
+- [ ] **Tunisian Tax Module**: Localization engine for VAT and official tax calculations.
 - [ ] **Online Payments**: Integration with Stripe/Local gateways.
