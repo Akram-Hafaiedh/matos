@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../app/generated/prisma"
@@ -13,324 +7,338 @@ datasource db {
   provider = "postgresql"
 }
 
-// ===================
-// Core Business Models
-// ===================
+model accounts {
+  id                  String  @id
+  user_id             String
+  type                String
+  provider            String
+  provider_account_id String
+  refresh_token       String?
+  access_token        String?
+  expires_at          Int?
+  token_type          String?
+  scope               String?
+  id_token            String?
+  session_state       String?
+  users               User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-model Account {
-  id                String  @id @default(cuid())
-  userId            String  @map("user_id")
-  type              String
-  provider          String
-  providerAccountId String  @map("provider_account_id")
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-  @@map("accounts") // Maps to your existing table name
+  @@unique([provider, provider_account_id])
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique @map("session_token")
-  userId       String   @map("user_id")
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model cart_sessions {
+  id           String   @id
+  user_id      String?
+  session_data Json
+  expires_at   DateTime
+  created_at   DateTime @default(now())
+  users        User?    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
 
-  @@map("sessions") // Maps to your existing table name
+model categories {
+  id            Int          @id @default(autoincrement())
+  name          String       @db.VarChar(255)
+  emoji         String?      @db.VarChar(10)
+  display_order Int          @default(0)
+  show_in_hero  Boolean      @default(false)
+  hero_title    String?      @db.VarChar(255)
+  hero_subtitle String?
+  hero_color    String?      @db.VarChar(100)
+  is_active     Boolean      @default(true)
+  created_at    DateTime     @default(now())
+  menu_items    menu_items[]
+}
+
+model contact_messages {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(255)
+  email      String   @db.VarChar(255)
+  phone      String?  @db.VarChar(20)
+  subject    String   @db.VarChar(255)
+  message    String
+  status     String   @default("unread") @db.VarChar(50)
+  created_at DateTime @default(now())
+}
+
+model global_settings {
+  id              Int      @id @default(1)
+  address         String   @default("2015, 1 Rue Abderrazak Karabaka, Carthage") @db.VarChar(255)
+  phone           String   @default("99 956 608") @db.VarChar(50)
+  lat             Float    @default(36.8391)
+  lng             Float    @default(10.3200)
+  facebook        String?  @db.VarChar(255)
+  instagram       String?  @db.VarChar(255)
+  tiktok          String?  @db.VarChar(255)
+  whatsapp        String?  @db.VarChar(50)
+  updated_at      DateTime
+  google_maps_url String?
+}
+
+model menu_items {
+  id             Int           @id @default(autoincrement())
+  name           String        @db.VarChar(255)
+  description    String?
+  price          Json
+  original_price Float?
+  category_id    Int?
+  image_url      String?       @db.VarChar(500)
+  emoji          String?       @db.VarChar(10)
+  ingredients    String[]
+  popular        Boolean       @default(false)
+  bestseller     Boolean       @default(false)
+  hot            Boolean       @default(false)
+  discount       Int?
+  sauce          String?       @db.VarChar(50)
+  is_active      Boolean       @default(true)
+  created_at     DateTime      @default(now())
+  updated_at     DateTime
+  display_order  Int           @default(0)
+  categories     categories?   @relation(fields: [category_id], references: [id])
+  menu_likes     menu_likes[]
+  order_items    order_items[]
+  reviews        reviews[]
+}
+
+model menu_likes {
+  id           Int        @id @default(autoincrement())
+  user_id      String
+  menu_item_id Int
+  created_at   DateTime   @default(now())
+  menu_items   menu_items @relation(fields: [menu_item_id], references: [id], onDelete: Cascade)
+  users        User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, menu_item_id])
+}
+
+model notifications {
+  id         Int      @id @default(autoincrement())
+  user_id    String
+  title      String   @db.VarChar(255)
+  message    String
+  type       String   @db.VarChar(50)
+  link       String?  @db.VarChar(255)
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+  users      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model order_items {
+  id            Int         @id @default(autoincrement())
+  order_id      Int
+  menu_item_id  Int?
+  item_name     String      @db.VarChar(255)
+  item_price    Float
+  quantity      Int         @default(1)
+  selected_size String?     @db.VarChar(50)
+  notes         String?
+  created_at    DateTime    @default(now())
+  choices       Json?
+  promotion_id  Int?
+  menu_items    menu_items? @relation(fields: [menu_item_id], references: [id])
+  orders        orders      @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  promotions    promotions? @relation(fields: [promotion_id], references: [id])
+}
+
+model orders {
+  id                  Int               @id @default(autoincrement())
+  order_number        String            @unique @db.VarChar(50)
+  user_id             String?
+  customer_name       String            @db.VarChar(255)
+  customer_phone      String            @db.VarChar(20)
+  customer_email      String?           @db.VarChar(255)
+  delivery_address    String
+  city                String            @default("Tunis") @db.VarChar(100)
+  notes               String?
+  delivery_time       String            @default("asap") @db.VarChar(50)
+  scheduled_time      DateTime?
+  payment_method      String            @default("cash") @db.VarChar(50)
+  subtotal            Float
+  delivery_fee        Float             @default(0)
+  total_amount        Float
+  status              String            @default("pending") @db.VarChar(50)
+  order_date          DateTime          @default(now())
+  delivered_at        DateTime?
+  created_at          DateTime          @default(now())
+  updated_at          DateTime
+  cancelled_at        DateTime?
+  confirmed_at        DateTime?
+  out_for_delivery_at DateTime?
+  preparing_at        DateTime?
+  ready_at            DateTime?
+  order_type          String            @default("delivery") @db.VarChar(50)
+  cancel_message      String?
+  points_awarded      Boolean           @default(false)
+  order_items         order_items[]
+  users               User?             @relation(fields: [user_id], references: [id])
+  support_tickets     support_tickets[]
+}
+
+model promotions {
+  id              Int           @id @default(autoincrement())
+  name            String        @db.VarChar(255)
+  description     String?
+  price           Float?
+  original_price  Float?
+  discount        Int?
+  image_url       String?       @db.VarChar(500)
+  emoji           String?       @db.VarChar(10)
+  badge_text      String?       @db.VarChar(50)
+  badge_color     String?       @db.VarChar(50)
+  is_active       Boolean       @default(true)
+  start_date      DateTime?
+  end_date        DateTime?
+  conditions      String?
+  created_at      DateTime      @default(now())
+  selection_rules Json?
+  is_hot          Boolean       @default(false)
+  tag             String?       @db.VarChar(100)
+  order_items     order_items[]
+}
+
+model quests {
+  id               String        @id
+  title            String
+  description      String
+  type             String
+  rewardType       String
+  rewardAmount     Int
+  minAct           Int           @default(0)
+  validationConfig Json?
+  isActive         Boolean       @default(true)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime
+  emoji            String?
+  user_quests      user_quests[]
+}
+
+model reviews {
+  id           Int        @id @default(autoincrement())
+  user_id      String
+  menu_item_id Int
+  rating       Int        @default(5)
+  comment      String?
+  created_at   DateTime   @default(now())
+  show_on_home Boolean    @default(false)
+  menu_items   menu_items @relation(fields: [menu_item_id], references: [id])
+  users        User       @relation(fields: [user_id], references: [id])
+}
+
+model sessions {
+  id            String   @id
+  session_token String   @unique
+  user_id       String
+  expires       DateTime
+  users         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model shop_items {
+  id          String   @id
+  name        String
+  type        String
+  price       Int
+  act         Int      @default(1)
+  level       Int      @default(1)
+  rarity      String
+  emoji       String
+  isActive    Boolean  @default(true)
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  description String?
+}
+
+model support_tickets {
+  id                   Int               @id @default(autoincrement())
+  user_id              String?
+  order_id             Int?
+  subject              String            @db.VarChar(255)
+  description          String
+  status               String            @default("open") @db.VarChar(50)
+  priority             String            @default("medium") @db.VarChar(20)
+  created_at           DateTime          @default(now())
+  updated_at           DateTime
+  last_admin_typing_at DateTime?
+  last_user_typing_at  DateTime?
+  orders               orders?           @relation(fields: [order_id], references: [id])
+  users                User?             @relation(fields: [user_id], references: [id])
+  ticket_messages      ticket_messages[]
+}
+
+model ticket_messages {
+  id              Int             @id @default(autoincrement())
+  ticket_id       Int
+  user_id         String
+  message         String
+  is_admin        Boolean         @default(false)
+  created_at      DateTime        @default(now())
+  attachments     Json?
+  support_tickets support_tickets @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  users           User            @relation(fields: [user_id], references: [id])
+}
+
+model user_inventory {
+  id          String    @id
+  user_id     String
+  item_id     String
+  name        String
+  type        String
+  unlocked_at DateTime  @default(now())
+  expires_at  DateTime?
+  description String?
+  users       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, item_id])
+}
+
+model user_quests {
+  id               String    @id
+  user_id          String
+  quest_id         String
+  progress         Int       @default(0)
+  status           String    @default("IN_PROGRESS")
+  last_progress_at DateTime  @default(now())
+  completed_at     DateTime?
+  quests           quests    @relation(fields: [quest_id], references: [id], onDelete: Cascade)
+  users            User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, quest_id])
 }
 
 model User {
-  id             String          @id @default(cuid()) // Ensure this matches your auth model
-  name           String?
-  email          String?         @unique
-  emailVerified  DateTime?       @map("email_verified")
-  password       String?         @db.VarChar(255)
-  image          String?
-  phone          String?         @db.VarChar(20) // Your custom field
-  address        String? // Your custom field
-  role           String          @default("customer") @db.VarChar(50) // Your custom field
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
-  // Relations
-  accounts       Account[]
-  sessions       Session[]
-  // Your restaurant relations
-  orders         Order[]
-  cartSessions   CartSession[]
-  supportTickets SupportTicket[]
-  ticketMessages TicketMessage[]
-  notifications  Notification[]
-  reviews        Review[]
-  loyaltyPoints  Int             @default(0) @map("loyalty_points")
-  selectedFrame  String?         @map("selected_frame")
-  selectedBg     String?         @map("selected_bg")
+  id              String            @id
+  name            String?
+  email           String?           @unique
+  emailVerified   DateTime?         @map("email_verified")
+  password        String?           @db.VarChar(255)
+  image           String?
+  phone           String?           @db.VarChar(20)
+  address         String?
+  role            String            @default("customer") @db.VarChar(50)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  loyaltyPoints   Int               @default(0) @map("loyalty_points")
+  selectedFrame   String?           @map("selected_frame")
+  selectedBg      String?           @map("selected_bg")
+  tokens          Int               @default(0)
+  selectedTitle   String?           @map("selected_title")
+  accounts        accounts[]
+  cart_sessions   cart_sessions[]
+  menu_likes      menu_likes[]
+  notifications   notifications[]
+  orders          orders[]
+  reviews         reviews[]
+  sessions        sessions[]
+  support_tickets support_tickets[]
+  ticket_messages ticket_messages[]
+  inventory       user_inventory[]
+  user_quests     user_quests[]
 
-  @@map("users") // Ensure this matches your existing table
+  @@map("users")
 }
 
-model VerificationToken {
+model verification_tokens {
   identifier String
   token      String   @unique
   expires    DateTime
 
   @@unique([identifier, token])
-  @@map("verification_tokens")
-}
-
-model Category {
-  id           Int      @id @default(autoincrement())
-  name         String   @db.VarChar(255)
-  emoji        String?  @db.VarChar(10)
-  displayOrder Int      @default(0) @map("display_order")
-  showInHero   Boolean  @default(false) @map("show_in_hero")
-  heroTitle    String?  @map("hero_title") @db.VarChar(255)
-  heroSubtitle String?  @map("hero_subtitle")
-  heroColor    String?  @map("hero_color") @db.VarChar(100)
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  // Relation: A Category can have many MenuItems
-  menuItems MenuItem[]
-
-  @@map("categories")
-}
-
-model MenuItem {
-  id            Int      @id @default(autoincrement())
-  name          String   @db.VarChar(255)
-  description   String?
-  price         Json // Flexible: number like 15.5 or object like {"xl": 10, "xxl": 12}
-  originalPrice Float?   @map("original_price")
-  categoryId    Int?     @map("category_id")
-  imageUrl      String?  @map("image_url") @db.VarChar(500)
-  emoji         String?  @db.VarChar(10)
-  displayOrder  Int      @default(0) @map("display_order")
-  ingredients   String[] // PostgreSQL native array
-  popular       Boolean  @default(false)
-  bestseller    Boolean  @default(false)
-  hot           Boolean  @default(false)
-  discount      Int?
-  sauce         String?  @db.VarChar(50) // 'rouge' or 'blanche'
-  isActive      Boolean  @default(true) @map("is_active")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  category   Category?   @relation(fields: [categoryId], references: [id])
-  orderItems OrderItem[]
-  reviews    Review[]
-
-  @@map("menu_items")
-}
-
-model Promotion {
-  id             Int       @id @default(autoincrement())
-  name           String    @db.VarChar(255)
-  description    String?
-  price          Float?
-  originalPrice  Float?    @map("original_price")
-  discount       Int?
-  imageUrl       String?   @map("image_url") @db.VarChar(500)
-  emoji          String?   @db.VarChar(10)
-  badgeText      String?   @map("badge_text") @db.VarChar(50)
-  badgeColor     String?   @map("badge_color") @db.VarChar(50)
-  isActive       Boolean   @default(true) @map("is_active")
-  startDate      DateTime? @map("start_date")
-  endDate        DateTime? @map("end_date")
-  conditions     String?
-  selectionRules Json?     @map("selection_rules")
-  createdAt      DateTime  @default(now()) @map("created_at")
-
-  // Relations
-  orderItems OrderItem[]
-
-  @@map("promotions")
-}
-
-// ======================
-// Order & Cart Models
-// ======================
-
-model Order {
-  id               Int       @id @default(autoincrement())
-  orderNumber      String    @unique @map("order_number") @db.VarChar(50)
-  userId           String?   @map("user_id")
-  customerName     String    @map("customer_name") @db.VarChar(255)
-  customerPhone    String    @map("customer_phone") @db.VarChar(20)
-  customerEmail    String?   @map("customer_email") @db.VarChar(255)
-  deliveryAddress  String    @map("delivery_address")
-  city             String    @default("Tunis") @db.VarChar(100)
-  notes            String?
-  deliveryTime     String    @default("asap") @map("delivery_time") @db.VarChar(50) // 'asap' or 'scheduled'
-  scheduledTime    DateTime? @map("scheduled_time")
-  paymentMethod    String    @default("cash") @map("payment_method") @db.VarChar(50) // 'cash' or 'd17'
-  orderType        String    @default("delivery") @map("order_type") @db.VarChar(50) // 'delivery' or 'pickup'
-  subtotal         Float     @map("subtotal")
-  deliveryFee      Float     @default(0) @map("delivery_fee")
-  totalAmount      Float     @map("total_amount")
-  status           String    @default("pending") @db.VarChar(50) // 'pending', 'confirmed', 'preparing', 'delivering', 'delivered', 'cancelled'
-  orderDate        DateTime  @default(now()) @map("order_date")
-  confirmedAt      DateTime? @map("confirmed_at")
-  preparingAt      DateTime? @map("preparing_at")
-  readyAt          DateTime? @map("ready_at")
-  outForDeliveryAt DateTime? @map("out_for_delivery_at")
-  deliveredAt      DateTime? @map("delivered_at")
-  cancelledAt      DateTime? @map("cancelled_at")
-  cancelMessage    String?   @map("cancel_message")
-  pointsAwarded    Boolean   @default(false) @map("points_awarded")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  user           User?           @relation(fields: [userId], references: [id])
-  orderItems     OrderItem[]
-  supportTickets SupportTicket[]
-
-  @@map("orders")
-}
-
-model OrderItem {
-  id           Int      @id @default(autoincrement())
-  orderId      Int      @map("order_id")
-  menuItemId   Int?     @map("menu_item_id")
-  itemName     String   @map("item_name") @db.VarChar(255)
-  itemPrice    Float    @map("item_price")
-  quantity     Int      @default(1)
-  selectedSize String?  @map("selected_size") @db.VarChar(50)
-  notes        String?
-  promotionId  Int?     @map("promotion_id")
-  choices      Json?    @map("choices")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  // Relations
-  order     Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  menuItem  MenuItem?  @relation(fields: [menuItemId], references: [id])
-  promotion Promotion? @relation(fields: [promotionId], references: [id])
-
-  @@map("order_items")
-}
-
-model CartSession {
-  id          String   @id @default(uuid())
-  userId      String?  @map("user_id")
-  sessionData Json     @map("session_data")
-  expiresAt   DateTime @map("expires_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  // Relations
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("cart_sessions")
-}
-
-// ======================
-// Support Models
-// ======================
-
-model ContactMessage {
-  id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(255)
-  email     String   @db.VarChar(255)
-  phone     String?  @db.VarChar(20)
-  subject   String   @db.VarChar(255)
-  message   String
-  status    String   @default("unread") @db.VarChar(50) // 'unread', 'read', 'replied'
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@map("contact_messages")
-}
-
-model SupportTicket {
-  id          Int      @id @default(autoincrement())
-  userId      String?  @map("user_id")
-  orderId     Int?     @map("order_id")
-  subject     String   @db.VarChar(255)
-  description String   @db.Text
-  status      String   @default("open") @db.VarChar(50) // 'open', 'in_progress', 'resolved', 'closed'
-  priority    String   @default("medium") @db.VarChar(20) // 'low', 'medium', 'high', 'urgent'
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  lastAdminTypingAt DateTime? @map("last_admin_typing_at")
-  lastUserTypingAt  DateTime? @map("last_user_typing_at")
-
-  // Relations
-  user     User?           @relation(fields: [userId], references: [id])
-  order    Order?          @relation(fields: [orderId], references: [id])
-  messages TicketMessage[]
-
-  @@map("support_tickets")
-}
-
-model TicketMessage {
-  id          Int      @id @default(autoincrement())
-  ticketId    Int      @map("ticket_id")
-  userId      String   @map("user_id")
-  message     String   @db.Text
-  attachments Json?    @map("attachments") // Array of { name: string, url: string, type: string }
-  isAdmin     Boolean  @default(false) @map("is_admin")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  // Relations
-  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user   User          @relation(fields: [userId], references: [id])
-
-  @@map("ticket_messages")
-}
-
-model Review {
-  id         Int      @id @default(autoincrement())
-  userId     String   @map("user_id")
-  menuItemId Int      @map("menu_item_id")
-  rating     Int      @default(5)
-  comment    String?  @db.Text
-  showOnHome Boolean  @default(false) @map("show_on_home")
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  // Relations
-  user     User     @relation(fields: [userId], references: [id])
-  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
-
-  @@map("reviews")
-}
-
-model Notification {
-  id        Int      @id @default(autoincrement())
-  userId    String   @map("user_id")
-  title     String   @db.VarChar(255)
-  message   String   @db.Text
-  type      String   @db.VarChar(50) // 'order_update', 'ticket_response', 'promotion', etc.
-  link      String?  @db.VarChar(255) // Optional link to the relevant page
-  isRead    Boolean  @default(false) @map("is_read")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("notifications")
-}
-
-model GlobalSettings {
-  id      Int    @id @default(1)
-  address String @default("2015, 1 Rue Abderrazak Karabaka, Carthage") @db.VarChar(255)
-  phone   String @default("99 956 608") @db.VarChar(50)
-  lat     Float  @default(36.8391)
-  lng     Float  @default(10.3200)
-
-  // Social Links
-  facebook  String? @db.VarChar(255)
-  instagram String? @db.VarChar(255)
-  tiktok    String? @db.VarChar(255)
-  whatsapp  String? @db.VarChar(50)
-
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("global_settings")
 }
