@@ -23,7 +23,11 @@ export async function GET() {
             });
         }
 
-        return NextResponse.json(settings);
+        return NextResponse.json({
+            ...settings,
+            googleMapsUrl: settings.google_maps_url,
+            updatedAt: settings.updated_at
+        });
     } catch (error) {
         console.error('Error fetching settings:', error);
         return NextResponse.json(

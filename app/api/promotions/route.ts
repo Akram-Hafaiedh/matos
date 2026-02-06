@@ -49,9 +49,22 @@ export async function GET(request: NextRequest) {
             })
         ]);
 
+        const formattedPromotions = promotions.map(promo => ({
+            ...promo,
+            imageUrl: promo.image_url,
+            selectionRules: promo.selection_rules,
+            originalPrice: promo.original_price,
+            isActive: promo.is_active,
+            isHot: promo.is_hot,
+            badgeText: promo.badge_text,
+            badgeColor: promo.badge_color,
+            startDate: promo.start_date,
+            endDate: promo.end_date
+        }));
+
         return NextResponse.json({
             success: true,
-            promotions,
+            promotions: formattedPromotions,
             pagination: {
                 totalItems,
                 totalPages: Math.ceil(totalItems / limit),
