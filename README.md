@@ -13,7 +13,7 @@ Mato's is a high-end, modern food ordering web application built with a focus on
 ## 💎 Key Features
 
 - **Premium Menu**: Dynamic category filtering, search, and pagination with smooth URL synchronization.
-- **Advanced Cart**: Complex promotion handling with percentage discounts and customizable choices.
+- **Transparent Cart**: Advanced promotion engine with real-time price breakdowns, strike-through original prices, and "badge-ified" bundle details.
 - **Fidelity Program**: Automated point awarding, global rank flairs (King/Challenger), and exclusive tiers.
 - **Real-time Engine**: Live typing indicators in support, instant notifications, and order status polling.
 - **Admin Command Center**: Visual stats dashboard, live order management with cancel reasons, and global settings control.
@@ -33,12 +33,45 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to see the result.
 
-## 📅 Recent Progress (Phase 1 & 2)
+## 📅 Recent Progress
 
-- [x] **Aesthetic Overhaul**: Implemented `backdrop-blur-3xl` glassmorphism across Admin and Public sections.
-- [x] **Menu & Cart Logic**: Fixed category filter loops and promo price calculations.
-- [x] **Notification Engine**: Optimized redirects for orders and tickets.
-- [ ] **Phase 2 (In Progress)**: Refining Admin Orders UX, Customer Avatars, and Home Section harmony.
+### 🏆 Phase 3: Identity & Loyalty (Active)
+- [x] **Quest System Engine**: Transitioned to a fully database-driven system with advanced validation (streaks, cumulative spend, temporal constraints).
+- [x] **Dynamic Loyalty Identity**: Real-time sync for user stats, tier-based acts, and verified histories on the Identity page.
+- [x] **Workshop Personalization**: Profile integration for custom frames, icons, and backgrounds with tier-gating and grandfathered access.
+- [x] **Synced Header Ecosystem**: Native `UserProfileHeader` for instant visual feedback on personalization across the entire app.
+
+### 🛒 Commerce & UX Optimization
+- [x] **Pricing Transparency**: Implemented full savings breakdowns and correction of promotion database configurations.
+- [x] **Cart Page Parity**: Fully synchronized sidebar and main cart pages with identical UI/UX and pricing logic.
+- [x] **Automatic Bundle Details**: Fixed deals (e.g., Double Box) now show their full contents as badges in the cart.
+- [x] **Premium Confirmation**: Replaced all native browser alerts with custom glassmorphism modals and a global `useConfirm()` hook.
+- [x] **Menu & Category Perfection**: Automated category shifting, order normalization, and dynamic database navigation.
+
+### 🛠️ Infrastructure & Standardization (Active)
+- [x] **Database Schema Standardization**: Comprehensive migration to `snake_case` and pluralized model names (e.g., `orders`, `reviews`) to ensure strict PostgreSQL compatibility and maintainability.
+- [x] **API Route Harmonization**: Refactored the entire API layer (Admin, User, Public) to utilize the standardized schema, resolving naming inconsistencies and lint errors.
+- [x] **Enhanced Developer Tooling**: Updated all utility scripts and the diagnostic suite to remain compatible with the new naming conventions.
+- [x] **Security-First Seeding**: Updated the `prisma/seed.ts` engine with automated password hashing and strict field validation.
+
+### 🎨 Visual & Infrastructure
+- [x] **Authentication Flow Redesign**: Full-bleed cinematic redesign of the Login, Register, and Forgot Password flow.
+- [x] **Universal Layout Standard**: Unified all public pages to the `max-w-7xl` boutique spatial standard.
+- [x] **Admin Command Center**: Visual stats dashboard and management overhaul (Initial Phase Complete).
+- [x] **Immersive 404 Experience**: Premium, branded "Not Found" page matching the signature split-screen design.
+
+## 🛠️ Developer Utilities & Scripts
+
+The repository includes several utility scripts and data snapshots for development and testing:
+
+### Database & Data
+- `temp_promo_dump.json`: Snapshot of the promotion engine's database state, used for logic verification.
+- `test_empty.json` / `test_output.json`: Mock review data used for testing the "Social Proof" simulation engine and review curation features.
+
+### Command Line Tools
+- `scripts/check-db.ts`: Utility to verify database connectivity and Prisma client state.
+- `scripts/list-categories.js`: Fast lookup tool for category IDs and display orders.
+- `inspect_rules.js`: Logic inspector for the advanced promotion selection engine.
 
 ---
 Mato's - *Le Goût Privilégié*

@@ -16,6 +16,9 @@
 - [x] **Checkout Reliability**: Fixed UID collisions, scheduled time parsing
 - [x] **Prisma Sync**: Database push and Client generation established
 - [x] **API Robustness**: Improved error handling and descriptive feedback
+- [x] **Database Standardization**: Global migration to `snake_case` and pluralized model names (`orders`, `reviews`, `menu_items`) for Postgres compliance
+- [x] **Schema-Safe APIs**: Refactored 30+ routes to align with the standardized Prisma naming conventions
+- [x] **Seeder Security**: Implemented password hashing and strict schema seeding for dev environments
 
 ## Design & Theme Excellence
 - [x] Redesign Contact & Support pages (Premium Aesthetic)
@@ -26,18 +29,17 @@
 - [x] Home Page Map: Full-width interactive Leaflet map (Carthage)
 - [x] Premium Success Toast during checkout transitions
 
-## Advanced User Experience
+## Advanced User Experience & Checkout Flow
 - [x] Dedicated Client Dashboard & Profile editing
-- [x] **Unified Avatar System**: High-fidelity `UserAvatar` with Emoji support and **Global Rank Flairs** (King/Challenger)
-- [x] **Registration Bonus**: 10-point welcome gift automatically awarded upon account creation
-- [x] **Review Reward System**: Automated point awarding (25 pts for 3 first reviews, 10-25 for subsequent)
-- [x] **Account Detail Refactor**: Unified Return links and navigation
-- [x] **Account Lists**: Search, filtering, and pagination for Orders & Tickets
-- [x] **Support Hub**: Moved tickets to `/account/tickets`, restored full conversation UI
-- [x] **Real-time Engine**: Typing indicators, Live notifications, Polling optimization
-- [x] **Storage & Media**: Paste-to-upload for ticket attachments
-- [x] Fidelity Leaderboard & Hall of Fame system (Transparent launch state)
-- [x] Dedicated `/cart` page (Mobile-first UX)
+- [x] **Unified Avatar System**: High-fidelity `UserAvatar` with Global Rank Flairs.
+- [x] **Selection Wizard Restoration**: Rebuilt the multi-step `SelectionModal` for complex promotions (2-pizza deals, student menus).
+- [x] **Cart Image Parity**: Synchronized visual styles and promotion badges between Sidebar and Main Cart page.
+- [x] **Registration Bonus**: 10-point welcome gift automatically awarded.
+- [x] **Review Reward System**: Automated point awarding for customer reviews.
+- [x] **Support Hub**: Moved tickets to `/account/tickets`, restored full conversation UI.
+- [x] **Storage & Media**: Paste-to-upload for ticket attachments.
+- [x] **Leaderboard System**: Fidelity Leaderboard and Hall of Fame (Transparent state).
+- [x] Dedicated `/cart` page (Mobile-optimized UX).
 
 ## Admin & Control Panel
 - [x] Fix search & pagination in all Admin lists
@@ -48,36 +50,26 @@
 - [x] Integrate Public site links in Admin Sidebar
 - [x] **Admin Global Settings**: Manage address, phone, and coordinates from dashboard
 
-## Completed Recently
-- [x] **Fidelity Tiers**: Standardized tiers (Bronze at 100 pts), "Newcomer" status, and avatar emoji restrictions.
-- [x] **Global Rank Flairs**: Implementing **"The King"** (Rank 1 gold) and **"The Challenger"** (Rank 2 silver) globally.
-- [x] **Fidelity Page Overhaul**: Added reward explanations, benefits comparison, and 10pt bonus mentions.
-- [x] **Home UI Refresh**: Updated Fidelity section design (vertical pill) and enabled flairs in reviews.
-- [x] **Retroactive Loyalty Script**: Fixed script to properly award points using `pointsAwarded` flag.
-- [x] **Admin Layout**: Fixed scrolling issues.
-- [x] **Menu Ordering**: Implemented `displayOrder` for manual menu item sorting.
-- [x] **Bug Fixes & URL Sync**: Resolved menu filter infinite loop and improved back-button history.
-- [x] **Promo Price Engine**: Fixed cart math for percentage-based discounts on promotions.
-- [x] **Authentication Flow**: Optimized redirects for customers (Account vs Home).
-- [x] **Notification Direct Links**: Ticket and Order updates now link to specific detail pages.
-- [x] **Legacy Cleanup**: Excluded category 14 items from public menu display.
-- [x] **Admin Aesthetic Upgrade**: Premium glassmorphism overhaul for Sidebar and Dashboard Stats.
+## Phase 3: Identity & Loyalty Overhaul
+- [x] **Public Header Sync**: Propagated "Scanner Pill" style to all public heroes.
+- [x] **Fidelity Overhaul**: Complete redesign with 10-tier Act system, Quests, and Token Shop.
+- [x] **Avatar Personalization**: High-end showcase for custom borders, kinetic backgrounds, and exclusive emojis.
+- [x] **Database-Driven Quest System**: Automated validation logic for streaks, spending thresholds, and temporal bonuses.
+- [x] **Real-time Identity Profile**: Dynamic sync for user status, medals of service, and verified operation history.
+- [x] **Header Dropdown Sync**: Native `UserProfileHeader` for seamless visual persistence of customization across routes.
 
-## Phase 2: Active Refinement (User Feedback)
-- [ ] **Admin Orders Page**: Redesign for high-intensity worker usage (Compact view, detailed order expander).
-- [ ] **Admin Customers**: Enable real avatars and fix functional links.
-- [ ] **Home Section Harmony**:
-    - [ ] Tone down Fidelity section (Subtle premium styling).
-    [ ] Fix Promotions section (Prevent emoji overflow and text hiding).
-    - [ ] Optimize Localisation section (Reduce empty vertical space).
-- [ ] **Notification Core**: Remove obsolete `tab=orders` query params from all triggers.
-- [ ] **Project Meta**: Update README.md and TODOS.md for progress tracking.
+## UI/UX Technical Challenges
+
+### Slanted Sections (Geometric Slopes)
+- **Status**: Exploration phase
+- **Context**: Used in `fidelity` and CTA sections.
+- **Challenge**: Absolute positioning and complex `clip-path` geometry make responsive layout tricky.
+- **Todo**: Research reliable responsive clip-path strategies or CSS skew transformations.
 
 ## Pending & Future Roadmap
-- [ ] **Improved Toast system**: Persistence & Animations for better feedback.
-- [ ] **Tracking Page**: Visual feedback on automated status changes.
-- [ ] **Admin Impersonation**: Feature to login as client for debugging.
+- [ ] **Admin Orders Page**: Redesign for high-intensity worker usage (Compact view, detailed order expander).
+- [ ] **Admin Dashboard Polish**: Further refine UI consistency and ergonomics.
+- [ ] **Quest Celebration FX**: Particle effects and cinematic overlays for quest completion.
 - [ ] **SMS Engine**: Automated notifications for order status.
-- [ ] **Live Tracking**: Real-time delivery driver location (Map integration).
-- [ ] **Mobile App**: PWA/Native transition.
+- [ ] **Tracking Page**: High-fidelity visual feedback for real-time status transitions.
 - [ ] **Online Payments**: Integration with Stripe/Local gateways.
