@@ -3,18 +3,13 @@
 import { useEffect, useState } from 'react';
 import { User, Mail, Phone, MapPin, Loader2, Crown, Trophy, ShieldCheck, Gem, User as UserIcon, Lock, CheckCircle2, AlertCircle, Save, Palette, Star } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { motion } from 'framer-motion';
 import { TIERS, getUserTier } from '@/lib/loyalty';
 import UserAvatar from '@/components/UserAvatar';
 import EmojiPicker from '@/components/EmojiPicker';
+import TacticalAura from '@/components/TacticalAura';
 
-const BACKGROUNDS = [
-    { name: 'Classique', value: 'bg-yellow-400', tier: 0 },
-    { name: 'Bronze', value: 'bg-gradient-to-br from-orange-400 to-orange-600 text-white', tier: 0 },
-    { name: 'Silver', value: 'bg-gradient-to-br from-gray-300 to-gray-500 text-white', tier: 1 },
-    { name: 'Gold', value: 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-black', tier: 2 },
-    { name: 'Platinum', value: 'bg-gradient-to-br from-cyan-400 to-blue-600 text-white', tier: 3 },
-    { name: 'Obsidian', value: 'bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white border border-gray-700', tier: 3 },
-];
+
 
 export default function ProfilePage() {
     const { data: session, update: updateSession } = useSession();
@@ -117,45 +112,63 @@ export default function ProfilePage() {
     const currentTierIndex = TIERS.findIndex(t => t.name === currentTier.name);
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
-            <div className="flex items-center justify-between">
-                <h2 className="text-4xl font-black uppercase italic tracking-tighter">
-                    Mon <span className="text-yellow-400">Profil</span>
-                </h2>
+        <div className="w-full space-y-12 animate-in fade-in duration-1000">
+            <TacticalAura opacity={0.5} />
+            <div className="flex flex-col xl:flex-row items-start xl:items-end justify-between gap-12 border-b border-white/5 pb-16">
+                <div className="space-y-6">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-yellow-400/20 bg-yellow-400/5 backdrop-blur-md">
+                        <UserIcon className="w-3 h-3 text-yellow-400" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-400">Identity Matrix Control</span>
+                    </div>
+                    <h1 className="text-5xl md:text-8xl font-[1000] uppercase italic tracking-tighter leading-none text-white">
+                        VOTRE <span className="text-yellow-400 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">PROFIL</span>
+                    </h1>
+                </div>
                 {hasChanges() && (
-                    <span className="text-xs bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 px-3 py-1 rounded-full font-bold animate-pulse">
-                        Modifications non enregistrées
-                    </span>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center gap-4 px-8 py-5 rounded-[2rem] bg-yellow-400/5 border border-yellow-400/20 shadow-2xl"
+                    >
+                        <div className="w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)] animate-pulse"></div>
+                        <span className="text-[10px] text-yellow-400 font-[1000] uppercase tracking-widest italic">
+                            Modifications en Attente
+                        </span>
+                    </motion.div>
                 )}
             </div>
 
-            <form onSubmit={handleSubmit} className="bg-gray-900/60 p-10 rounded-[3rem] border border-gray-800 backdrop-blur-xl space-y-12">
+            <form onSubmit={handleSubmit} className="bg-[#0a0a0a] p-10 md:p-16 rounded-[4rem] border border-white/10 relative overflow-hidden space-y-20 shadow-3xl">
+                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-yellow-400/5 blur-[120px] rounded-full -mr-80 -mt-80 opacity-40"></div>
 
                 {/* --- Identity & Avatar --- */}
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-8 border-b border-gray-800 pb-10">
-                    <UserAvatar
-                        image={previewData.image}
-                        name={previewData.name}
-                        size={'xl'}
-                        rank={userData?.rank}
-                        backgroundColor={previewData.selectedBg}
-                        className={`w-32 h-32 rounded-[2.5rem] border-8 transition-all duration-500 shadow-2xl ${previewData.selectedFrame ? previewData.selectedFrame : 'border-gray-800'} text-7xl`}
-                    />
-                    <div className="space-y-1 flex-1">
-                        <div className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">Mon identité</div>
-                        <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase">{previewData?.name || 'Utilisateur'}</h3>
-                        <p className={`text-xs font-bold uppercase tracking-widest ${currentTier.textColor} flex items-center gap-2`}>
-                            {currentTier.name === 'Bronze' && <ShieldCheck className="w-4 h-4" />}
-                            {currentTier.name === 'Silver' && <Trophy className="w-4 h-4" />}
-                            {currentTier.name === 'Gold' && <Crown className="w-4 h-4" />}
-                            {currentTier.name === 'Platinum' && <Gem className="w-4 h-4" />}
-                            Membre {currentTier.name}
+                <div className="flex flex-col md:flex-row items-center gap-10 border-b border-white/5 pb-16">
+                    <div className="relative group">
+                        <div className="absolute inset-0 bg-yellow-400/20 blur-[40px] rounded-full scale-125 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <UserAvatar
+                            image={previewData.image}
+                            name={previewData.name}
+                            size={'xl'}
+                            rank={userData?.rank}
+                            backgroundColor={previewData.selectedBg}
+                            className={`w-40 h-40 rounded-[2.5rem] border-8 transition-all duration-700 shadow-2xl relative z-10 ${previewData.selectedFrame ? previewData.selectedFrame : 'border-white/5'} text-8xl`}
+                        />
+                    </div>
+                    <div className="space-y-3 flex-1 text-center md:text-left">
+                        <div className="text-gray-600 text-[10px] font-black uppercase tracking-[0.4em] italic mb-1">Détention du Titre</div>
+                        <h3 className="text-4xl font-[1000] text-white italic tracking-tighter uppercase leading-none">{previewData?.name || 'Utilisateur'}</h3>
+                        <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${currentTier.textColor} flex items-center justify-center md:justify-start gap-2 italic`}>
+                            {currentTier.name === 'Bronze' && <ShieldCheck className="w-3.5 h-3.5" />}
+                            {currentTier.name === 'Silver' && <Trophy className="w-3.5 h-3.5" />}
+                            {currentTier.name === 'Gold' && <Crown className="w-3.5 h-3.5" />}
+                            {currentTier.name === 'Platinum' && <Gem className="w-3.5 h-3.5" />}
+                            HÉRITAGE {currentTier.name}
                         </p>
                     </div>
 
                     {/* Quick Stats or Info */}
-                    <div className="text-right hidden md:block">
-                        <p className="text-gray-600 text-[10px] font-black uppercase tracking-widest">Membre depuis le <br /> <span className="text-white text-xs">{new Date(userData?.createdAt).toLocaleDateString()}</span></p>
+                    <div className="text-right hidden lg:block">
+                        <p className="text-gray-600 text-[9px] font-black uppercase tracking-[0.4em] italic leading-relaxed">Activation du Compte<br /> <span className="text-white text-[11px] font-[1000] tracking-widest">{new Date(userData?.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</span></p>
                     </div>
                 </div>
 
@@ -167,244 +180,69 @@ export default function ProfilePage() {
                 )}
 
                 {/* --- Editable Fields --- */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <div className="space-y-3">
-                        <label className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] block ml-4">Nom complet</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+                    <div className="space-y-4">
+                        <label className="text-gray-600 text-[9px] font-black uppercase tracking-[0.5em] block ml-4 italic">Signature Nominale</label>
                         <div className="relative group">
-                            <User className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                            <User className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-700 group-focus-within:text-yellow-400 transition-colors" />
                             <input
                                 type="text"
                                 value={previewData.name || ''}
                                 onChange={(e) => updatePreview('name', e.target.value)}
-                                className="w-full bg-gray-950 p-6 pl-16 rounded-[2rem] border border-gray-800 font-bold text-white focus:outline-none focus:border-yellow-400 focus:bg-black transition-all"
+                                className="w-full bg-white/[0.01] p-6 pl-16 rounded-3xl border border-white/5 font-[1000] text-sm uppercase italic tracking-tight text-white focus:outline-none focus:border-yellow-400 focus:bg-white/[0.03] transition-all"
                             />
                         </div>
                     </div>
-                    <div className="space-y-3">
-                        <label className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] block ml-4">Email</label>
+                    <div className="space-y-4">
+                        <label className="text-gray-600 text-[9px] font-black uppercase tracking-[0.5em] block ml-4 italic">Canal Digitale</label>
                         <div className="relative">
-                            <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600" />
-                            <div className="w-full bg-gray-900/50 p-6 pl-16 rounded-[2rem] border border-gray-800 font-bold text-gray-500 cursor-not-allowed">
+                            <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-800" />
+                            <div className="w-full bg-black/40 p-6 pl-16 rounded-3xl border border-white/5 font-[1000] text-sm uppercase italic tracking-tight text-gray-700 cursor-not-allowed">
                                 {userData.email}
                             </div>
                         </div>
                     </div>
-                    <div className="space-y-3">
-                        <label className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] block ml-4">Téléphone</label>
+                    <div className="space-y-4">
+                        <label className="text-gray-600 text-[9px] font-black uppercase tracking-[0.5em] block ml-4 italic">Ligne Directe</label>
                         <div className="relative group">
-                            <Phone className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                            <Phone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-700 group-focus-within:text-yellow-400 transition-colors" />
                             <input
                                 type="tel"
                                 value={previewData.phone || ''}
                                 onChange={(e) => updatePreview('phone', e.target.value)}
                                 placeholder="+216 -- --- ---"
-                                className="w-full bg-gray-950 p-6 pl-16 rounded-[2rem] border border-gray-800 font-bold text-white focus:outline-none focus:border-yellow-400 focus:bg-black transition-all"
+                                className="w-full bg-white/[0.01] p-6 pl-16 rounded-3xl border border-white/5 font-[1000] text-sm uppercase italic tracking-tight text-white focus:outline-none focus:border-yellow-400 focus:bg-white/[0.03] transition-all"
                             />
                         </div>
                     </div>
-                    <div className="space-y-3">
-                        <label className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] block ml-4">Adresse de livraison</label>
+                    <div className="space-y-4">
+                        <label className="text-gray-600 text-[9px] font-black uppercase tracking-[0.5em] block ml-4 italic">Lieu de Livraison</label>
                         <div className="relative group">
-                            <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                            <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-700 group-focus-within:text-yellow-400 transition-colors" />
                             <input
                                 type="text"
                                 value={previewData.address || ''}
                                 onChange={(e) => updatePreview('address', e.target.value)}
                                 placeholder="Votre adresse..."
-                                className="w-full bg-gray-950 p-6 pl-16 rounded-[2rem] border border-gray-800 font-bold text-white focus:outline-none focus:border-yellow-400 focus:bg-black transition-all"
+                                className="w-full bg-white/[0.01] p-6 pl-16 rounded-3xl border border-white/5 font-[1000] text-sm uppercase italic tracking-tight text-white focus:outline-none focus:border-yellow-400 focus:bg-white/[0.03] transition-all"
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* --- Avatar Selection (Emoji Picker) --- */}
-                <div className="space-y-6 pt-10 border-t border-gray-800">
-                    <div className="flex items-end justify-between">
-                        <div>
-                            <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Votre Avatar</h3>
-                            <p className="text-gray-500 text-xs font-bold mt-1">Choisissez un emoji qui vous représente.</p>
-                        </div>
-                        {/* Rank Icons Selection */}
-                        <div className="hidden sm:flex items-center gap-2">
-                            {TIERS.map((tier, idx) => {
-                                const isLocked = currentTierIndex < idx;
-                                return (
-                                    <button
-                                        key={tier.name}
-                                        type="button"
-                                        onClick={() => !isLocked && updatePreview('image', tier.emoji)}
-                                        disabled={isLocked}
-                                        className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all border border-gray-800 ${isLocked ? 'opacity-30 cursor-not-allowed bg-gray-900' : 'hover:scale-110 hover:bg-gray-800 bg-gray-900 cursor-pointer'}`}
-                                        title={`Icone ${tier.name}`}
-                                    >
-                                        <span className={`transition-all duration-300 ${isLocked ? 'filter grayscale opacity-60 scale-90' : 'group-hover:scale-110'}`}>
-                                            {tier.emoji}
-                                        </span>
-                                        {isLocked && (
-                                            <div className="absolute top-1 right-1">
-                                                <Lock className="w-3 h-3 text-gray-500/70" />
-                                            </div>
-                                        )}
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    </div>
 
-                    {/* Rank Icons Mobile */}
-                    <div className="flex sm:hidden items-center gap-2 mb-4">
-                        {TIERS.map((tier, idx) => {
-                            const isLocked = currentTierIndex < idx;
-                            return (
-                                <button
-                                    key={tier.name}
-                                    type="button"
-                                    onClick={() => !isLocked && updatePreview('image', tier.emoji)}
-                                    disabled={isLocked}
-                                    className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all border border-gray-800 ${isLocked ? 'opacity-30 cursor-not-allowed bg-gray-900' : 'hover:scale-110 hover:bg-gray-800 bg-gray-900 cursor-pointer'}`}
-                                >
-                                    <span className={`transition-all duration-300 ${isLocked ? 'filter grayscale opacity-60 scale-90' : 'group-hover:scale-110'}`}>
-                                        {tier.emoji}
-                                    </span>
-                                    {isLocked && (
-                                        <div className="absolute top-1 right-1">
-                                            <Lock className="w-3 h-3 text-gray-500/70" />
-                                        </div>
-                                    )}
-                                </button>
-                            )
-                        })}
-                    </div>
-
-                    <EmojiPicker
-                        selected={previewData.image}
-                        onSelect={(emoji) => updatePreview('image', emoji)}
-                        label=""
-                        allowClear={false}
-                        userTierIndex={currentTierIndex}
-                        loyaltyPoints={userData?.loyaltyPoints || 0}
-                    />
-                </div>
-
-                {/* --- Background Selection --- */}
-                <div className="space-y-6 pt-10 border-t border-gray-800">
-                    <div className="flex items-end justify-between">
-                        <div>
-                            <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Votre Style</h3>
-                            <p className="text-gray-500 text-xs font-bold mt-1 max-w-md">
-                                Personnalisez la couleur de fond de votre avatar.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-                        {BACKGROUNDS.map((bg) => {
-                            const isNewcomer = (userData.loyaltyPoints || 0) < 100;
-                            // Allow tier 0 backgrounds for newcomers if it's the classic one
-                            const isLocked = bg.tier === 0 ? false : (currentTierIndex < bg.tier);
-                            const isSelected = previewData.selectedBg === bg.value;
-
-                            return (
-                                <button
-                                    key={bg.name}
-                                    type="button"
-                                    onClick={() => !isLocked && updatePreview('selectedBg', bg.value)}
-                                    disabled={isLocked}
-                                    className={`group relative h-16 rounded-2xl border-2 transition-all duration-300 overflow-hidden ${isSelected ? 'border-white scale-105 shadow-xl' : 'border-transparent hover:border-white/20'} ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                    <div className={`absolute inset-0 ${bg.value}`}></div>
-                                    {isLocked && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                                            <Lock className="w-5 h-5 text-white/50" />
-                                        </div>
-                                    )}
-                                    {!isLocked && isSelected && (
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <CheckCircle2 className="w-6 h-6 text-white drop-shadow-md" />
-                                        </div>
-                                    )}
-                                    <div className="absolute bottom-1 w-full text-center text-[8px] font-black uppercase text-white/80 tracking-widest bg-black/20 py-0.5">
-                                        {bg.name}
-                                    </div>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-
-
-                {/* --- Frame Selection Section --- */}
-                <div className="space-y-6 pt-10 border-t border-gray-800">
-                    <div className="flex items-end justify-between">
-                        <div>
-                            <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Cadres de Fidélité</h3>
-                            <p className="text-gray-500 text-xs font-bold mt-1 max-w-md">
-                                Personnalisez votre avatar avec un cadre exclusif correspondant à votre statut. Gravissez les échelons pour en débloquer davantage.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                        {/* Default / None */}
-                        <button
-                            type="button"
-                            onClick={() => updatePreview('selectedFrame', null)}
-                            className={`group relative p-4 rounded-3xl border-2 transition-all duration-300 flex flex-col items-center gap-3 ${!previewData.selectedFrame ? 'bg-white/10 border-white/40 shadow-xl' : 'bg-black/20 border-white/5 hover:bg-white/5'}`}
-                        >
-                            <div className="w-16 h-16 rounded-2xl bg-gray-800 border-2 border-gray-700 flex items-center justify-center">
-                                <UserIcon className="w-6 h-6 text-gray-500" />
-                            </div>
-                            <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Par défaut</span>
-                        </button>
-
-                        {/* Tier Frames */}
-                        {TIERS.map((tier) => {
-                            const isLocked = (userData.loyaltyPoints || 0) < tier.min;
-                            const isSelected = previewData.selectedFrame === tier.borderColor;
-
-                            return (
-                                <button
-                                    key={tier.name}
-                                    type="button"
-                                    onClick={() => !isLocked && updatePreview('selectedFrame', tier.borderColor)}
-                                    disabled={isLocked}
-                                    className={`group relative p-4 rounded-3xl border-2 transition-all duration-300 flex flex-col items-center gap-3 overflow-hidden
-                                        ${isSelected ? 'bg-white/10 border-white/50 shadow-[0_0_30px_rgba(255,255,255,0.1)] scale-105' : 'bg-black/20 border-white/5'}
-                                        ${isLocked ? 'opacity-50 cursor-not-allowed grayscale' : 'hover:bg-white/5 hover:border-white/20 cursor-pointer'}
-                                    `}
-                                >
-                                    {isLocked && (
-                                        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
-                                            <Lock className="w-5 h-5 text-white/50" />
-                                        </div>
-                                    )}
-
-                                    <div className={`relative w-16 h-16 rounded-2xl bg-gray-900 border-4 ${tier.borderColor} flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform`}>
-                                        <div className={`absolute inset-0 bg-gradient-to-br ${tier.color} opacity-30`}></div>
-                                    </div>
-
-                                    <div className="text-center z-10">
-                                        <div className={`text-[9px] font-black uppercase tracking-widest ${isSelected ? 'text-white' : 'text-gray-500'}`}>{tier.name}</div>
-                                        {isLocked && <div className="text-[8px] font-bold text-gray-600 mt-0.5">{tier.min} pts</div>}
-                                    </div>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                <div className="pt-10 border-t border-gray-800 flex justify-end">
+                <div className="pt-16 border-t border-white/5 flex justify-end">
                     <button
                         type="submit"
                         disabled={saving || !hasChanges()}
-                        className="bg-yellow-400 hover:bg-yellow-300 disabled:bg-gray-800 disabled:text-gray-600 text-gray-900 px-12 py-5 rounded-3xl font-black text-sm uppercase tracking-widest transition-all shadow-2xl shadow-yellow-400/20 active:scale-95 flex items-center gap-3"
+                        className="bg-yellow-400 hover:bg-white disabled:bg-white/5 disabled:text-gray-700 text-black px-16 py-6 rounded-[2rem] font-[1000] text-[11px] uppercase tracking-[0.3em] transition-all shadow-2xl shadow-yellow-400/10 active:scale-95 flex items-center gap-4 italic"
                     >
                         {saving ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                         ) : (
                             <Save className="w-5 h-5" />
                         )}
-                        Enregistrer les modifications
+                        Graver les Changements
                     </button>
                 </div>
             </form>

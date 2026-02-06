@@ -11,17 +11,17 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
     console.log('--- Checking Categories ---');
-    const categories = await prisma.category.findMany();
+    const categories = await prisma.categories.findMany();
     for (const cat of categories) {
-        const count = await prisma.menuItem.count({ where: { categoryId: cat.id } });
+        const count = await prisma.menu_items.count({ where: { category_id: cat.id } });
         console.log(`ID: ${cat.id}, Name: ${cat.name}, Items: ${count}`);
     }
 
     console.log('\n--- Checking Promotions ---');
-    const promos = await prisma.promotion.findMany();
+    const promos = await prisma.promotions.findMany();
     promos.forEach(p => {
         console.log(`ID: ${p.id}, Name: ${p.name}`);
-        console.log(`selectionRules: ${JSON.stringify(p.selectionRules, null, 2)}`);
+        console.log(`selection_rules: ${JSON.stringify(p.selection_rules, null, 2)}`);
         console.log('---');
     });
 }

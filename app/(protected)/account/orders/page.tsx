@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Package, Clock, CheckCircle2, Loader2, ChevronRight, ShoppingBag, Search, Filter, ChevronLeft, Store, Truck, XCircle, Star } from 'lucide-react';
 import Link from 'next/link';
+import TacticalAura from '@/components/TacticalAura';
 
 const getStatusLabel = (status: string) => {
     switch (status) {
@@ -66,39 +67,46 @@ export default function OrdersPage() {
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
-                <h2 className="text-4xl font-black uppercase italic tracking-tighter">
-                    Mes <span className="text-yellow-400">Commandes</span>
-                </h2>
+        <div className="w-full space-y-12 animate-in fade-in duration-700 pb-20">
+            <TacticalAura opacity={0.3} />
+            <div className="flex flex-col md:flex-row gap-8 items-end justify-between border-b border-white/5 pb-16">
+                <div className="space-y-6">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-yellow-400/20 bg-yellow-400/5 backdrop-blur-md">
+                        <ShoppingBag size={12} className="text-yellow-400" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-400">Logistique Tactique</span>
+                    </div>
+                    <h1 className="text-5xl md:text-8xl font-[1000] uppercase italic tracking-tighter leading-none text-white">
+                        VOS <span className="text-yellow-400 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">COMMANDES</span>
+                    </h1>
+                </div>
 
-                <form onSubmit={handleSearch} className="relative w-full md:w-80 group">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                <form onSubmit={handleSearch} className="relative w-full md:w-96 group">
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-700 group-focus-within:text-yellow-400 transition-colors" />
                     <input
                         type="text"
-                        placeholder="Rechercher #..."
+                        placeholder="Rechercher une signature #..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-gray-900/50 border-2 border-gray-800 text-white pl-14 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
+                        className="w-full bg-white/[0.02] border border-white/5 text-white pl-14 pr-6 py-5 rounded-3xl font-[1000] uppercase italic tracking-tight focus:outline-none focus:border-yellow-400/50 focus:bg-white/[0.04] transition-all text-sm placeholder:text-gray-800"
                     />
                 </form>
             </div>
 
-            <div className="flex flex-wrap gap-2 pb-4">
+            <div className="flex flex-wrap gap-3 pb-4">
                 {[
                     { val: 'all', label: 'Toutes' },
                     { val: 'pending', label: 'En attente' },
                     { val: 'confirmed', label: 'Confirmées' },
-                    { val: 'preparing', label: 'En préparation' },
+                    { val: 'preparing', label: 'Cuisine' },
                     { val: 'delivered', label: 'Terminées' },
                     { val: 'cancelled', label: 'Annulées' }
                 ].map((s) => (
                     <button
                         key={s.val}
                         onClick={() => { setStatus(s.val); setPage(1); }}
-                        className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${status === s.val
-                            ? 'bg-yellow-400 border-yellow-400 text-gray-950 shadow-lg shadow-yellow-400/10'
-                            : 'bg-gray-900/50 border-gray-800 text-gray-500 hover:border-gray-700'
+                        className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] italic border transition-all duration-500 ${status === s.val
+                            ? 'bg-yellow-400 border-yellow-400 text-black shadow-[0_0_20px_rgba(250,204,21,0.2)]'
+                            : 'bg-white/[0.02] border-white/5 text-gray-600 hover:text-white hover:border-white/10'
                             }`}
                     >
                         {s.label}
@@ -107,78 +115,80 @@ export default function OrdersPage() {
             </div>
 
             {loading ? (
-                <div className="flex items-center justify-center py-20">
-                    <Loader2 className="w-10 h-10 text-yellow-400 animate-spin" />
+                <div className="flex flex-col items-center justify-center py-32 space-y-4">
+                    <Loader2 className="w-8 h-8 text-yellow-400 animate-spin" />
+                    <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.4em] italic">Fetching Order Vault...</p>
                 </div>
             ) : orders.length === 0 ? (
-                <div className="text-center py-32 bg-gray-900/30 rounded-[3rem] border-2 border-dashed border-gray-800 backdrop-blur-xl">
-                    <div className="w-24 h-24 bg-gray-950 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-gray-800">
-                        <ShoppingBag className="w-10 h-10 text-gray-700" />
+                <div className="text-center py-32 bg-white/[0.01] rounded-[3.5rem] border border-white/5 border-dashed relative overflow-hidden">
+                    <div className="w-24 h-24 bg-white/[0.02] rounded-[2rem] border border-white/5 flex items-center justify-center mx-auto mb-8 text-gray-800">
+                        <ShoppingBag size={40} />
                     </div>
-                    <h3 className="text-2xl font-black text-white/50 uppercase italic mb-2">Aucune commande</h3>
-                    <p className="text-gray-600 font-bold text-sm uppercase tracking-widest px-4">Prêt à commander votre premier burger ?</p>
-                    <Link href="/menu" className="mt-10 inline-block bg-yellow-400 text-gray-900 px-10 py-5 rounded-2xl font-black uppercase text-sm tracking-widest shadow-2xl shadow-yellow-400/10 hover:bg-yellow-300 transition-all">
-                        Voir le Menu
+                    <h3 className="text-3xl font-[1000] text-gray-800 uppercase italic tracking-tighter mb-4">Archives Vides</h3>
+                    <p className="text-[10px] text-gray-600 font-black uppercase tracking-[0.3em] px-4 italic">Il est temps de passer votre première commande exclusive.</p>
+                    <Link href="/menu" className="mt-12 inline-flex items-center gap-4 bg-white text-black px-12 py-5 rounded-2xl font-[1000] uppercase text-[11px] tracking-[0.2em] italic hover:scale-105 transition-transform active:scale-95 shadow-2xl">
+                        Visiter le Menu
+                        <ChevronRight size={16} strokeWidth={3} />
                     </Link>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-6 text-left">
+                <div className="space-y-6">
                     {orders.map((order) => (
-                        <Link href={`/account/orders/${order.orderNumber}`} key={order.id} className="block bg-gray-900/60 p-8 rounded-[2.5rem] border border-gray-800 hover:border-yellow-400/30 transition-all duration-500 group relative overflow-hidden backdrop-blur-xl">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 blur-[60px] -mr-16 -mt-16 pointer-events-none group-hover:bg-yellow-400/10 transition-all duration-500"></div>
+                        <Link href={`/account/orders/${order.orderNumber}`} key={order.id} className="block bg-white/[0.02] p-10 rounded-[3rem] border border-white/5 hover:border-yellow-400/30 transition-all duration-700 group relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-yellow-400/[0.01] blur-[150px] -mr-64 -mt-64 pointer-events-none group-hover:bg-yellow-400/[0.03] transition-all duration-1000"></div>
 
-                            <div className="flex flex-col md:flex-row justify-between gap-8 relative z-10">
-                                <div className="space-y-6 flex-1">
-                                    <div className="flex flex-wrap items-center gap-4">
-                                        <div className="bg-yellow-400/10 text-yellow-500 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-yellow-400/20">
+                            <div className="flex flex-col lg:flex-row justify-between gap-10 relative z-10">
+                                <div className="space-y-8 flex-1">
+                                    <div className="flex flex-wrap items-center gap-6">
+                                        <div className="bg-yellow-400/10 text-yellow-500 px-6 py-2.5 rounded-2xl text-[12px] font-[1000] italic uppercase tracking-tighter border border-yellow-400/20">
                                             #{order.orderNumber}
                                         </div>
-                                        <div className="flex items-center gap-2 text-gray-500 text-[10px] font-black uppercase tracking-widest">
-                                            <Clock className="w-3.5 h-3.5" />
-                                            {new Date(order.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+                                        <div className="flex items-center gap-2.5 text-gray-600 text-[10px] font-black uppercase tracking-[0.2em] italic">
+                                            <Clock size={14} className="text-gray-800" />
+                                            {new Date(order.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                         </div>
-                                        <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border-2 border-opacity-20 ${order.orderType === 'pickup' ? 'border-pink-500 bg-pink-500/10 text-pink-400' : 'border-blue-500 bg-blue-500/10 text-blue-400'}`}>
-                                            {order.orderType === 'pickup' ? <Store className="w-3 h-3" /> : <Truck className="w-3 h-3" />}
+                                        <div className={`px-5 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.3em] flex items-center gap-2.5 border border-2 border-opacity-10 italic ${order.orderType === 'pickup' ? 'border-pink-500 bg-pink-500/5 text-pink-400' : 'border-blue-500 bg-blue-500/5 text-blue-400'}`}>
+                                            {order.orderType === 'pickup' ? <Store size={14} /> : <Truck size={14} />}
                                             {order.orderType === 'pickup' ? 'A Emporter' : 'Livraison'}
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="flex flex-wrap gap-3">
                                         {(Array.isArray(order.cart) ? order.cart : []).map((item: any, idx: number) => (
-                                            <span key={idx} className="text-[10px] font-black uppercase tracking-wider bg-gray-950 px-4 py-2 rounded-xl border border-gray-800 text-white/80">
-                                                {item.quantity}x {item.itemName}
+                                            <span key={idx} className="text-[10px] font-black uppercase tracking-widest bg-white/[0.03] px-5 py-3 rounded-2xl border border-white/5 text-gray-400 group-hover:text-white transition-colors italic">
+                                                <span className="text-yellow-400 mr-2">{item.quantity}×</span> {item.itemName}
                                             </span>
                                         ))}
                                     </div>
 
                                     {order.status === 'cancelled' && order.cancelMessage && (
-                                        <div className="p-4 bg-red-500/5 border border-red-500/10 rounded-2xl max-w-md">
-                                            <p className="text-[8px] font-black text-red-500 uppercase tracking-widest mb-1 flex items-center gap-1">
-                                                <XCircle className="w-2.5 h-2.5" />
-                                                Motif d'annulation
+                                        <div className="p-6 bg-red-400/[0.02] border border-red-400/10 rounded-[2rem] max-w-xl">
+                                            <p className="text-[9px] font-black text-red-500 uppercase tracking-[0.4em] mb-2 flex items-center gap-2 italic">
+                                                <XCircle size={14} />
+                                                Note de Service — Annulation
                                             </p>
-                                            <p className="text-gray-500 font-bold text-[10px] italic line-clamp-1">"{order.cancelMessage}"</p>
+                                            <p className="text-gray-600 font-bold text-[11px] italic leading-relaxed">"{order.cancelMessage}"</p>
                                         </div>
                                     )}
                                 </div>
 
-                                <div className="flex flex-row md:flex-col justify-between md:items-end gap-4 border-t md:border-t-0 md:border-l border-gray-800/50 pt-6 md:pt-0 md:pl-8 min-w-[180px]">
-                                    <div className="space-y-1 text-right">
-                                        <div className="text-3xl font-black text-white italic tracking-tighter">{order.finalTotal.toFixed(1)} <span className="text-sm uppercase not-italic text-yellow-400/50">DT</span></div>
+                                <div className="flex flex-row lg:flex-col justify-between lg:items-end gap-6 border-t lg:border-t-0 lg:border-l border-white/5 pt-8 lg:pt-0 lg:pl-12 min-w-[220px]">
+                                    <div className="space-y-2 text-right">
+                                        <div className="text-4xl font-[1000] text-white italic tracking-tighter leading-none">{order.finalTotal.toFixed(1)} <span className="text-[11px] font-black uppercase not-italic text-yellow-400 opacity-40 ml-1">DT</span></div>
                                         {order.status !== 'cancelled' && (
-                                            <div className="text-[10px] font-black text-yellow-500 uppercase tracking-widest flex items-center justify-end gap-1.5 bg-yellow-400/5 py-1 px-3 rounded-lg border border-yellow-400/10 w-fit ml-auto">
-                                                <Star className="w-3 h-3" />
-                                                +{Math.floor(order.finalTotal)} Points
+                                            <div className="text-[9px] font-[1000] text-yellow-500 uppercase tracking-[0.3em] flex items-center justify-end gap-2 italic">
+                                                <Star size={12} className="fill-current" />
+                                                +{Math.floor(order.finalTotal)} POINTS CUMULÉS
                                             </div>
                                         )}
                                     </div>
-                                    <div className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border ${order.status === 'delivered'
-                                        ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                                    <div className={`px-6 py-2.5 rounded-2xl text-[10px] font-[1000] uppercase tracking-[0.2em] italic flex items-center gap-3 border border-2 border-opacity-10 shadow-lg ${order.status === 'delivered'
+                                        ? 'bg-green-500/5 text-green-400 border-green-400/20'
                                         : order.status === 'cancelled'
-                                            ? 'bg-red-500/10 text-red-500 border-red-500/20'
-                                            : 'bg-yellow-400/10 text-yellow-500 border-yellow-400/20'
+                                            ? 'bg-red-500/5 text-red-500 border-red-500/20'
+                                            : 'bg-yellow-400/5 text-yellow-400 border-yellow-400/20'
                                         }`}>
-                                        {order.status === 'delivered' ? <CheckCircle2 className="w-3 h-3" /> : (order.status === 'cancelled' ? <XCircle className="w-3 h-3" /> : <Loader2 className="w-3 h-3 animate-spin" />)}
+                                        <div className={`w-1.5 h-1.5 rounded-full bg-current shadow-[0_0_10px_currentColor] ${order.status === 'delivered' ? '' : 'animate-pulse'}`}></div>
                                         {getStatusLabel(order.status)}
                                     </div>
                                 </div>
@@ -188,23 +198,23 @@ export default function OrdersPage() {
 
                     {/* Pagination Controls */}
                     {pagination && pagination.totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-4 mt-8">
+                        <div className="flex items-center justify-center gap-5 mt-12">
                             <button
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
-                                className="w-12 h-12 rounded-xl bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:text-white hover:border-yellow-400/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-center text-gray-700 hover:text-white hover:border-yellow-400/50 transition-all disabled:opacity-20 disabled:cursor-not-allowed group"
                             >
-                                <ChevronLeft className="w-5 h-5" />
+                                <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                             </button>
-                            <span className="text-sm font-black text-white px-6 py-2 bg-gray-900 border border-gray-800 rounded-xl tracking-widest uppercase italic bg-gray-950 border-gray-800 text-white/80">
-                                Page {page} / {pagination.totalPages}
+                            <span className="text-[11px] font-[1000] text-gray-500 px-8 py-4 bg-white/[0.03] border border-white/5 rounded-2xl tracking-[0.3em] uppercase italic">
+                                Page <span className="text-white mx-1">{page}</span> / {pagination.totalPages}
                             </span>
                             <button
                                 onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
                                 disabled={page === pagination.totalPages}
-                                className="w-12 h-12 rounded-xl bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:text-white hover:border-yellow-400/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-center text-gray-700 hover:text-white hover:border-yellow-400/50 transition-all disabled:opacity-20 disabled:cursor-not-allowed group"
                             >
-                                <ChevronRight className="w-5 h-5" />
+                                <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
                             </button>
                         </div>
                     )}
