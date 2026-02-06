@@ -1,11 +1,13 @@
+// app/(private)/dashboard/customers/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import {
     Users, Search, Star, Package, Calendar, MoreVertical,
     ChevronRight, Loader2, ArrowUpDown, Filter, Edit2,
-    Check, X, Phone, Mail, User, MapPin
+    Check, X, Phone, Mail, User, MapPin, Signal, Activity, Zap, Sparkles, Hash
 } from 'lucide-react';
+import { useToast } from '@/app/context/ToastContext';
 
 interface Customer {
     id: string;
@@ -13,19 +15,24 @@ interface Customer {
     email: string | null;
     phone: string | null;
     address: string | null;
+    image: string | null;
     loyaltyPoints: number;
+    tokens: number;
     totalOrders: number;
     totalRevenue: number;
     createdAt: string;
 }
 
 export default function AdminCustomersPage() {
+    const { toast } = useToast();
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [editingPoints, setEditingPoints] = useState<string | null>(null);
-    const [newPoints, setNewPoints] = useState<number>(0);
+    const [editingTokens, setEditingTokens] = useState<string | null>(null);
+    const [newValue, setNewValue] = useState<number>(0);
     const [updating, setUpdating] = useState(false);
+    const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
 
     useEffect(() => {
         fetchCustomers();
@@ -46,208 +53,244 @@ export default function AdminCustomersPage() {
         }
     };
 
-    const handleUpdatePoints = async (userId: string) => {
+    const handleUpdate = async (userId: string, field: 'loyaltyPoints' | 'tokens') => {
         setUpdating(true);
         try {
             const res = await fetch('/api/admin/customers', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, loyaltyPoints: newPoints })
+                body: JSON.stringify({ userId, [field]: newValue })
             });
             const data = await res.json();
             if (data.success) {
-                setCustomers(customers.map(c => c.id === userId ? { ...c, loyaltyPoints: newPoints } : c));
+                setCustomers(customers.map(c => c.id === userId ? { ...c, [field]: newValue } : c));
                 setEditingPoints(null);
+                setEditingTokens(null);
+                toast.success(`${field === 'tokens' ? 'Jetons' : 'Points'} mis à jour avec succès !`);
+            } else {
+                toast.error(data.error || 'Erreur lors de la mise à jour');
             }
         } catch (error) {
-            console.error('Error updating points:', error);
+            console.error(`Error updating ${field}:`, error);
+            toast.error('Erreur technique lors de la mise à jour');
         } finally {
             setUpdating(false);
         }
     };
 
     return (
-        <div className="space-y-10 pb-20 p-4 md:p-8">
+        <div className="w-full space-y-12 animate-in fade-in duration-700 pb-20 p-4 md:p-8">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10">
                 <div>
-                    <h1 className="text-4xl md:text-5xl font-[1000] text-white mb-2 uppercase italic tracking-tighter">
+                    <div className="flex items-center gap-3 mb-2">
+                        <Signal size={12} className="text-yellow-400" />
+                        <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic">User Intelligence Matrix</span>
+                    </div>
+                    <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none mb-4">
                         Gestion <span className="text-yellow-400">Clients</span>
                     </h1>
-                    <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Gérez votre base de clients et leurs récompenses</p>
+                    <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em] ml-1">Analyse des flux et protocoles de fidélité</p>
                 </div>
 
-                <div className="relative group w-full md:w-96">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                <div className="relative group w-full xl:w-96">
+                    <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-700 group-focus-within:text-yellow-400 transition-colors" />
                     <input
                         type="text"
-                        placeholder="Rechercher un client (Nom, Email, Tel)..."
+                        placeholder="Scanner la base clients (Nom, Tel)..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-gray-900/50 border-2 border-gray-800 text-white pl-16 pr-6 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
+                        className="w-full bg-black/40 border border-white/5 text-white pl-16 pr-8 py-6 rounded-[2rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-xs uppercase italic tracking-widest placeholder:text-gray-800"
                     />
                 </div>
             </div>
 
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-gray-900/40 p-8 rounded-[2rem] border border-gray-800 flex items-center gap-6">
-                    <div className="w-14 h-14 bg-yellow-400/10 rounded-2xl flex items-center justify-center">
-                        <Users className="w-6 h-6 text-yellow-500" />
-                    </div>
-                    <div>
-                        <div className="text-2xl font-black text-white italic">{customers.length}</div>
-                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Clients Actifs</div>
-                    </div>
-                </div>
-                <div className="bg-gray-900/40 p-8 rounded-[2rem] border border-gray-800 flex items-center gap-6">
-                    <div className="w-14 h-14 bg-green-400/10 rounded-2xl flex items-center justify-center">
-                        <Package className="w-6 h-6 text-green-500" />
-                    </div>
-                    <div>
-                        <div className="text-2xl font-black text-white italic">
-                            {customers.reduce((acc, c) => acc + c.totalRevenue, 0).toLocaleString()} <span className="text-xs text-gray-500 not-italic">DT</span>
+            {/* Stats matrix */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
+                {[
+                    { label: 'Base Clients', value: customers.length, icon: Users, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+                    { label: 'Revenue Global', value: `${customers.reduce((acc, c) => acc + c.totalRevenue, 0).toLocaleString()} DT`, icon: Activity, color: 'text-green-500', bg: 'bg-green-500/10' },
+                    { label: 'Points Actifs', value: customers.reduce((acc, c) => acc + c.loyaltyPoints, 0).toLocaleString(), icon: Zap, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+                    { label: 'Total Services', value: customers.reduce((acc, c) => acc + c.totalOrders, 0).toLocaleString(), icon: Package, color: 'text-blue-500', bg: 'bg-blue-500/10' }
+                ].map((stat, i) => (
+                    <div key={i} className="bg-white/[0.02] p-8 rounded-[3rem] border border-white/5 flex items-center gap-8 group hover:border-white/10 transition-all shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] -rotate-45 translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform duration-700"></div>
+                        <div className={`w-16 h-16 ${stat.bg} rounded-[1.5rem] flex items-center justify-center relative z-10 group-hover:scale-110 transition-transform`}>
+                            <stat.icon className={`w-7 h-7 ${stat.color}`} strokeWidth={2.5} />
                         </div>
-                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Revenu Total</div>
-                    </div>
-                </div>
-                <div className="bg-gray-900/40 p-8 rounded-[2rem] border border-gray-800 flex items-center gap-6">
-                    <div className="w-14 h-14 bg-orange-400/10 rounded-2xl flex items-center justify-center">
-                        <Star className="w-6 h-6 text-orange-500" />
-                    </div>
-                    <div>
-                        <div className="text-2xl font-black text-white italic">
-                            {customers.reduce((acc, c) => acc + c.loyaltyPoints, 0).toLocaleString()}
+                        <div className="relative z-10">
+                            <div className="text-3xl font-[1000] text-white italic tracking-tighter leading-none mb-1">{stat.value}</div>
+                            <div className="text-[10px] text-gray-700 font-[1000] uppercase tracking-[0.3em] italic">{stat.label}</div>
                         </div>
-                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Points Fidélité</div>
                     </div>
-                </div>
-                <div className="bg-gray-900/40 p-8 rounded-[2rem] border border-gray-800 flex items-center gap-6">
-                    <div className="w-14 h-14 bg-blue-400/10 rounded-2xl flex items-center justify-center">
-                        <Package className="w-6 h-6 text-blue-500" />
-                    </div>
-                    <div>
-                        <div className="text-2xl font-black text-white italic">
-                            {customers.reduce((acc, c) => acc + c.totalOrders, 0).toLocaleString()}
-                        </div>
-                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Commandes</div>
-                    </div>
-                </div>
+                ))}
             </div>
 
-            {/* Table */}
-            <div className="bg-gray-900/20 border border-gray-800 rounded-[2.5rem] overflow-hidden backdrop-blur-3xl shadow-3xl">
-                <div className="overflow-x-auto">
+            {/* Main Table Matrix */}
+            <div className="bg-white/[0.01] rounded-[4rem] border border-white/5 backdrop-blur-3xl overflow-hidden shadow-3xl relative">
+                <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-gray-900/50 border-b border-gray-800">
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Client</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Contact & Adresse</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Stats Financières</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Points</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Depuis le</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Actions</th>
+                            <tr className="bg-white/[0.02] border-b border-white/5">
+                                <th className="px-12 py-8 text-[10px] font-[1000] text-gray-600 uppercase tracking-[0.4em] italic">Profile</th>
+                                <th className="px-12 py-8 text-[10px] font-[1000] text-gray-600 uppercase tracking-[0.4em] italic">Coordinates</th>
+                                <th className="px-12 py-8 text-[10px] font-[1000] text-gray-600 uppercase tracking-[0.4em] italic text-right">Yield</th>
+                                <th className="px-12 py-8 text-[10px] font-[1000] text-gray-600 uppercase tracking-[0.4em] italic">Loyalty Matrix</th>
+                                <th className="px-12 py-8 text-[10px] font-[1000] text-gray-600 uppercase tracking-[0.4em] italic text-center">Transmission</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-800/50">
+                        <tbody className="divide-y divide-white/[0.03]">
                             {loading ? (
                                 Array(5).fill(0).map((_, i) => (
                                     <tr key={i} className="animate-pulse">
-                                        <td colSpan={6} className="px-8 py-8 h-20 bg-white/[0.02]"></td>
+                                        <td colSpan={5} className="px-12 py-10 h-32 bg-white/[0.005]"></td>
                                     </tr>
                                 ))
                             ) : customers.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-8 py-20 text-center">
-                                        <div className="flex flex-col items-center gap-4">
-                                            <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center">
-                                                <Users className="w-8 h-8 text-gray-600" />
-                                            </div>
-                                            <p className="text-gray-500 font-bold">Aucun client trouvé</p>
+                                    <td colSpan={5} className="px-12 py-40 text-center">
+                                        <div className="flex flex-col items-center gap-6 py-10 opacity-20">
+                                            <Users className="w-20 h-20 text-gray-500" strokeWidth={1} />
+                                            <p className="text-gray-500 font-[1000] uppercase tracking-[0.5em] text-xs italic">Silence Tactique • Aucun Signal</p>
                                         </div>
                                     </td>
                                 </tr>
                             ) : customers.map((customer) => (
-                                <tr key={customer.id} className="hover:bg-white/[0.02] transition-colors group">
-                                    <td className="px-8 py-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-gray-800 rounded-2xl border border-gray-700 flex items-center justify-center font-black text-white text-lg group-hover:bg-yellow-400 group-hover:text-gray-900 transition-all duration-300">
-                                                {customer.name?.charAt(0) || <User className="w-5 h-5" />}
+                                <tr key={customer.id} className="hover:bg-yellow-400/[0.01] transition-all duration-500 group relative">
+                                    <td className="px-12 py-10">
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-20 h-20 bg-black rounded-[2.2rem] border border-white/5 overflow-hidden flex items-center justify-center font-[1000] text-white text-2xl transition-all duration-700 group-hover:scale-105 group-hover:border-yellow-400/50 shadow-inner group-hover:shadow-[0_0_40px_rgba(250,204,21,0.1)] relative">
+                                                {customer.image ? (
+                                                    <img src={customer.image} alt="" className="w-full h-full object-cover brightness-75 group-hover:brightness-100 transition-all" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black text-gray-800 group-hover:text-yellow-400 transition-colors uppercase italic">
+                                                        {customer.name?.charAt(0) || <User className="w-8 h-8" />}
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div>
-                                                <div className="text-white font-black text-sm uppercase tracking-tight">{customer.name || 'Anonyme'}</div>
-                                                <div className="text-[10px] text-gray-600 font-bold truncate max-w-[150px]">ID: {customer.id}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-6">
-                                        <div className="space-y-1">
-                                            <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
-                                                <Phone className="w-3 h-3 text-yellow-400" /> {customer.phone || 'Pas de tel'}
-                                            </div>
-                                            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-600 italic">
-                                                <MapPin className="w-3 h-3 text-blue-400" /> {customer.address || 'Pas d\'adresse'}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-6">
-                                        <div className="space-y-1">
-                                            <div className="text-lg font-black text-white italic">
-                                                {customer.totalRevenue.toFixed(1)} <span className="text-[10px] not-italic text-gray-600">DT</span>
-                                            </div>
-                                            <div className="text-[9px] font-black uppercase tracking-widest text-gray-500">
-                                                {customer.totalOrders} commande{customer.totalOrders > 1 ? 's' : ''}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-6">
-                                        {editingPoints === customer.id ? (
-                                            <div className="flex items-center gap-2 animate-in slide-in-from-right-2">
-                                                <input
-                                                    type="number"
-                                                    value={newPoints}
-                                                    onChange={(e) => setNewPoints(parseInt(e.target.value))}
-                                                    className="w-24 bg-gray-950 border-2 border-yellow-400/30 rounded-lg px-3 py-1.5 text-white font-black text-sm focus:outline-none focus:border-yellow-400"
-                                                    disabled={updating}
-                                                />
-                                                <button
-                                                    onClick={() => handleUpdatePoints(customer.id)}
-                                                    className="p-1.5 bg-yellow-400 rounded-lg text-gray-900 hover:bg-yellow-300 transition-colors"
-                                                    disabled={updating}
-                                                >
-                                                    {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                                                </button>
-                                                <button
-                                                    onClick={() => setEditingPoints(null)}
-                                                    className="p-1.5 bg-gray-800 rounded-lg text-gray-400 hover:bg-gray-700 transition-colors"
-                                                    disabled={updating}
-                                                >
-                                                    <X className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center gap-3">
-                                                <div className="px-4 py-2 bg-yellow-400/10 border border-yellow-400/20 rounded-xl text-yellow-400 font-black text-sm italic">
-                                                    {customer.loyaltyPoints.toLocaleString()} <span className="text-[10px] uppercase not-italic opacity-50 ml-1">pts</span>
+                                            <div className="space-y-2">
+                                                <div className="text-white font-[1000] text-2xl uppercase italic tracking-tighter group-hover:text-yellow-400 transition-colors leading-none">{customer.name || 'ANONYMOUS ENTITY'}</div>
+                                                <div className="flex items-center gap-3 text-[10px] text-gray-700 font-[1000] uppercase tracking-[0.2em] italic">
+                                                    <Hash size={12} className="text-yellow-400/50" />
+                                                    ID-{customer.id.slice(-8).toUpperCase()}
                                                 </div>
-                                                <button
-                                                    onClick={() => {
-                                                        setEditingPoints(customer.id);
-                                                        setNewPoints(customer.loyaltyPoints);
-                                                    }}
-                                                    className="p-2 text-gray-600 hover:text-white transition-colors"
-                                                >
-                                                    <Edit2 className="w-4 h-4" />
-                                                </button>
                                             </div>
-                                        )}
+                                        </div>
                                     </td>
-                                    <td className="px-8 py-6 text-xs font-bold text-gray-500 italic uppercase">
-                                        {new Date(customer.createdAt).toLocaleDateString()}
+                                    <td className="px-12 py-10">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-4 text-xs font-[1000] text-gray-400 italic uppercase tracking-widest leading-none">
+                                                <Phone className="w-4 h-4 text-yellow-400/50" /> {customer.phone || 'NO COORDS'}
+                                            </div>
+                                            <div className="flex items-center gap-4 text-[10px] font-black text-gray-700 uppercase tracking-widest italic line-clamp-1 max-w-[240px]">
+                                                <MapPin className="w-4 h-4 text-blue-500/50" /> {customer.address || 'UNDEFINED LOCATION'}
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td className="px-8 py-6">
-                                        <button className="p-3 bg-gray-800/50 rounded-xl text-gray-500 hover:text-yellow-400 hover:bg-yellow-400/10 hover:border-yellow-400/20 border border-transparent transition-all">
-                                            <ChevronRight className="w-5 h-5" />
+                                    <td className="px-12 py-10 text-right">
+                                        <div className="space-y-1">
+                                            <div className="text-3xl font-[1000] text-white italic tracking-tighter leading-none group-hover:text-yellow-400 transition-colors transition-all">
+                                                {customer.totalRevenue.toFixed(1)} <span className="text-sm not-italic text-gray-700 uppercase ml-1">DT</span>
+                                            </div>
+                                            <div className="text-[10px] font-[1000] uppercase tracking-[0.3em] text-gray-800 italic">
+                                                {customer.totalOrders} Mission Logged
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-12 py-10">
+                                        <div className="flex flex-col gap-4">
+                                            {/* Loyalty Points */}
+                                            {editingPoints === customer.id ? (
+                                                <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-500">
+                                                    <input
+                                                        type="number"
+                                                        value={newValue}
+                                                        onChange={(e) => setNewValue(parseInt(e.target.value))}
+                                                        className="w-28 bg-black/60 border border-yellow-400/30 rounded-[1.2rem] px-5 py-3 text-white font-[1000] text-sm focus:outline-none focus:border-yellow-400 transition-all shadow-2xl italic tracking-tighter"
+                                                        disabled={updating}
+                                                    />
+                                                    <button
+                                                        onClick={() => handleUpdate(customer.id, 'loyaltyPoints')}
+                                                        className="w-12 h-12 flex items-center justify-center bg-yellow-400 rounded-xl text-black hover:scale-110 active:scale-90 transition-all shadow-[0_10px_30px_rgba(250,204,21,0.2)]"
+                                                        disabled={updating}
+                                                    >
+                                                        {updating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" strokeWidth={3} />}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setEditingPoints(null)}
+                                                        className="w-12 h-12 flex items-center justify-center bg-white/[0.05] border border-white/5 rounded-xl text-gray-500 hover:text-white transition-all hover:bg-white/[0.1]"
+                                                        disabled={updating}
+                                                    >
+                                                        <X className="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-6">
+                                                    <div className="w-40 px-6 py-3 bg-yellow-400/5 border border-yellow-400/10 rounded-[1.5rem] text-yellow-500 font-[1000] text-base italic tracking-tighter group-hover:bg-yellow-400/10 transition-all shadow-inner flex items-center gap-3">
+                                                        <Zap className="w-3.5 h-3.5 text-yellow-400" />
+                                                        {customer.loyaltyPoints.toLocaleString()} <span className="text-[9px] uppercase not-italic opacity-40 ml-1 tracking-[0.2em]">PTS</span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingPoints(customer.id);
+                                                            setEditingTokens(null);
+                                                            setNewValue(customer.loyaltyPoints);
+                                                        }}
+                                                        className="w-10 h-10 flex items-center justify-center text-gray-800 hover:text-yellow-400 hover:bg-yellow-400/5 rounded-xl transition-all opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
+                                                    >
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Tokens */}
+                                            {editingTokens === customer.id ? (
+                                                <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-500">
+                                                    <input
+                                                        type="number"
+                                                        value={newValue}
+                                                        onChange={(e) => setNewValue(parseInt(e.target.value))}
+                                                        className="w-28 bg-black/60 border border-cyan-400/30 rounded-[1.2rem] px-5 py-3 text-white font-[1000] text-sm focus:outline-none focus:border-cyan-400 transition-all shadow-2xl italic tracking-tighter"
+                                                        disabled={updating}
+                                                    />
+                                                    <button
+                                                        onClick={() => handleUpdate(customer.id, 'tokens')}
+                                                        className="w-12 h-12 flex items-center justify-center bg-cyan-400 rounded-xl text-black hover:scale-110 active:scale-90 transition-all shadow-[0_10px_30px_rgba(34,211,238,0.2)]"
+                                                        disabled={updating}
+                                                    >
+                                                        {updating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" strokeWidth={3} />}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setEditingTokens(null)}
+                                                        className="w-12 h-12 flex items-center justify-center bg-white/[0.05] border border-white/5 rounded-xl text-gray-500 hover:text-white transition-all hover:bg-white/[0.1]"
+                                                        disabled={updating}
+                                                    >
+                                                        <X className="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-6">
+                                                    <div className="w-40 px-6 py-3 bg-cyan-400/5 border border-cyan-400/10 rounded-[1.5rem] text-cyan-500 font-[1000] text-base italic tracking-tighter group-hover:bg-cyan-400/10 transition-all shadow-inner flex items-center gap-3">
+                                                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                                                        {customer.tokens.toLocaleString()} <span className="text-[9px] uppercase not-italic opacity-40 ml-1 tracking-[0.2em]">JTN</span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingTokens(customer.id);
+                                                            setEditingPoints(null);
+                                                            setNewValue(customer.tokens);
+                                                        }}
+                                                        className="w-10 h-10 flex items-center justify-center text-gray-800 hover:text-cyan-400 hover:bg-cyan-400/5 rounded-xl transition-all opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
+                                                    >
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-12 py-10 text-center">
+                                        <button className="w-14 h-14 bg-white/[0.02] rounded-[1.5rem] text-gray-800 group-hover:text-yellow-400 border border-white/5 group-hover:border-yellow-400/50 group-hover:shadow-[0_10px_30px_rgba(250,204,21,0.1)] transition-all active:scale-95 flex items-center justify-center mx-auto">
+                                            <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                                         </button>
                                     </td>
                                 </tr>

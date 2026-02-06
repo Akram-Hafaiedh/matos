@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Send, ChevronLeft, Loader2, MessageSquare, ShieldCheck, User, Package, AlertTriangle, Paperclip, X, FileIcon, ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import UserAvatar from '@/components/UserAvatar';
 
 interface Message {
     id: number;
@@ -191,7 +192,7 @@ export default function AdminTicketDetailsPage() {
     if (!ticket) return null;
 
     return (
-        <div className="max-w-7xl mx-auto py-12 px-4 space-y-12">
+        <div className="w-full py-12 px-4 space-y-12">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
                 <div className="space-y-4">
                     <Link href="/dashboard/support" className="inline-flex items-center gap-2 text-gray-500 hover:text-white transition font-black uppercase text-[10px] tracking-[0.2em] group">
@@ -225,9 +226,12 @@ export default function AdminTicketDetailsPage() {
                     {/* User Info */}
                     <div className="bg-gray-900/40 p-8 rounded-[3rem] border border-gray-800 backdrop-blur-3xl space-y-6">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-gray-800 rounded-2xl flex items-center justify-center border border-white/5">
-                                <User className="text-gray-500" />
-                            </div>
+                            <UserAvatar
+                                image={ticket.user?.image}
+                                name={ticket.user?.name || 'U'}
+                                size="md"
+                                className="border border-white/5"
+                            />
                             <div>
                                 <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">Client</p>
                                 <p className="text-white font-black uppercase text-sm">{ticket.user?.name || 'Inconnu'}</p>
@@ -275,13 +279,12 @@ export default function AdminTicketDetailsPage() {
                     <div className="flex-1 overflow-y-auto p-8 space-y-8">
                         {/* Initial Description */}
                         <div className="flex gap-5 group items-start">
-                            <div className="w-12 h-12 rounded-2xl bg-gray-800 flex items-center justify-center text-yellow-400/50 flex-shrink-0 border border-white/5 shadow-xl transition-all duration-500">
-                                {ticket.user?.image ? (
-                                    <Image src={ticket.user.image} alt={ticket.user.name} width={48} height={48} className="rounded-2xl object-cover" />
-                                ) : (
-                                    <div className="text-xl font-black uppercase">{ticket.user?.name?.[0] || 'U'}</div>
-                                )}
-                            </div>
+                            <UserAvatar
+                                image={ticket.user?.image}
+                                name={ticket.user?.name || 'U'}
+                                size="lg"
+                                className="border border-white/5 shadow-xl transition-all duration-500"
+                            />
                             <div className="space-y-2 max-w-[85%]">
                                 <div className="bg-gray-800/40 p-6 rounded-[2.5rem] rounded-tl-none border border-white/5 text-gray-300 text-sm leading-relaxed backdrop-blur-sm">
                                     <p className="font-bold mb-2 text-yellow-400/80 uppercase text-[10px] tracking-widest">Message initial</p>
@@ -305,11 +308,7 @@ export default function AdminTicketDetailsPage() {
                                             <Image src="/logo.svg" alt="Mato's" width={40} height={40} className="object-contain" />
                                         </div>
                                     ) : (
-                                        msg.user.image ? (
-                                            <Image src={msg.user.image} alt={msg.user.name} width={48} height={48} className="object-cover" />
-                                        ) : (
-                                            <span className="font-black text-gray-400 uppercase text-lg">{msg.user.name?.[0] || 'U'}</span>
-                                        )
+                                        <UserAvatar image={msg.user.image} name={msg.user.name} size="lg" />
                                     )}
                                 </div>
                                 <div className={`space-y-2 max-w-[85%] ${msg.isAdmin ? 'items-end flex flex-col' : ''}`}>

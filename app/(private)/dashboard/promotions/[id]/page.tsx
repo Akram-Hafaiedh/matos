@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Loader2, Gift, Image as ImageIcon, Percent, Calendar, Info } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Gift, Image as ImageIcon, Percent, Calendar, Info, Hash, Plus, Signal, Activity, Sparkles, Layers, ChevronRight } from 'lucide-react';
 
 export default function PromotionFormPage(props: { params: Promise<{ id: string }> }) {
     const params = use(props.params);
@@ -21,6 +21,8 @@ export default function PromotionFormPage(props: { params: Promise<{ id: string 
         badgeText: '',
         badgeColor: '#EAB308', // yellow-500
         isActive: true,
+        isHot: false,
+        tag: '',
         startDate: '',
         endDate: '',
         conditions: '',
@@ -69,6 +71,8 @@ export default function PromotionFormPage(props: { params: Promise<{ id: string 
                     badgeText: p.badgeText || '',
                     badgeColor: p.badgeColor || '#EAB308',
                     isActive: p.isActive,
+                    isHot: p.isHot || false,
+                    tag: p.tag || '',
                     startDate: p.startDate ? new Date(p.startDate).toISOString().split('T')[0] : '',
                     endDate: p.endDate ? new Date(p.endDate).toISOString().split('T')[0] : '',
                     conditions: p.conditions || '',
@@ -137,280 +141,311 @@ export default function PromotionFormPage(props: { params: Promise<{ id: string 
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-20">
-            {/* Header */}
-            <div>
-                <Link
-                    href="/dashboard/promotions"
-                    className="inline-flex items-center text-gray-400 hover:text-white mb-4 transition"
-                >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Retour aux promotions
-                </Link>
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-yellow-400/10 rounded-2xl flex items-center justify-center">
-                        <Gift className="w-6 h-6 text-yellow-400" />
+        <div className="w-full space-y-12 animate-in fade-in duration-700 pb-20">
+            {/* Tactical Header */}
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-yellow-400/10 rounded-2xl flex items-center justify-center border border-yellow-400/20">
+                            <Gift className="w-5 h-5 text-yellow-400" />
+                        </div>
+                        <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic leading-none">Intelligence Promotionnelle</span>
                     </div>
-                    <h1 className="text-3xl font-black text-white">
-                        {isNew ? 'Nouvelle Promotion' : `Modifier ${formData.name}`}
+                    <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none">
+                        {isNew ? 'Nouveau' : 'Editer'} <span className="text-yellow-400">Protocole</span>
                     </h1>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/dashboard/promotions"
+                            className="bg-white/[0.02] border border-white/5 px-6 py-3 rounded-2xl text-gray-500 hover:text-white transition-all flex items-center gap-2 text-[10px] font-[1000] uppercase tracking-widest italic"
+                        >
+                            <ArrowLeft size={14} />
+                            Retour au Registre
+                        </Link>
+                        <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em]">Configuration des paramètres d'offre stratégique</p>
+                    </div>
                 </div>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-8">
-
+            {/* Form Matrix */}
+            <form onSubmit={handleSubmit} className="space-y-10">
                 {error && (
-                    <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 rounded-xl">
-                        {error}
+                    <div className="bg-red-500/5 border border-red-500/20 text-red-400 p-8 rounded-[2.5rem] flex items-center gap-4 animate-in slide-in-from-top duration-500">
+                        <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center shrink-0">
+                            <Info className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-[1000] uppercase tracking-[0.2em] mb-1">Erreur de Système</p>
+                            <p className="text-sm font-bold opacity-80 italic uppercase">{error}</p>
+                        </div>
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    {/* Primary Logistics */}
+                    <div className="lg:col-span-2 space-y-10">
+                        <div className="bg-white/[0.02] rounded-[4rem] p-10 border border-white/5 backdrop-blur-3xl shadow-3xl relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-full h-full bg-yellow-400/[0.01] pointer-events-none"></div>
 
-                    {/* Main Info */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-gray-800 rounded-3xl p-6 border border-gray-700 space-y-6">
-                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                <Info className="w-5 h-5 text-yellow-400" />
-                                Informations Générales
-                            </h2>
-
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-gray-400 font-bold mb-2">Nom de l'offre</label>
-                                    <input
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
-                                        placeholder="ex: Menu Duo Pizza, Offre Étudiant..."
-                                        required
-                                    />
+                            <div className="relative z-10 space-y-8">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <div className="w-2 h-10 bg-yellow-400 rounded-full"></div>
+                                    <h2 className="text-3xl font-[1000] text-white uppercase italic tracking-tighter">Paramètres <span className="text-yellow-400">Généraux</span></h2>
                                 </div>
 
-                                <div>
-                                    <label className="block text-gray-400 font-bold mb-2">Description / Contenu</label>
-                                    <textarea
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition min-h-[120px]"
-                                        placeholder="Décrivez ce que contient l'offre..."
-                                    />
-                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <label className="flex items-center gap-3 text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">
+                                            <Hash size={12} className="text-yellow-400" />
+                                            Identification de l'Offre
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            className="w-full bg-black/40 border border-white/5 text-white px-8 py-6 rounded-[2rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-xs uppercase italic tracking-widest placeholder:text-gray-800 shadow-inner"
+                                            placeholder="Ex: PROTOCOLE DUO PIZZA"
+                                            required
+                                        />
+                                    </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-gray-400 font-bold mb-2">Emoji</label>
+                                    <div className="space-y-4">
+                                        <label className="flex items-center gap-3 text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">
+                                            <Plus size={12} className="text-yellow-400" />
+                                            Configuration Visuelle (Emoji)
+                                        </label>
                                         <input
                                             type="text"
                                             value={formData.emoji}
                                             onChange={(e) => setFormData({ ...formData, emoji: e.target.value })}
-                                            className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition text-2xl text-center"
+                                            className="w-full bg-black/40 border border-white/5 text-white px-8 py-6 rounded-[2rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-2xl text-center shadow-inner"
                                             placeholder="🎁"
                                             maxLength={2}
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-gray-400 font-bold mb-2">Statut</label>
-                                        <button
-                                            type="button"
-                                            onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
-                                            className={`w-full py-3 rounded-xl font-bold transition border-2 ${formData.isActive
-                                                ? 'bg-green-500/10 border-green-500 text-green-500'
-                                                : 'bg-gray-900 border-gray-700 text-gray-500'
-                                                }`}
-                                        >
-                                            {formData.isActive ? 'Active' : 'Inactive'}
-                                        </button>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="flex items-center gap-3 text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">
+                                        <Signal size={12} className="text-yellow-400" />
+                                        Briefing de l'Offre (Description)
+                                    </label>
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/5 text-white px-8 py-6 rounded-[2.5rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-xs uppercase italic tracking-widest placeholder:text-gray-800 min-h-[160px] resize-none shadow-inner"
+                                        placeholder="Décrivez les spécificités de ce protocole promotionnel..."
+                                    />
+                                </div>
+
+                                <div className="flex flex-wrap gap-4 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+                                        className={`flex-1 flex items-center justify-center gap-3 py-6 rounded-[2rem] font-[1000] uppercase text-[10px] tracking-[0.3em] italic transition-all border ${formData.isActive
+                                            ? 'bg-green-500/10 border-green-500 text-green-400'
+                                            : 'bg-black/20 border-white/5 text-gray-600'}`}
+                                    >
+                                        <Activity size={14} />
+                                        {formData.isActive ? 'Opérationnel' : 'Offline'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, isHot: !formData.isHot })}
+                                        className={`flex-1 flex items-center justify-center gap-3 py-6 rounded-[2rem] font-[1000] uppercase text-[10px] tracking-[0.3em] italic transition-all border ${formData.isHot
+                                            ? 'bg-red-500/10 border-red-500 text-red-500 shadow-[0_0_40px_rgba(239,68,68,0.1)]'
+                                            : 'bg-black/20 border-white/5 text-gray-600'}`}
+                                    >
+                                        <Sparkles size={14} />
+                                        {formData.isHot ? 'Protocole Critique 🔥' : 'Standard'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Rules Intelligence */}
+                        <div className="bg-white/[0.02] rounded-[4rem] p-10 border border-white/5 backdrop-blur-3xl shadow-3xl relative overflow-hidden">
+                            <div className="relative z-10 space-y-8">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-2 h-10 bg-green-500 rounded-full"></div>
+                                        <h2 className="text-3xl font-[1000] text-white uppercase italic tracking-tighter leading-none">Matrix <span className="text-green-500">Selection</span></h2>
+                                    </div>
+                                    <div className="px-5 py-2 rounded-full border border-green-500/20 bg-green-500/5 text-green-400 text-[9px] font-[1000] uppercase tracking-widest italic leading-none">
+                                        JSON System Logic
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <div className="bg-gray-800 rounded-3xl p-6 border border-gray-700 space-y-6">
-                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                <Calendar className="w-5 h-5 text-blue-400" />
-                                Validité & Conditions
-                            </h2>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-gray-400 font-bold mb-2">Date de début (optionnel)</label>
-                                    <input
-                                        type="date"
-                                        value={formData.startDate}
-                                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                                        className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-400 font-bold mb-2">Date de fin (optionnel)</label>
-                                    <input
-                                        type="date"
-                                        value={formData.endDate}
-                                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                                        className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-gray-400 font-bold mb-2">Conditions particulières</label>
-                                <textarea
-                                    value={formData.conditions}
-                                    onChange={(e) => setFormData({ ...formData, conditions: e.target.value })}
-                                    className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition min-h-[80px]"
-                                    placeholder="ex: Valable uniquement le midi, Non cumulable..."
-                                />
-                            </div>
-                        </div>
-
-                        {/* Selection Rules */}
-                        <div className="bg-gray-800 rounded-3xl p-6 border border-gray-700 space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                    <ArrowLeft className="w-5 h-5 text-green-400 rotate-180" />
-                                    Règles de Sélection
-                                </h2>
-                                <div className="text-xs text-gray-500 bg-gray-900 px-3 py-1 rounded-full border border-gray-700">
-                                    Format JSON
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <p className="text-sm text-gray-400">
-                                    Définissez les choix que l'utilisateur doit faire (ex: choisir une pizza parmi une catégorie).
-                                </p>
-
-                                <div className="p-4 bg-yellow-400/5 border border-yellow-400/20 rounded-xl space-y-2">
-                                    <p className="text-xs font-bold text-yellow-400 uppercase">Aide aux IDs de Catégories:</p>
-                                    <div className="flex flex-wrap gap-2">
+                                <div className="p-8 bg-black/40 border border-white/5 rounded-[2.5rem] space-y-4">
+                                    <div className="flex items-center gap-3 text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic">
+                                        <Layers size={12} className="text-green-500" />
+                                        Index des Catégories Disponibles
+                                    </div>
+                                    <div className="flex flex-wrap gap-3">
                                         {categories.map(cat => (
-                                            <span key={cat.id} className="text-[10px] bg-gray-900 text-gray-300 px-2 py-1 rounded border border-gray-700">
-                                                {cat.name}: <span className="text-white font-bold">{cat.id}</span>
-                                            </span>
+                                            <div key={cat.id} className="bg-white/[0.03] px-5 py-3 rounded-2xl border border-white/5 text-[10px] font-bold text-gray-400 group/cat transition-all hover:border-green-500/30">
+                                                <span className="text-gray-600 group-hover/cat:text-green-500 transition-colors uppercase mr-2">{cat.name}:</span>
+                                                <span className="text-white text-xs">{cat.id}</span>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
 
-                                <div>
-                                    <textarea
-                                        value={formData.selectionRules}
-                                        onChange={(e) => setFormData({ ...formData, selectionRules: e.target.value })}
-                                        className="w-full bg-gray-900 text-green-400 font-mono text-sm px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition min-h-[150px]"
-                                        placeholder='[ { "id": "choice1", "label": "Pizza 1", "type": "category", "categoryId": 1, "quantity": 1 } ]'
-                                    />
-                                    <p className="mt-2 text-[10px] text-gray-500 italic">
-                                        Exemple: [ &#123; "id": "p1", "label": "Pizza au choix", "type": "category", "categoryId": 1, "quantity": 1 &#125; ]
-                                    </p>
+                                <div className="space-y-4">
+                                    <label className="flex items-center gap-3 text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">
+                                        Architecture des Règles (Format JSON)
+                                    </label>
+                                    <div className="relative group/json">
+                                        <div className="absolute top-6 right-6 opacity-0 group-hover/json:opacity-100 transition-opacity pointer-events-none">
+                                            <span className="text-[10px] font-black text-green-500/50 uppercase tracking-[0.2em]">Code Layer Access</span>
+                                        </div>
+                                        <textarea
+                                            value={formData.selectionRules}
+                                            onChange={(e) => setFormData({ ...formData, selectionRules: e.target.value })}
+                                            className="w-full bg-black/60 border border-white/5 text-green-400 font-mono text-xs p-10 rounded-[3rem] focus:outline-none focus:border-green-500/50 transition-all min-h-[300px] shadow-2xl custom-scrollbar"
+                                            placeholder='[ { "id": "p1", "label": "Pizza Selection", "type": "category", "categoryId": 1, "quantity": 1 } ]'
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[9px] text-gray-700 font-bold uppercase tracking-[0.2em] italic ml-6">
+                                        <ChevronRight size={10} className="text-green-500" />
+                                        Structure correcte requise pour l'activation du wizard client.
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Side Info (Pricing & Visual) */}
-                    <div className="space-y-6">
-                        <div className="bg-gray-800 rounded-3xl p-6 border border-gray-700 space-y-6">
-                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                <Percent className="w-5 h-5 text-red-400" />
-                                Prix & Réduction
-                            </h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-gray-400 font-bold mb-2">Prix de l'offre (DT)</label>
+                    {/* Secondary Matrix */}
+                    <div className="space-y-10">
+                        {/* Financial Analytics */}
+                        <div className="bg-white/[0.02] rounded-[4rem] p-10 border border-white/5 backdrop-blur-3xl shadow-3xl space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="w-2 h-10 bg-red-500 rounded-full"></div>
+                                <h2 className="text-3xl font-[1000] text-white uppercase italic tracking-tighter">Metric <span className="text-red-500">Finance</span></h2>
+                            </div>
+
+                            <div className="space-y-8">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">Vecteur Prix Final (DT)</label>
                                     <input
                                         type="number"
                                         step="0.1"
                                         value={formData.price}
                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                        className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
+                                        className="w-full bg-black/40 border border-white/5 text-white px-8 py-6 rounded-3xl font-[1000] text-2xl focus:outline-none focus:border-red-500/50 transition-all text-center placeholder:text-gray-800"
                                         placeholder="0.0"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-gray-400 font-bold mb-2">Prix original (DT)</label>
-                                    <input
-                                        type="number"
-                                        step="0.1"
-                                        value={formData.originalPrice}
-                                        onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                                        className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
-                                        placeholder="0.0"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-400 font-bold mb-2">Réduction (%)</label>
-                                    <input
-                                        type="number"
-                                        value={formData.discount}
-                                        onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
-                                        className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
-                                        placeholder="0"
-                                    />
+
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">Réduction (%)</label>
+                                        <input
+                                            type="number"
+                                            value={formData.discount}
+                                            onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
+                                            className="w-full bg-black/40 border border-white/5 text-white px-8 py-5 rounded-2xl font-[1000] focus:outline-none focus:border-red-500/50 transition-all text-center"
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">Prix de Base (DT)</label>
+                                        <input
+                                            type="number"
+                                            step="0.1"
+                                            value={formData.originalPrice}
+                                            onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
+                                            className="w-full bg-black/40 border border-white/5 text-white px-8 py-5 rounded-2xl font-[1000] focus:outline-none focus:border-red-500/50 transition-all text-center opacity-60 hover:opacity-100"
+                                            placeholder="0.0"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-gray-800 rounded-3xl p-6 border border-gray-700 space-y-6">
-                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                <ImageIcon className="w-5 h-5 text-purple-400" />
-                                Visuel & Badge
-                            </h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-gray-400 font-bold mb-2">Lien de l'image</label>
+                        {/* Visual Asset Management */}
+                        <div className="bg-white/[0.02] rounded-[4rem] p-10 border border-white/5 backdrop-blur-3xl shadow-3xl space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="w-2 h-10 bg-purple-500 rounded-full"></div>
+                                <h2 className="text-3xl font-[1000] text-white uppercase italic tracking-tighter">Assets <span className="text-purple-500">Visual</span></h2>
+                            </div>
+
+                            <div className="space-y-8">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">Source de l'Image</label>
                                     <input
                                         type="text"
                                         value={formData.imageUrl}
                                         onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                                        className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
-                                        placeholder="https://... ou /images/..."
+                                        className="w-full bg-black/40 border border-white/5 text-white px-8 py-5 rounded-2xl font-[1000] focus:outline-none focus:border-purple-500/50 transition-all text-[10px] italic placeholder:text-gray-800"
+                                        placeholder="URL DE L'ACTIF..."
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-gray-400 font-bold mb-2">Texte du Badge</label>
+
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">Texte de Branding (Badge)</label>
                                     <input
                                         type="text"
                                         value={formData.badgeText}
                                         onChange={(e) => setFormData({ ...formData, badgeText: e.target.value })}
-                                        className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
+                                        className="w-full bg-black/40 border border-white/5 text-white px-8 py-5 rounded-2xl font-[1000] focus:outline-none focus:border-purple-500/50 transition-all text-center uppercase italic"
                                         placeholder="NOUVEAU, DUO..."
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-gray-400 font-bold mb-2">Couleur du Badge</label>
+
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">Vecteur Couleur Badge</label>
+                                    <div className="flex gap-4">
+                                        <div
+                                            className="w-16 h-16 rounded-2xl border-2 border-white/10 shadow-xl"
+                                            style={{ backgroundColor: formData.badgeColor }}
+                                        ></div>
+                                        <input
+                                            type="color"
+                                            value={formData.badgeColor}
+                                            onChange={(e) => setFormData({ ...formData, badgeColor: e.target.value })}
+                                            className="flex-1 h-16 bg-black/40 p-2 rounded-2xl border border-white/5 cursor-pointer"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">Tag Stratégique (Récompense)</label>
                                     <input
-                                        type="color"
-                                        value={formData.badgeColor}
-                                        onChange={(e) => setFormData({ ...formData, badgeColor: e.target.value })}
-                                        className="w-full h-12 bg-gray-900 p-1 rounded-xl border border-gray-700 cursor-pointer"
+                                        type="text"
+                                        value={formData.tag}
+                                        onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/5 text-yellow-400 px-8 py-5 rounded-2xl font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-center uppercase italic"
+                                        placeholder="EX: +50 M-TOKENS"
                                     />
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                {/* Actions */}
-                <div className="flex justify-end gap-4 p-6 bg-gray-800 rounded-3xl border border-gray-700 shadow-2xl">
-                    <button
-                        type="button"
-                        onClick={() => router.push('/dashboard/promotions')}
-                        className="px-8 py-3 rounded-xl font-bold text-gray-400 hover:text-white transition"
-                    >
-                        Annuler
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={saving}
-                        className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-12 py-3 rounded-xl font-black flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-yellow-400/20"
-                    >
-                        {saving ? (
-                            <Loader2 className="w-6 h-6 animate-spin" />
-                        ) : (
-                            <Save className="w-6 h-6" />
-                        )}
-                        {isNew ? 'Créer la promotion' : 'Enregistrer les modifications'}
-                    </button>
+                        {/* Actions Matrix */}
+                        <div className="bg-black/40 rounded-[3rem] p-4 flex flex-col gap-4">
+                            <button
+                                type="submit"
+                                disabled={saving}
+                                className="w-full bg-yellow-400 hover:bg-yellow-300 text-black py-8 rounded-[2.5rem] font-[1000] uppercase text-[13px] tracking-[0.4em] italic transition-all flex items-center justify-center gap-4 disabled:opacity-50 shadow-[0_20px_60px_rgba(250,204,21,0.2)] active:scale-95"
+                            >
+                                {saving ? (
+                                    <Loader2 className="w-6 h-6 animate-spin" />
+                                ) : (
+                                    <>
+                                        <Save size={20} strokeWidth={3} />
+                                        Exécuter Sync
+                                    </>
+                                )}
+                            </button>
+                            <Link
+                                href="/dashboard/promotions"
+                                className="w-full bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] text-gray-500 hover:text-white py-6 rounded-[2rem] font-[1000] uppercase text-[10px] tracking-[0.3em] italic transition-all flex items-center justify-center gap-4 active:scale-95"
+                            >
+                                Abandonner le Protocole
+                            </Link>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>

@@ -95,7 +95,7 @@ export default function CategoryFormPage(props: { params: Promise<{ id: string }
 
     if (loading) {
         return (
-            <div className="max-w-2xl mx-auto space-y-8 pb-32">
+            <div className="w-full space-y-8 pb-32">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <Link href="/dashboard/categories" className="text-gray-400 hover:text-yellow-400 transition flex items-center gap-2">
@@ -131,104 +131,145 @@ export default function CategoryFormPage(props: { params: Promise<{ id: string }
     }
 
     return (
-        <div className="max-w-2xl mx-auto space-y-8 pb-32">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <Link href="/dashboard/categories" className="text-gray-400 hover:text-yellow-400 transition flex items-center gap-2">
-                    <ArrowLeft className="w-5 h-5" />
-                    Retour aux catégories
-                </Link>
-                <h1 className="text-3xl font-bold text-white">
-                    {isNew ? 'Nouvelle catégorie' : 'Modifier la catégorie'}
-                </h1>
+        <div className="w-full space-y-12 animate-in fade-in duration-700 pb-20">
+            {/* Tactical Header */}
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-yellow-400/10 rounded-2xl flex items-center justify-center border border-yellow-400/20">
+                            <Tag className="w-5 h-5 text-yellow-400" />
+                        </div>
+                        <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic leading-none">System Architecture Registry</span>
+                    </div>
+                    <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none">
+                        {isNew ? 'Nouveau' : 'Editer'} <span className="text-yellow-400">Classification</span>
+                    </h1>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/dashboard/categories"
+                            className="bg-white/[0.02] border border-white/5 px-6 py-3 rounded-2xl text-gray-500 hover:text-white transition-all flex items-center gap-2 text-[10px] font-[1000] uppercase tracking-widest italic"
+                        >
+                            <ArrowLeft size={14} />
+                            Retour au Registre
+                        </Link>
+                        <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em]">Configuration des paramètres de taxonomie et indexation</p>
+                    </div>
+                </div>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-10">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    {/* Primary Matrix: Data */}
+                    <div className="lg:col-span-2 space-y-10">
+                        <div className="bg-white/[0.02] rounded-[4rem] p-10 border border-white/5 backdrop-blur-3xl shadow-3xl relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-full h-full bg-yellow-400/[0.01] pointer-events-none"></div>
 
-                {error && (
-                    <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 rounded-xl">
-                        {error}
-                    </div>
-                )}
+                            <div className="relative z-10 space-y-8">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <div className="w-2 h-10 bg-yellow-400 rounded-full"></div>
+                                    <h2 className="text-3xl font-[1000] text-white uppercase italic tracking-tighter">Spec <span className="text-yellow-400">Générales</span></h2>
+                                </div>
 
-                <div className="space-y-6">
-                    {/* Name & Order Group */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Name */}
-                        <div className="col-span-2 md:col-span-1">
-                            <label className="block text-gray-400 font-bold mb-2">Nom de la catégorie</label>
-                            <div className="relative">
-                                <Tag className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
-                                <input
-                                    type="text"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full bg-gray-900 text-white pl-12 pr-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
-                                    placeholder="ex: Burgers"
-                                    required
-                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <label className="flex items-center gap-3 text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">
+                                            Nom de la Catégorie
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            required
+                                            className="w-full bg-black/40 border border-white/5 text-white px-8 py-6 rounded-[2rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-sm uppercase italic tracking-widest placeholder:text-gray-800 shadow-inner"
+                                            placeholder="EX: BURGERS GOURMET"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <label className="flex items-center gap-3 text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">
+                                            Indice d'Ordre
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={formData.displayOrder}
+                                            onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+                                            className="w-full bg-black/40 border border-white/5 text-white px-8 py-6 rounded-[2rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-center text-sm placeholder:text-gray-800 shadow-inner"
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                </div>
+
+                                {error && (
+                                    <div className="bg-red-500/5 border border-red-500/20 text-red-400 p-8 rounded-[2.5rem] flex items-center gap-4 animate-in slide-in-from-top duration-500">
+                                        <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center shrink-0">
+                                            <div className="w-2 h-2 bg-red-400 rounded-full animate-ping"></div>
+                                        </div>
+                                        <p className="text-[10px] font-[1000] uppercase tracking-widest italic">{error}</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
-                        {/* Order */}
-                        <div>
-                            <label className="block text-gray-400 font-bold mb-2">Ordre d'affichage</label>
-                            <input
-                                type="number"
-                                value={formData.displayOrder}
-                                onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
-                                className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
-                                placeholder="0"
+                        {/* Visual Logic: Emoji Picker */}
+                        <div className="bg-white/[0.02] rounded-[4rem] p-10 border border-white/5 backdrop-blur-3xl shadow-3xl space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="w-2 h-10 bg-purple-500 rounded-full"></div>
+                                <h2 className="text-3xl font-[1000] text-white uppercase italic tracking-tighter">Icon <span className="text-purple-500">Protocol</span></h2>
+                            </div>
+
+                            <EmojiPicker
+                                selected={formData.emoji}
+                                onSelect={(emoji) => setFormData({ ...formData, emoji })}
+                                label="Sélecteur d'Identité Visuelle"
+                                description="Associez un glyphe distinctif pour la représentation systémique"
+                                isAdmin={true}
                             />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Emoji */}
-                        <div>
-                            <label className="block text-gray-400 font-bold mb-2">Emoji</label>
-                            <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 flex items-center justify-center bg-gray-950 rounded-xl text-3xl border border-gray-700">
-                                    {formData.emoji || <span className="text-gray-700 text-xl">?</span>}
+                    {/* Secondary Matrix: Actions & Status */}
+                    <div className="space-y-10">
+                        <div className="bg-white/[0.02] rounded-[4rem] p-10 border border-white/5 backdrop-blur-3xl shadow-3xl space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="w-2 h-10 bg-green-500 rounded-full"></div>
+                                <h2 className="text-3xl font-[1000] text-white uppercase italic tracking-tighter">Status <span className="text-green-500">Monitor</span></h2>
+                            </div>
+
+                            <div className="p-10 bg-black/40 rounded-[3rem] border border-white/5 flex flex-col items-center justify-center gap-6 group">
+                                <div className="w-24 h-24 bg-white/[0.02] rounded-[2.5rem] border border-white/5 flex items-center justify-center text-6xl group-hover:scale-110 group-hover:bg-yellow-400/10 group-hover:border-yellow-400/30 transition-all duration-500 shadow-2xl">
+                                    {formData.emoji || <span className="text-gray-800 italic">?</span>}
                                 </div>
-                                <input
-                                    type="text"
-                                    value={formData.emoji}
-                                    onChange={(e) => setFormData({ ...formData, emoji: e.target.value })}
-                                    className="flex-1 bg-gray-900 text-white px-4 py-3 rounded-xl border border-gray-700 focus:outline-none focus:border-yellow-400 transition"
-                                    placeholder="ex: 🍔"
-                                    maxLength={2}
-                                />
+                                <div className="text-center space-y-2">
+                                    <p className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic">Aperçu Identitaire</p>
+                                    <p className="text-white font-[1000] uppercase text-xs tracking-widest">{formData.name || 'SANS NOM'}</p>
+                                </div>
                             </div>
                         </div>
+
+                        {/* Actions Matrix */}
+                        <div className="bg-black/40 rounded-[3rem] p-4 flex flex-col gap-4">
+                            <button
+                                type="submit"
+                                disabled={saving}
+                                className="w-full bg-yellow-400 hover:bg-yellow-300 text-black py-8 rounded-[2.5rem] font-[1000] uppercase text-[13px] tracking-[0.4em] italic transition-all flex items-center justify-center gap-4 disabled:opacity-50 shadow-[0_20px_60px_rgba(250,204,21,0.2)] active:scale-95"
+                            >
+                                {saving ? (
+                                    <Loader2 className="w-6 h-6 animate-spin" />
+                                ) : (
+                                    <>
+                                        <Save size={20} strokeWidth={3} />
+                                        Exécuter Sync
+                                    </>
+                                )}
+                            </button>
+                            <Link
+                                href="/dashboard/categories"
+                                className="w-full bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] text-gray-500 hover:text-white py-6 rounded-[2rem] font-[1000] uppercase text-[10px] tracking-[0.3em] italic transition-all flex items-center justify-center gap-4 active:scale-95 text-center"
+                            >
+                                Abandonner Opération
+                            </Link>
+                        </div>
                     </div>
-
-                    {/* Emoji Picker */}
-                    <EmojiPicker
-                        selected={formData.emoji}
-                        onSelect={(emoji) => setFormData({ ...formData, emoji })}
-                        label="Choisir un Emoji"
-                        description="Cliquez sur un emoji pour l'assigner à la catégorie."
-                        isAdmin={true}
-                    />
-
-                </div>
-
-                {/* Actions */}
-                <div className="flex justify-end pt-4 border-t border-gray-700">
-                    <button
-                        type="submit"
-                        disabled={saving}
-                        className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {saving ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                            <Save className="w-5 h-5" />
-                        )}
-                        {isNew ? 'Créer la catégorie' : 'Enregistrer les modifications'}
-                    </button>
                 </div>
             </form>
         </div>

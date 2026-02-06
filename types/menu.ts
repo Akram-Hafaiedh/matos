@@ -26,6 +26,9 @@ export interface MenuItem {
     originalPrice?: number;
     savings?: number; // How much you save
     discount?: number; // Percentage discount
+    likeCount?: number;
+    rating?: number;
+    reviewCount?: number;
 }
 
 

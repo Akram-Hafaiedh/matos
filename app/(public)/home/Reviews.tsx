@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Star, ShieldCheck, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
+import SectionHeader from '@/components/SectionHeader';
 import UserAvatar from '@/components/UserAvatar';
 
 interface User {
@@ -32,7 +33,12 @@ export default function Reviews() {
             try {
                 const res = await fetch('/api/reviews?home=true');
                 const data = await res.json();
-                setReviews(data);
+                if (data.success) {
+                    setReviews(data.reviews);
+                } else if (Array.isArray(data)) {
+                    // Fallback for legacy raw array
+                    setReviews(data);
+                }
             } catch (error) {
                 console.error('Error fetching home reviews:', error);
             } finally {
@@ -58,86 +64,78 @@ export default function Reviews() {
     if (reviews.length === 0) return null;
 
     return (
-        <section className="py-20 px-4 bg-black relative overflow-hidden">
-            {/* Background Signature Glows */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-yellow-400/5 blur-[150px] pointer-events-none"></div>
+        <section className="py-32 relative overflow-hidden bg-transparent">
 
-            <div className="max-w-7xl mx-auto space-y-16 relative z-10">
+            <div className="max-w-7xl mx-auto px-6 md:px-12 space-y-24 relative z-10">
                 {/* Section Header */}
-                <div className="flex flex-col md:flex-row items-end justify-between gap-8">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-px bg-yellow-400/30"></div>
-                            <span className="text-yellow-400 font-black uppercase text-[10px] tracking-[0.4em]">Community Voice</span>
-                        </div>
-                        <h2 className="text-4xl md:text-6xl font-[1000] text-white italic tracking-tighter uppercase leading-[0.85]">
-                            Ce qu'ils en <span className="text-yellow-400">Disent</span>
-                        </h2>
-                    </div>
-
-                    {/* Navigation Arrows */}
-                    {totalSlides > 1 && (
+                <SectionHeader
+                    badge="Community Voice"
+                    title={<>Ce qu'ils <br /><span className="text-yellow-400">en Disent</span></>}
+                    description="Votre satisfaction est notre plus belle récompense. Découvrez les témoignages de notre communauté Mato's."
+                    rightContent={totalSlides > 1 && (
                         <div className="flex gap-4">
                             <button
                                 onClick={prevSlide}
-                                className="w-14 h-14 rounded-2xl border-2 border-white/5 hover:border-yellow-400/30 flex items-center justify-center text-white hover:text-yellow-400 transition-all active:scale-95 bg-gray-950/50 backdrop-blur-xl"
+                                className="w-14 h-14 rounded-2xl border border-white/10 hover:border-yellow-400/30 flex items-center justify-center text-white hover:text-yellow-400 transition-all active:scale-95 bg-white/5 backdrop-blur-3xl group shadow-xl"
                             >
-                                <ChevronLeft className="w-6 h-6" />
+                                <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
                             </button>
                             <button
                                 onClick={nextSlide}
-                                className="w-14 h-14 rounded-2xl border-2 border-white/5 hover:border-yellow-400/30 flex items-center justify-center text-white hover:text-yellow-400 transition-all active:scale-95 bg-gray-950/50 backdrop-blur-xl"
+                                className="w-14 h-14 rounded-2xl border border-white/10 hover:border-yellow-400/30 flex items-center justify-center text-white hover:text-yellow-400 transition-all active:scale-95 bg-white/5 backdrop-blur-3xl group shadow-xl"
                             >
-                                <ChevronRight className="w-6 h-6" />
+                                <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                             </button>
                         </div>
                     )}
-                </div>
+                />
 
                 {/* Reviews Slider */}
-                <div className="relative overflow-hidden">
+                <div className="relative overflow-hidden px-2">
                     <div
-                        className="flex transition-transform duration-1000 ease-in-out"
+                        className="flex transition-transform duration-1000 cubic-bezier(0.4, 0, 0.2, 1)"
                         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
                     >
                         {[...Array(totalSlides)].map((_, slideIdx) => (
-                            <div key={slideIdx} className="w-full flex-shrink-0 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            <div key={slideIdx} className="w-full flex-shrink-0 grid md:grid-cols-2 lg:grid-cols-3 gap-10">
                                 {reviews.slice(slideIdx * 3, slideIdx * 3 + 3).map((review) => (
                                     <div
                                         key={review.id}
-                                        className="group relative bg-gray-950/40 border border-white/5 rounded-[2.5rem] p-8 flex flex-col space-y-6 hover:bg-white/[0.02] transition-all duration-500 backdrop-blur-3xl h-full"
+                                        className="group relative bg-gray-900/10 border border-white/5 rounded-[4rem] p-10 flex flex-col space-y-8 hover:bg-white/[0.03] hover:border-yellow-400/20 transition-all duration-700 backdrop-blur-3xl h-full shadow-3xl overflow-hidden"
                                     >
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex gap-1">
+                                        <div className="absolute -right-8 -top-8 w-24 h-24 bg-yellow-400/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                                        <div className="flex justify-between items-start relative z-10">
+                                            <div className="flex gap-1.5">
                                                 {[...Array(5)].map((_, i) => (
-                                                    <Star key={i} className={`w-3 h-3 ${i < review.rating ? 'fill-yellow-500 text-yellow-500' : 'text-white/10'}`} />
+                                                    <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'fill-yellow-500 text-yellow-500' : 'text-white/10'}`} />
                                                 ))}
                                             </div>
-                                            <div className="bg-yellow-400/10 px-3 py-1 rounded-full text-[8px] font-black text-yellow-400 uppercase tracking-widest border border-yellow-400/20 italic">
+                                            <div className="bg-white/5 px-4 py-1.5 rounded-full text-[9px] font-black text-white/50 uppercase tracking-widest border border-white/5 italic">
                                                 {review.menuItem.name}
                                             </div>
                                         </div>
 
-                                        <p className="text-base text-gray-400 font-bold leading-relaxed italic group-hover:text-gray-300 transition-colors flex-1">
+                                        <p className="text-xl text-gray-400 font-bold leading-relaxed italic group-hover:text-white transition-colors flex-1 relative z-10">
                                             "{review.comment}"
                                         </p>
 
-                                        <div className="flex items-center gap-4 pt-6 border-t border-white/5 mt-auto">
-                                            <div className="group-hover:scale-110 transition-transform duration-500">
+                                        <div className="flex items-center gap-5 pt-8 border-t border-white/5 mt-auto relative z-10">
+                                            <div className="group-hover:scale-110 transition-transform duration-700">
                                                 <UserAvatar
                                                     image={(review.user as any).image}
                                                     name={review.user.name}
-                                                    size="md"
+                                                    size="lg"
                                                     rank={(review.user as any).rank}
                                                     backgroundColor={(review.user as any).selectedBg}
-                                                    className={`w-12 h-12 rounded-xl border-2 transition-all duration-300 ${(review.user as any).selectedFrame || 'border-white/10'}`}
+                                                    className={`w-14 h-14 rounded-2xl border-2 transition-all duration-300 ${(review.user as any).selectedFrame || 'border-white/10'}`}
                                                 />
                                             </div>
                                             <div>
-                                                <h4 className="text-white font-black text-lg italic uppercase">{review.user.name || 'Client Anonyme'}</h4>
-                                                <div className="flex items-center gap-1.5 text-yellow-500/80 font-bold text-[8px] uppercase tracking-widest mt-0.5">
-                                                    <ShieldCheck className="w-2.5 h-2.5" />
-                                                    Membre {review.user.role === 'admin' ? 'Admin' : 'Privilège'}
+                                                <h4 className="text-white font-black text-xl italic uppercase tracking-tight">{review.user.name || 'Client Anonyme'}</h4>
+                                                <div className="flex items-center gap-2 text-yellow-500 font-black text-[9px] uppercase tracking-[0.2em] mt-1 opacity-80">
+                                                    <ShieldCheck className="w-3 h-3" />
+                                                    Membre {review.user.role === 'admin' ? 'Elite' : 'Privilège'}
                                                 </div>
                                             </div>
                                         </div>
@@ -150,12 +148,12 @@ export default function Reviews() {
 
                 {/* Dots Navigation */}
                 {totalSlides > 1 && (
-                    <div className="flex justify-center gap-3">
+                    <div className="flex justify-center gap-4">
                         {[...Array(totalSlides)].map((_, i) => (
                             <button
                                 key={i}
                                 onClick={() => setCurrentSlide(i)}
-                                className={`h-1.5 rounded-full transition-all duration-500 ${i === currentSlide ? 'w-8 bg-yellow-400' : 'w-2 bg-white/10 hover:bg-white/20'}`}
+                                className={`h-1.5 rounded-full transition-all duration-700 ${i === currentSlide ? 'w-12 bg-yellow-400' : 'w-3 bg-white/10 hover:bg-white/20'}`}
                             />
                         ))}
                     </div>

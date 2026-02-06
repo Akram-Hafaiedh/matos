@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { X, Lock } from 'lucide-react';
 
 export const FOOD_EMOJIS = [
-    // Tier 0 (Bronze/Basic) - Fast Food & Basics
+    // Tier 0 (Bronze/Basic) - People & Basics
+    { emoji: '👦', name: 'Garçon', tier: 0 }, { emoji: '👧', name: 'Fille', tier: 0 },
     { emoji: '🍔', name: 'Burger', tier: 0 }, { emoji: '🍕', name: 'Pizza', tier: 0 },
     { emoji: '🍟', name: 'Frites', tier: 0 }, { emoji: '🌭', name: 'Hot Dog', tier: 0 },
     { emoji: '🥪', name: 'Sandwich', tier: 0 }, { emoji: '🌮', name: 'Tacos', tier: 0 },
@@ -60,7 +61,7 @@ interface EmojiPickerProps {
 
 export default function EmojiPicker({ selected, onSelect, label, description, allowClear = true, userTierIndex = 999, loyaltyPoints = 0, isAdmin = false }: EmojiPickerProps) {
     const isNewcomer = loyaltyPoints < 100;
-    const newcomerAllowed = ['🍔', '🍕', '🍟', '🥪', '🌭', '🌮'];
+    const newcomerAllowed = ['👦', '👧', '🍔', '🍕', '🍟', '🥪', '🌭', '🌮'];
 
     return (
         <div className="bg-gray-900/50 p-6 rounded-2xl border border-gray-700">

@@ -6,7 +6,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from "react
 
 interface CartContextType {
     cart: { [key: string]: CartItem };
-    addToCart: (item: MenuItem | Promotion, type: 'menuItem' | 'promotion', size?: string, choices?: any) => void;
+    addToCart: (item: MenuItem | Promotion, type: 'menuItem' | 'promotion', size?: string, choices?: any, quantity?: number) => void;
     removeFromCart: (cartKey: string) => void;
     updateQuantity: (cartKey: string, delta: number) => void; // Added for convenience if needed
     clearCart: () => void;
@@ -54,7 +54,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
     }, [cart, orderType, isLoaded]);
 
-    const addToCart = (item: any, type: 'menuItem' | 'promotion', size?: string, choices?: any) => {
+    const addToCart = (item: any, type: 'menuItem' | 'promotion', size?: string, choices?: any, quantity: number = 1) => {
         // Create unique key
         const cartKey = type === 'promotion'
             ? `promo-${item.id}${choices ? `-${JSON.stringify(choices)}` : ''}`
@@ -65,7 +65,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             [cartKey]: {
                 item,
                 type,
-                quantity: (prev[cartKey]?.quantity || 0) + 1,
+                quantity: (prev[cartKey]?.quantity || 0) + quantity,
                 selectedSize: size,
                 choices
             }
@@ -120,11 +120,43 @@ export function CartProvider({ children }: { children: ReactNode }) {
     // Calculate total price
     const getTotalPrice = () => {
         return Object.values(cart).reduce((total, cartItem) => {
-            const { item, quantity, selectedSize, type } = cartItem;
+            const { item, quantity, selectedSize, type, choices } = cartItem;
             let itemPrice = 0;
 
             if (type === 'promotion') {
-                itemPrice = (item as Promotion).price || 0;
+                const promo = item as Promotion;
+
+                // 1. Calculate original total from choices (selections)
+                let originalTotal = 0;
+                if (choices) {
+                    Object.values(choices).forEach((items: any) => {
+                        if (Array.isArray(items)) {
+                            items.forEach(choiceItem => {
+                                if (choiceItem.price) {
+                                    if (typeof choiceItem.price === 'number') {
+                                        originalTotal += choiceItem.price;
+                                    } else if (typeof choiceItem.price === 'object') {
+                                        originalTotal += choiceItem.price.xl || Object.values(choiceItem.price)[0] || 0;
+                                    }
+                                }
+                            });
+                        }
+                    });
+                } else if (promo.originalPrice) {
+                    originalTotal = promo.originalPrice;
+                }
+
+                // 2. Determine the final item price
+                if (promo.price && promo.price > 0) {
+                    // Fixed price promo
+                    itemPrice = promo.price;
+                } else if (promo.discount && originalTotal > 0) {
+                    // Percentage discount promo
+                    itemPrice = originalTotal * (1 - promo.discount / 100);
+                } else {
+                    // Fallback to original total
+                    itemPrice = originalTotal;
+                }
             } else {
                 const menuItem = item as MenuItem;
                 if (typeof menuItem.price === 'number') {

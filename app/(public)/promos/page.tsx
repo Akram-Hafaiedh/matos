@@ -1,33 +1,30 @@
-// app/(public)/promos/page.tsx
 'use client';
 
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Flame,
-    Percent,
-    Gift,
-    Clock,
-    Star,
-    ShoppingCart,
-    Users,
-    Zap,
-    TrendingUp,
-    Sparkles,
-    ChevronRight,
-    ArrowRight,
-    Tag,
-    Info
+    Tag, Rocket, Flame, Clock, Sparkles,
+    Zap, ShoppingBag, ChevronRight, Timer,
+    ArrowRight, Star, Shield, Gift, Target
 } from 'lucide-react';
-import Link from 'next/link';
 import Image from 'next/image';
-import { useCart } from '../../cart/CartContext';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import PromotionConfigModal from '@/app/components/PromotionConfigModal';
+import AmbientBackground from '@/components/AmbientBackground';
+import SectionHeader from '@/components/SectionHeader';
+import { useCart } from '@/app/cart/CartContext';
+import SelectionModal from '@/components/SelectionModal';
+import { useToast } from '@/app/context/ToastContext';
 
 export default function PromosPage() {
-    const { addToCart } = useCart();
+    const { addToCart, setCartOpen } = useCart();
+    const { toast } = useToast();
     const [promos, setPromos] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [configPromo, setConfigPromo] = useState<any>(null);
+    const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+    // Modal State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedPromo, setSelectedPromo] = useState<any | null>(null);
 
     useEffect(() => {
         const fetchPromos = async () => {
@@ -35,10 +32,24 @@ export default function PromosPage() {
                 const res = await fetch('/api/promotions?active=true');
                 const data = await res.json();
                 if (data.success) {
-                    setPromos(processPromos(data.promotions));
+                    // Map API data to UI requirements
+                    const mappedPromos = data.promotions.map((p: any) => ({
+                        id: p.id.toString(),
+                        title: p.name,
+                        badge: p.badgeText || 'SPECIAL',
+                        desc: p.description,
+                        price: p.price ? `${p.price.toFixed(1)} DT` : 'Varies',
+                        oldPrice: p.originalPrice ? `${p.originalPrice.toFixed(1)} DT` : null,
+                        image: p.imageUrl,
+                        tag: p.tag,
+                        isHot: p.isHot,
+                        selectionRules: p.selectionRules ? (typeof p.selectionRules === 'string' ? JSON.parse(p.selectionRules) : p.selectionRules) : null,
+                        rawItem: p // Keep raw to pass to cart
+                    }));
+                    setPromos(mappedPromos);
                 }
             } catch (error) {
-                console.error("Failed to fetch promos", error);
+                console.error('Error fetching promos:', error);
             } finally {
                 setLoading(false);
             }
@@ -46,225 +57,171 @@ export default function PromosPage() {
         fetchPromos();
     }, []);
 
-    const processPromos = (items: any[]) => {
-        return items.map((promo, index) => {
-            const getColor = () => {
-                if (promo.bestseller) return 'from-yellow-400 to-orange-500';
-                if (promo.hot) return 'from-red-500 to-rose-600';
-                if (promo.popular) return 'from-indigo-500 to-purple-600';
-                return ['from-emerald-400 to-teal-500', 'from-blue-500 to-indigo-600', 'from-pink-500 to-rose-600'][index % 3];
-            };
-
-            const getBadge = () => {
-                if (promo.bestseller) return 'MEILLEURE VENTE';
-                if (promo.popular) return 'TRÈS POPULAIRE';
-                if (promo.hot) return 'OFFRE DUO';
-                return 'OFFRE SPÉCIALE';
-            };
-
-            return {
-                ...promo,
-                uiColor: getColor(),
-                uiBadge: promo.badgeText || getBadge(),
-                displayDescription: promo.description
-            };
-        });
-    }
-
-    const handleAddToCart = (promo: any) => {
-        let rules = promo.selectionRules;
-        if (typeof rules === 'string') {
-            try { rules = JSON.parse(rules); } catch (e) { rules = []; }
-        }
-
-        if (rules && Array.isArray(rules) && rules.length > 0) {
-            setConfigPromo({ ...promo, selectionRules: rules });
+    const handleProfiter = (promo: any) => {
+        if (promo.selectionRules && promo.selectionRules.length > 0) {
+            setSelectedPromo(promo.rawItem);
+            setIsModalOpen(true);
         } else {
-            addToCart(promo, 'promotion');
+            addToCart(promo.rawItem, 'promotion');
+            toast.success(`${promo.title} ajouté au panier !`);
+            setCartOpen(true);
         }
     };
 
-    const confirmPromotion = (choices: any) => {
-        addToCart(configPromo, 'promotion', undefined, choices);
-        setConfigPromo(null);
+    const handleConfirmSelection = (item: any, selectedSize?: string, choices?: any) => {
+        addToCart(item, 'promotion', selectedSize, choices);
+        setIsModalOpen(false);
+        toast.success(`${item.name} ajouté au panier !`);
+        setCartOpen(true);
     };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
-                <div className="w-16 h-16 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        );
-    }
 
     return (
-        <div className="min-h-screen bg-black text-white py-24 px-4 relative overflow-hidden">
-            {/* Background Glows */}
-            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-yellow-400/5 blur-[150px] pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-indigo-500/5 blur-[130px] pointer-events-none"></div>
+        <div className="min-h-screen bg-transparent text-white font-sans selection:bg-yellow-500/30 overflow-x-hidden pb-40">
+            <AmbientBackground />
 
-            <div className="max-w-7xl mx-auto space-y-24 relative z-10">
-                {/* Header Section */}
-                <div className="text-center space-y-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 text-sm font-black uppercase tracking-widest animate-fade-in">
-                        <Flame className="w-4 h-4 animate-pulse" />
-                        Le coin des bonnes affaires
+            {/* HERO / HEADER SECTION */}
+            <section className="relative pt-40 pb-24 px-6 flex flex-col items-center text-center">
+                <div className="space-y-12 relative z-10 w-full max-w-5xl">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="inline-flex items-center gap-4 px-6 py-2 rounded-full bg-yellow-400/5 border border-yellow-400/10 backdrop-blur-sm shadow-2xl"
+                    >
+                        <Tag className="w-4 h-4 text-yellow-500 animate-pulse" />
+                        <span className="text-yellow-400 font-black text-[10px] uppercase tracking-[0.5em] italic">Contrats en Cours</span>
+                    </motion.div>
+
+                    <div className="relative group flex flex-col items-center">
+                        <div className="absolute -inset-40 bg-yellow-400/5 blur-[160px] opacity-100 animate-pulse"></div>
+
+                        <div className="relative bg-yellow-400 py-10 px-16 md:px-24 -rotate-1 hover:rotate-0 transition-all duration-700 shadow-[20px_20px_0_rgba(0,0,0,1)] border-4 border-black group overflow-hidden">
+                            <h1 className="text-5xl md:text-[8rem] font-[1000] italic uppercase tracking-tighter text-black leading-none inline-block relative z-10 pr-[0.4em]">
+                                PROMOS
+                            </h1>
+                        </div>
                     </div>
-                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none animate-slide-up">
-                        Nos <span className="text-yellow-400 italic">Promos</span>
-                    </h1>
-                    <p className="text-xl text-gray-500 max-w-2xl mx-auto font-bold animate-fade-in delay-200">
-                        Savourez vos plats préférés à prix réduits. Des offres exclusives conçues pour votre plaisir (et votre portefeuille).
+
+                    <p className="max-w-xl mx-auto text-gray-400 font-bold uppercase tracking-[0.2em] leading-relaxed text-xs italic py-6 opacity-60">
+                        Saisissez les meilleures opportunités. Les deals du Syndicat <br /> sont limités dans le temps et dans l'espace.
                     </p>
                 </div>
+            </section>
 
-                {/* Promo Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {promos.map((promo, idx) => (
-                        <div
-                            key={promo.id}
-                            className="group bg-gray-900/40 border border-gray-800 rounded-[3rem] overflow-hidden backdrop-blur-3xl hover:border-yellow-400/30 transition-all duration-500 flex flex-col h-full"
-                        >
-                            {/* Visual Header */}
-                            <div className={`relative h-56 bg-gradient-to-br ${promo.uiColor} p-8 flex items-center justify-center overflow-hidden`}>
-                                {/* Abstract Shapes */}
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-                                <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full -ml-16 -mb-16 blur-2xl"></div>
-
-                                {/* Emoji/Image Wrapper */}
-                                <div className="relative z-10 text-8xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-12 filter drop-shadow-2xl">
-                                    {promo.imageUrl && (promo.imageUrl.startsWith('http') || promo.imageUrl.startsWith('/')) ? (
-                                        <div className="w-32 h-32 relative">
-                                            <Image
-                                                src={promo.imageUrl}
-                                                alt={promo.name}
-                                                fill
-                                                className="object-contain"
-                                            />
-                                        </div>
-                                    ) : (
-                                        promo.emoji || '🎁'
-                                    )}
-                                </div>
-
-                                {/* Floating Badge */}
-                                <div className="absolute top-6 right-6 bg-black/20 backdrop-blur-md border border-white/10 px-4 py-1.5 rounded-full">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-white">
-                                        {promo.uiBadge}
-                                    </span>
-                                </div>
-
-                                {/* Discount Tag */}
-                                {promo.discount && (
-                                    <div className="absolute bottom-6 left-6 bg-white text-gray-900 px-4 py-2 rounded-2xl font-black shadow-xl shadow-black/20 transform -rotate-12">
-                                        -{promo.discount}%
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Content Section */}
-                            <div className="p-10 space-y-6 flex-grow flex flex-col">
-                                <div className="space-y-3">
-                                    <h3 className="text-2xl font-black text-white group-hover:text-yellow-400 transition-colors">
-                                        {promo.name}
-                                    </h3>
-                                    <p className="text-gray-500 font-bold leading-relaxed line-clamp-3">
-                                        {promo.displayDescription}
-                                    </p>
-                                </div>
-
-                                {/* Features / Constraints */}
-                                <div className="flex flex-wrap gap-2">
-                                    {promo.name.includes('Family') && (
-                                        <span className="bg-white/5 border border-white/5 px-3 py-1 rounded-full text-[10px] font-black uppercase text-gray-400 flex items-center gap-1.5">
-                                            <Users className="w-3 h-3" /> Idéal Famille
-                                        </span>
-                                    )}
-                                    {promo.name.includes('Étudiant') && (
-                                        <span className="bg-indigo-500/10 border border-indigo-500/10 px-3 py-1 rounded-full text-[10px] font-black uppercase text-indigo-400 flex items-center gap-1.5">
-                                            <Zap className="w-3 h-3" /> Offre Étudiante
-                                        </span>
-                                    )}
-                                    <span className="bg-yellow-400/5 border border-yellow-400/10 px-3 py-1 rounded-full text-[10px] font-black uppercase text-yellow-400 flex items-center gap-1.5">
-                                        <Clock className="w-3 h-3" /> Durée Limitée
-                                    </span>
-                                </div>
-
-                                {/* Footer: Price & CTA */}
-                                <div className="pt-6 border-t border-gray-800 flex items-center justify-between mt-auto">
-                                    <div>
-                                        {promo.originalPrice && (
-                                            <div className="text-gray-600 line-through text-xs font-black">{promo.originalPrice} DT</div>
-                                        )}
-                                        <div className="text-3xl font-black text-white">
-                                            {promo.price && promo.price !== 0
-                                                ? `${promo.price} `
-                                                : promo.discount ? 'Variable ' : 'Offre '}
-                                            <span className="text-sm text-yellow-400">DT</span>
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        onClick={() => handleAddToCart(promo)}
-                                        className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-xl shadow-yellow-400/10 group-active:scale-95"
-                                    >
-                                        <ShoppingCart className="w-6 h-6" />
-                                    </button>
-                                </div>
-                            </div>
+            {/* PROMOS GRID */}
+            <section className="max-w-7xl mx-auto px-6">
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-40 space-y-8">
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-yellow-400/20 blur-[30px] rounded-full animate-pulse"></div>
+                            <Zap className="w-12 h-12 text-yellow-400 animate-spin relative z-10" />
                         </div>
-                    ))}
+                        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 italic animate-pulse">Extraction des Protocoles...</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {promos.map((promo: any, idx: number) => (
+                            <motion.div
+                                key={promo.id}
+                                initial={{ opacity: 0, y: 50 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.1 }}
+                                viewport={{ once: true }}
+                                onMouseEnter={() => setHoveredId(promo.id)}
+                                onMouseLeave={() => setHoveredId(null)}
+                                className="group relative bg-[#0a0a0a] border border-white/5 rounded-[4rem] overflow-hidden p-10 hover:border-yellow-400/20 transition-all duration-700 h-full flex flex-col"
+                            >
+                                <div className="flex flex-col md:flex-row gap-10 h-full">
+                                    <div className="md:w-1/2 relative">
+                                        <div className="absolute -inset-10 bg-yellow-400/5 blur-[50px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <Image
+                                            src={promo.image}
+                                            alt={promo.title}
+                                            width={400}
+                                            height={400}
+                                            className="object-contain filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform duration-700 relative z-10"
+                                        />
+                                        {promo.isHot && (
+                                            <div className="absolute top-0 left-0 bg-red-500 text-white px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-2 z-20">
+                                                <Flame className="w-3 h-3 animate-bounce" />
+                                                Hot Deal
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="md:w-1/2 flex flex-col justify-between py-4">
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-yellow-400 font-black text-[9px] uppercase tracking-widest italic">{promo.badge}</span>
+                                                {promo.tag && (
+                                                    <span className="bg-white/5 border border-white/5 px-3 py-1 rounded-full text-[8px] font-black text-yellow-400 uppercase tracking-widest group-hover:border-yellow-400/30 transition-colors">
+                                                        {promo.tag}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <h3 className="text-3xl font-[1000] italic uppercase tracking-tighter leading-none">{promo.title}</h3>
+                                            <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest leading-relaxed opacity-60">{promo.desc}</p>
+                                        </div>
+                                        <div className="pt-8">
+                                            <div className="flex items-end gap-3 mb-6">
+                                                <span className="text-4xl font-[1000] italic text-yellow-400 leading-none">{promo.price}</span>
+                                                {promo.oldPrice && (
+                                                    <span className="text-xs font-black text-gray-700 line-through mb-1 uppercase italic">{promo.oldPrice}</span>
+                                                )}
+                                            </div>
+                                            <button
+                                                onClick={() => handleProfiter(promo)}
+                                                className="w-full bg-white text-black py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-yellow-400 transition-all group-hover:scale-[1.02]"
+                                            >
+                                                Profiter de l'offre
+                                                <ArrowRight className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* FOOTER CTA: SLANTED - SYNCED WITH LOYALTY */}
+            <section className="relative mt-40">
+                <div
+                    className="absolute inset-0 z-0 bg-yellow-400 group"
+                    style={{ clipPath: 'polygon(0 20%, 100% 0, 100% 100%, 0 100%)' }}
+                >
+                    <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(black 1px, transparent 1px)', backgroundSize: '10px 10px' }}></div>
                 </div>
 
-                {/* Info Deck */}
-                <div className="grid md:grid-cols-2 gap-8 mt-24">
-                    <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 p-12 rounded-[3.5rem] relative overflow-hidden group">
-                        <div className="absolute -right-24 -bottom-24 w-64 h-64 bg-yellow-400/5 blur-[100px] border border-yellow-400/10 rounded-full group-hover:bg-yellow-400/10 transition-colors"></div>
-                        <div className="relative z-10 space-y-6">
-                            <div className="w-16 h-16 bg-yellow-400 rounded-3xl flex items-center justify-center text-gray-900 shadow-2xl">
-                                <TrendingUp className="w-8 h-8" />
-                            </div>
-                            <h2 className="text-3xl font-black">Loyalty Rewards</h2>
-                            <p className="text-gray-500 font-bold text-lg leading-relaxed">
-                                Saviez-vous que chaque promotion vous rapporte également des points de fidélité ? Cumulez 1 point pour chaque dinar dépensé et profitez encore plus !
-                            </p>
-                            <Link href="/account" className="inline-flex items-center gap-2 text-yellow-400 font-black uppercase tracking-widest text-sm group/btn">
-                                Mon solde points <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                <div className="relative z-10 pt-48 pb-24 flex flex-col items-center text-center text-black px-6">
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }} className="space-y-12 max-w-4xl">
+                        <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full border border-black/10 bg-black/5 font-black uppercase italic text-[10px] tracking-widest">
+                            <Shield className="w-4 h-4" />
+                            Syndicate Protocol
+                        </div>
+                        <h2 className="text-5xl md:text-[7rem] font-[1000] uppercase italic tracking-tighter leading-[0.7]">
+                            PLUS DE <span className="text-black">POINTS</span>. <br />
+                            PLUS DE <span className="text-black">DROPS</span>.
+                        </h2>
+                        <p className="text-black font-black text-[10px] uppercase tracking-widest leading-relaxed max-w-xl opacity-60 italic">
+                            Les membres du Syndicat débloquent des réductions cachées sur chaque commande. Votre fidélité est votre monnaie.
+                        </p>
+
+                        <div className="pt-6">
+                            <Link href="/register" className="relative group overflow-hidden px-12 py-5 bg-black text-white font-[1000] uppercase italic tracking-widest rounded-full text-xs hover:scale-105 transition-all shadow-2xl inline-block">
+                                <span className="relative z-10">Rejoindre l'Élite</span>
+                                <div className="absolute inset-0 flex items-center justify-center bg-white text-black translate-y-full group-hover:translate-y-0 transition-transform duration-500 z-20 font-black uppercase text-xs">Accès Immédiat</div>
                             </Link>
                         </div>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 p-12 rounded-[3.5rem] flex flex-col justify-center gap-8">
-                        <div className="flex items-center gap-6">
-                            <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center border border-white/5">
-                                <Info className="w-6 h-6 text-gray-400" />
-                            </div>
-                            <div>
-                                <h4 className="font-black text-xl mb-1">Pas de cumul</h4>
-                                <p className="text-gray-500 font-bold text-sm">Les promotions ne sont pas cumulables entre elles.</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-6">
-                            <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center border border-white/5">
-                                <Sparkles className="w-6 h-6 text-gray-400" />
-                            </div>
-                            <div>
-                                <h4 className="font-black text-xl mb-1">Qualité Garantie</h4>
-                                <p className="text-gray-500 font-bold text-sm">Même prix réduit, même exigence de produits frais.</p>
-                            </div>
-                        </div>
-                    </div>
+                    </motion.div>
                 </div>
+            </section>
 
-                {/* Selection Modal */}
-                {configPromo && (
-                    <PromotionConfigModal
-                        promotion={configPromo}
-                        onClose={() => setConfigPromo(null)}
-                        onConfirm={confirmPromotion}
-                    />
-                )}
-            </div>
+            <SelectionModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                item={selectedPromo}
+                onConfirm={handleConfirmSelection}
+            />
         </div>
     );
 }

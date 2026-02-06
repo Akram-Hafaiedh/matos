@@ -3,7 +3,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Lock, Phone, MapPin, AlertCircle, CheckCircle, ArrowRight, UserPlus, Eye, EyeOff } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { User, Mail, Lock, Phone, MapPin, AlertCircle, CheckCircle, ArrowRight, UserPlus, Eye, EyeOff, Sparkles, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function RegisterPage() {
@@ -31,7 +32,6 @@ export default function RegisterPage() {
         setError('');
         setSuccess('');
 
-        // Basic validation
         if (formData.password !== formData.confirmPassword) {
             setError('Les mots de passe ne correspondent pas');
             return;
@@ -49,7 +49,7 @@ export default function RegisterPage() {
                     phone: formData.phone,
                     address: formData.address,
                     password: formData.password,
-                    role: 'customer', // Default role for registration
+                    role: 'customer',
                 }),
             });
 
@@ -59,8 +59,7 @@ export default function RegisterPage() {
                 throw new Error(data.error || 'Erreur lors de l\'inscription');
             }
 
-            setSuccess('Compte créé avec succès ! Redirection...');
-            // Redirect to login after 2 seconds
+            setSuccess('Compte créé avec succès ! Bienvenue au Club.');
             setTimeout(() => {
                 router.push('/login');
             }, 2000);
@@ -72,187 +71,229 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="w-full relative">
-            {/* Ambient Background Glows */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-yellow-400/10 blur-[100px] rounded-full pointer-events-none animate-pulse"></div>
-            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-yellow-400/10 blur-[100px] rounded-full pointer-events-none animate-pulse delay-700"></div>
+        <div className="min-h-screen flex flex-col lg:flex-row bg-black overflow-hidden selection:bg-yellow-400 selection:text-black">
 
-            {/* Header */}
-            <div className="text-center mb-10 relative z-10">
-                <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-950 rounded-[2rem] border-2 border-yellow-400/20 shadow-2xl shadow-yellow-400/5 mb-6 group hover:border-yellow-400/50 transition-colors duration-500">
-                    <UserPlus className="w-10 h-10 text-yellow-400 group-hover:scale-110 transition-transform duration-500" />
+            {/* Visual Side (50%) */}
+            <div className="lg:flex-1 relative overflow-hidden hidden lg:block">
+                <motion.div
+                    initial={{ scale: 1.2, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute inset-0"
+                >
+                    <img
+                        src="https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?q=80&w=2071&auto=format&fit=crop"
+                        alt="Mato's Maison"
+                        className="w-full h-full object-cover opacity-60 grayscale-[10%]"
+                    />
+                </motion.div>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/10 to-black"></div>
+
+                {/* Branding Overlay */}
+                <div className="absolute bottom-16 left-16 space-y-6 z-20">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.5 }}
+                        className="bg-white text-black px-6 py-2 font-black text-[12px] uppercase tracking-[0.4em] -rotate-2 inline-block shadow-2xl"
+                    >
+                        Rejoindre le Prestige
+                    </motion.div>
+
+                    <motion.h1
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.7 }}
+                        className="text-7xl xl:text-9xl font-[1000] italic text-white uppercase tracking-tighter leading-[0.85]"
+                    >
+                        DEVENIR<br />
+                        <span className="text-yellow-400">MEMBRE.</span>
+                    </motion.h1>
                 </div>
-                <h1 className="text-5xl font-black text-white mb-2 uppercase italic tracking-tighter leading-none">
-                    Rejoindre <span className="text-yellow-400 block mt-1">Mato's</span>
-                </h1>
-                <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em]">Devenez un client privilégié</p>
+
+                <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-yellow-400/5 blur-[150px] rounded-full"></div>
             </div>
 
-            {/* Registration Form */}
-            <div className="bg-gray-900/50 rounded-[3.5rem] p-10 border-2 border-gray-800 backdrop-blur-3xl shadow-3xl shadow-black relative z-10 hover:border-yellow-400/10 transition-colors duration-500">
-                {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3 mb-8 animate-in fade-in slide-in-from-top-2">
-                        <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                        <p className="text-red-500 font-black text-[10px] uppercase tracking-wider">{error}</p>
-                    </div>
-                )}
+            {/* Form Side (50%) */}
+            <div className="w-full lg:w-[650px] min-h-screen bg-black relative flex flex-col items-center justify-center p-8 lg:p-16 border-l border-white/5 overflow-y-auto">
 
-                {success && (
-                    <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 flex items-center gap-3 mb-8 animate-in fade-in slide-in-from-top-2">
-                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                        <p className="text-green-500 font-black text-[10px] uppercase tracking-wider">{success}</p>
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 gap-6">
-                        {/* Name */}
-                        <div className="space-y-2">
-                            <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Nom complet *</label>
-                            <div className="relative group">
-                                <User className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
-                                    placeholder="Votre nom"
-                                    required
-                                />
-                            </div>
+                {/* Back Button */}
+                <div className="absolute top-10 left-10 lg:left-16">
+                    <Link href="/" className="group flex items-center gap-3 text-gray-600 hover:text-white transition-all font-black uppercase text-[10px] tracking-[0.3em] italic">
+                        <div className="w-10 h-10 rounded-full border border-white/5 flex items-center justify-center group-hover:border-yellow-400/50 group-hover:text-yellow-400 transition-all">
+                            <ArrowLeft className="w-4 h-4" />
                         </div>
+                        <span className="opacity-0 group-hover:opacity-100 transition-opacity">Accueil</span>
+                    </Link>
+                </div>
 
-                        {/* Email */}
-                        <div className="space-y-2">
-                            <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Email *</label>
-                            <div className="relative group">
-                                <Mail className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
-                                    placeholder="votre@email.com"
-                                    required
-                                />
-                            </div>
+                <div className="w-full max-w-lg space-y-12">
+
+                    <div className="space-y-4">
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="w-14 h-14 bg-yellow-400 flex items-center justify-center rounded-2xl -rotate-6"
+                        >
+                            <UserPlus className="w-7 h-7 text-black" />
+                        </motion.div>
+                        <div className="space-y-1">
+                            <h2 className="text-4xl font-[1000] italic text-white uppercase tracking-tighter">Inscription Elite</h2>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-500">Maison Mato's — Accès Privilégié</p>
                         </div>
+                    </div>
 
-                        {/* Phone & Map in Grid if needed, but let's keep it simple */}
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3"
+                            >
+                                <AlertCircle className="w-4 h-4 text-red-500" />
+                                <p className="text-red-500 font-bold text-[10px] uppercase tracking-widest">{error}</p>
+                            </motion.div>
+                        )}
+
+                        {success && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 flex items-center gap-3"
+                            >
+                                <CheckCircle className="w-4 h-4 text-green-500" />
+                                <p className="text-green-500 font-bold text-[10px] uppercase tracking-widest">{success}</p>
+                            </motion.div>
+                        )}
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Identity */}
+                            <div className="space-y-2 col-span-2">
+                                <label className="text-gray-500 font-black uppercase text-[9px] tracking-[0.3em] ml-2 italic">Identité Complète</label>
+                                <div className="relative group">
+                                    <User className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-yellow-400 transition-colors w-4 h-4" />
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        className="w-full bg-white/[0.03] border border-white/5 text-white pl-16 pr-6 py-4 rounded-xl font-bold transition-all outline-none focus:bg-white/[0.07] focus:border-yellow-400/30 placeholder:text-gray-800 uppercase text-xs"
+                                        placeholder="VOTRE NOM"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Email */}
+                            <div className="space-y-2 col-span-2">
+                                <label className="text-gray-500 font-black uppercase text-[9px] tracking-[0.3em] ml-2 italic">Contact Email</label>
+                                <div className="relative group">
+                                    <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-yellow-400 transition-colors w-4 h-4" />
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        className="w-full bg-white/[0.03] border border-white/5 text-white pl-16 pr-6 py-4 rounded-xl font-bold transition-all outline-none focus:bg-white/[0.07] focus:border-yellow-400/30 placeholder:text-gray-800 uppercase text-xs font-sans"
+                                        placeholder="VOTRE@EMAIL.COM"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
                             {/* Phone */}
                             <div className="space-y-2">
-                                <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Téléphone</label>
+                                <label className="text-gray-500 font-black uppercase text-[9px] tracking-[0.3em] ml-2 italic">Téléphone</label>
                                 <div className="relative group">
-                                    <Phone className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                                    <Phone className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-yellow-400 transition-colors w-4 h-4" />
                                     <input
                                         type="tel"
                                         name="phone"
                                         value={formData.phone}
                                         onChange={handleChange}
-                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
-                                        placeholder="XX XXX XXX"
+                                        className="w-full bg-white/[0.03] border border-white/5 text-white pl-16 pr-6 py-4 rounded-xl font-bold transition-all outline-none focus:bg-white/[0.07] focus:border-yellow-400/30 placeholder:text-gray-800 text-xs font-sans"
+                                        placeholder="0X XX XX XX"
                                     />
                                 </div>
                             </div>
+
                             {/* Address */}
                             <div className="space-y-2">
-                                <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Adresse</label>
+                                <label className="text-gray-500 font-black uppercase text-[9px] tracking-[0.3em] ml-2 italic">Localisation</label>
                                 <div className="relative group">
-                                    <MapPin className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                                    <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-yellow-400 transition-colors w-4 h-4" />
                                     <input
                                         type="text"
                                         name="address"
                                         value={formData.address}
                                         onChange={handleChange}
-                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-6 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
-                                        placeholder="Votre adresse"
+                                        className="w-full bg-white/[0.03] border border-white/5 text-white pl-16 pr-6 py-4 rounded-xl font-bold transition-all outline-none focus:bg-white/[0.07] focus:border-yellow-400/30 placeholder:text-gray-800 uppercase text-xs"
+                                        placeholder="VOTRE VILLE"
                                     />
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Passwords */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Password */}
                             <div className="space-y-2">
-                                <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Mot de passe *</label>
+                                <label className="text-gray-500 font-black uppercase text-[9px] tracking-[0.3em] ml-2 italic">Code Secret</label>
                                 <div className="relative group">
-                                    <Lock className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                                    <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-yellow-400 transition-colors w-4 h-4" />
                                     <input
                                         type={showPassword ? "text" : "password"}
                                         name="password"
                                         value={formData.password}
                                         onChange={handleChange}
-                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-14 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
+                                        className="w-full bg-white/[0.03] border border-white/5 text-white pl-16 pr-12 py-4 rounded-xl font-bold transition-all outline-none focus:bg-white/[0.07] focus:border-yellow-400/30 placeholder:text-gray-800 text-xs font-sans"
                                         placeholder="••••••••"
                                         required
                                         minLength={6}
                                     />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-yellow-400 transition-colors"
-                                    >
-                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-700 hover:text-white transition-colors">
+                                        {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Confirm */}
                             <div className="space-y-2">
-                                <label className="text-gray-500 font-black uppercase text-[10px] tracking-widest ml-4">Confirmation *</label>
+                                <label className="text-gray-500 font-black uppercase text-[9px] tracking-[0.3em] ml-2 italic">Confirmation</label>
                                 <div className="relative group">
-                                    <Lock className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-yellow-400 transition-colors" />
+                                    <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-yellow-400 transition-colors w-4 h-4" />
                                     <input
                                         type={showConfirmPassword ? "text" : "password"}
                                         name="confirmPassword"
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
-                                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-14 py-4 rounded-2xl font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-700 text-sm"
+                                        className="w-full bg-white/[0.03] border border-white/5 text-white pl-16 pr-12 py-4 rounded-xl font-bold transition-all outline-none focus:bg-white/[0.07] focus:border-yellow-400/30 placeholder:text-gray-800 text-xs font-sans"
                                         placeholder="••••••••"
                                         required
                                         minLength={6}
                                     />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-yellow-400 transition-colors"
-                                    >
-                                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-700 hover:text-white transition-colors">
+                                        {showConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                                     </button>
                                 </div>
                             </div>
                         </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-yellow-400 hover:bg-white text-black py-6 rounded-2xl font-[1000] text-[11px] uppercase tracking-[0.4em] transition-all shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed group/btn relative overflow-hidden mt-4"
+                        >
+                            <span className="relative z-10 flex items-center justify-center gap-3">
+                                {loading ? 'TRAITEMENT...' : 'REJOINDRE LE CLUB'}
+                                <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-2 transition-transform" />
+                            </span>
+                            <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover/btn:animate-shimmer"></div>
+                        </button>
+                    </form>
+
+                    <div className="text-center pt-8 border-t border-white/5">
+                        <p className="text-gray-600 font-bold uppercase text-[10px] tracking-widest italic">
+                            Déjà membre ? <Link href="/login" className="text-white hover:text-yellow-400 transition-colors ml-2 underline underline-offset-4 decoration-white/20">Se connecter</Link>
+                        </p>
                     </div>
-
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] transition-all shadow-xl shadow-yellow-400/10 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group"
-                    >
-                        {loading ? (
-                            <span className="flex items-center justify-center gap-3">
-                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-900 border-t-transparent"></div>
-                                Traitement...
-                            </span>
-                        ) : (
-                            <span className="flex items-center justify-center gap-2">
-                                S'inscrire maintenant
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </span>
-                        )}
-                    </button>
-                </form>
-
-                {/* Login Link */}
-                <div className="mt-8 text-center">
-                    <p className="text-gray-500 font-bold text-xs">
-                        Déjà membre ?{' '}
-                        <Link href="/login" className="text-yellow-400 hover:text-yellow-300 font-black uppercase tracking-wider underline underline-offset-4 decoration-yellow-400/20 hover:decoration-yellow-400 transition-all">
-                            Se connecter
-                        </Link>
-                    </p>
                 </div>
             </div>
         </div>

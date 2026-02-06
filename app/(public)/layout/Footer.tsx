@@ -11,12 +11,15 @@ import {
     MapPin,
     Clock,
     ChevronRight,
-    ExternalLink,
     UtensilsCrossed,
     Star,
-    MessageCircle
+    MessageCircle,
+    HelpCircle,
+    Crown,
+    ArrowRight
 } from "lucide-react";
 import SubFooter from "@/components/SubFooter";
+import { useSession } from "next-auth/react";
 
 const TikTokIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -26,7 +29,7 @@ const TikTokIcon = ({ className }: { className?: string }) => (
 
 
 export default function Footer() {
-    const currentYear = new Date().getFullYear();
+    const { data: session, status } = useSession();
     const [settings, setSettings] = useState<any>(null);
 
     useEffect(() => {
@@ -43,71 +46,65 @@ export default function Footer() {
     }, []);
 
     return (
-        <footer className="relative bg-black pt-24 pb-12 overflow-hidden border-t border-white/5">
-            {/* Ambient Background Glows */}
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-yellow-400/5 blur-[120px] pointer-events-none"></div>
-            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-red-600/5 blur-[100px] pointer-events-none"></div>
-
-            <div className="max-w-7xl mx-auto px-4 relative z-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-20">
+        <footer className="relative bg-transparent pt-32 pb-12 overflow-hidden border-t border-white/5 mt-20">
+            <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
 
                     {/* Brand Section */}
-                    <div className="space-y-8">
-                        <Link href="/" className="flex items-center gap-4 group">
-                            <div className="relative w-16 h-16 bg-white/5 rounded-2xl border-2 border-yellow-400/30 p-2 flex items-center justify-center overflow-hidden shadow-2xl group-hover:border-yellow-400 transition-all duration-500">
-                                <Image
-                                    src="/logo.svg"
-                                    alt="Mato's Logo"
-                                    width={48}
-                                    height={48}
-                                    className="object-contain"
-                                />
+                    <div className="space-y-10">
+                        <Link href="/" className="inline-block group">
+                            <div className="flex items-center gap-4">
+                                <div className="relative w-14 h-14 bg-[#0a0a0a] border border-white/5 rounded-2xl flex items-center justify-center overflow-hidden shadow-2xl group-hover:border-yellow-400 group-hover:bg-yellow-400 transition-all duration-500">
+                                    <Image
+                                        src="/logo.svg"
+                                        alt="Mato's Logo"
+                                        width={36}
+                                        height={36}
+                                        className="object-contain group-hover:brightness-0 transition-all duration-500"
+                                    />
+                                </div>
+                                <span className="text-2xl font-[1000] text-white tracking-widest uppercase italic group-hover:text-yellow-400 transition-all duration-500">MATO'S</span>
                             </div>
-                            <span className="text-3xl font-black text-white tracking-widest uppercase italic group-hover:text-yellow-400 transition-colors">MATO'S</span>
                         </Link>
-                        <p className="text-gray-500 font-bold leading-relaxed">
-                            L'excellence de la gastronomie rapide. Découvrez nos pizzas artisanales, burgers gourmets et tacos généreux, préparés avec passion et fraîcheur.
+                        <p className="text-gray-500 text-[11px] font-bold leading-relaxed uppercase tracking-wider italic pr-4">
+                            L'essence de la gastronomie rapide. Découvrez l'alliance parfaite entre tradition artisanale et innovation culinaire.
                         </p>
-                        <div className="flex items-center gap-4">
-                            {settings?.facebook && (
-                                <a href={settings.facebook} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-900/50 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-yellow-400 hover:text-gray-900 hover:border-yellow-400 transition-all duration-300">
-                                    <Facebook className="w-5 h-5" />
+                        <div className="flex items-center gap-3">
+                            {[
+                                { icon: Facebook, href: settings?.facebook, hover: 'hover:bg-blue-600' },
+                                { icon: Instagram, href: settings?.instagram, hover: 'hover:bg-pink-600' },
+                                { icon: TikTokIcon, href: settings?.tiktok, hover: 'hover:bg-white hover:text-black' },
+                                { icon: MessageCircle, href: settings?.whatsapp, hover: 'hover:bg-green-500' }
+                            ].map((social, i) => social.href && (
+                                <a
+                                    key={i}
+                                    href={social.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={`w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 transition-all duration-300 ${social.hover} hover:text-white hover:border-transparent hover:scale-110 active:scale-95`}
+                                >
+                                    <social.icon className="w-4 h-4" />
                                 </a>
-                            )}
-                            {settings?.instagram && (
-                                <a href={settings.instagram} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-900/50 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-pink-600 hover:text-white hover:border-pink-600 transition-all duration-300">
-                                    <Instagram className="w-5 h-5" />
-                                </a>
-                            )}
-                            {settings?.tiktok && (
-                                <a href={settings.tiktok} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-900/50 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-black hover:text-white hover:border-white transition-all duration-300">
-                                    <TikTokIcon className="w-5 h-5" />
-                                </a>
-                            )}
-                            {settings?.whatsapp && (
-                                <a href={settings.whatsapp} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-900/50 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all duration-300">
-                                    <MessageCircle className="w-5 h-5" />
-                                </a>
-                            )}
+                            ))}
                         </div>
                     </div>
 
                     {/* Quick Access */}
-                    <div className="space-y-8">
-                        <h4 className="text-xl font-black text-white italic uppercase tracking-tighter flex items-center gap-3">
-                            <UtensilsCrossed className="w-5 h-5 text-yellow-400" />
-                            Exploration
+                    <div className="space-y-10 pt-4">
+                        <h4 className="text-[10px] font-black text-gray-600 italic uppercase tracking-[0.4em] flex items-center gap-3">
+                            <UtensilsCrossed className="w-3.5 h-3.5" />
+                            Navigation
                         </h4>
-                        <ul className="space-y-4">
+                        <ul className="space-y-5">
                             {[
-                                { name: "Notre Carte", href: "/menu" },
-                                { name: "Promotions", href: "/promos" },
-                                { name: "Service Client", href: "/support" },
-                                { name: "Contactez-nous", href: "/contact" }
+                                { name: "Menu Gourmet", href: "/menu" },
+                                { name: "Offres Limitées", href: "/promos" },
+                                { name: "Suivi Commande", href: "/track" },
+                                { name: "Centre d'Aide", href: "/faq" }
                             ].map((link) => (
                                 <li key={link.name}>
-                                    <Link href={link.href} className="text-gray-400 hover:text-yellow-400 font-bold flex items-center gap-2 group transition-colors">
-                                        <ChevronRight className="w-4 h-4 text-gray-800 group-hover:text-yellow-400 transition-colors" />
+                                    <Link href={link.href} className="text-white hover:text-yellow-400 font-[1000] italic uppercase tracking-tighter text-base flex items-center gap-2 group transition-all">
+                                        <ChevronRight className="w-4 h-4 text-gray-800 group-hover:text-yellow-400 group-hover:translate-x-1 transition-all" />
                                         {link.name}
                                     </Link>
                                 </li>
@@ -116,50 +113,51 @@ export default function Footer() {
                     </div>
 
                     {/* Information */}
-                    <div className="space-y-8">
-                        <h4 className="text-xl font-black text-white italic uppercase tracking-tighter flex items-center gap-3">
-                            <Clock className="w-5 h-5 text-yellow-400" />
-                            Informations
+                    <div className="space-y-10 pt-4">
+                        <h4 className="text-[10px] font-black text-gray-600 italic uppercase tracking-[0.4em] flex items-center gap-3">
+                            <Clock className="w-3.5 h-3.5" />
+                            Prestige
                         </h4>
-                        <ul className="space-y-4">
-                            <li className="flex gap-4">
-                                <MapPin className="w-5 h-5 text-gray-700 mt-1" />
-                                <div>
-                                    <p className="text-white font-black text-sm uppercase">Adresse</p>
-                                    <p className="text-gray-500 text-sm font-bold">{settings?.address || 'Chargement...'}</p>
-                                </div>
+                        <ul className="space-y-6">
+                            <li className="space-y-2">
+                                <p className="text-[8px] font-black text-gray-700 uppercase tracking-[0.2em] italic">Localisation</p>
+                                <p className="text-white font-bold text-xs uppercase tracking-widest italic leading-relaxed">{settings?.address || 'Tunis, Tunisie'}</p>
                             </li>
-                            <li className="flex gap-4">
-                                <Phone className="w-5 h-5 text-gray-700 mt-1" />
-                                <div>
-                                    <p className="text-white font-black text-sm uppercase">Réservation</p>
-                                    <p className="text-gray-500 text-sm font-bold">{settings?.phone || 'Chargement...'}</p>
-                                </div>
-                            </li>
-                            <li className="flex gap-4">
-                                <Mail className="w-5 h-5 text-gray-700 mt-1" />
-                                <div>
-                                    <p className="text-white font-black text-sm uppercase">Support</p>
-                                    <p className="text-gray-500 text-sm font-bold">contact@matos.tn</p>
-                                </div>
+                            <li className="space-y-2">
+                                <p className="text-[8px] font-black text-gray-700 uppercase tracking-[0.2em] italic">Contact Direct</p>
+                                <p className="text-white font-bold text-xs uppercase tracking-widest italic">{settings?.phone}</p>
+                                <p className="text-yellow-400 font-bold text-[10px] uppercase tracking-[0.1em] italic">contact@matos.tn</p>
                             </li>
                         </ul>
                     </div>
 
-                    {/* Newsletter / App */}
-                    <div className="space-y-8">
-                        <h4 className="text-xl font-black text-white italic uppercase tracking-tighter flex items-center gap-3">
-                            <Star className="w-5 h-5 text-yellow-400" />
-                            Avantages
-                        </h4>
-                        <div className="bg-gradient-to-br from-gray-900 to-black p-6 rounded-[2rem] border border-white/5 space-y-4 shadow-2xl">
-                            <p className="text-white font-black text-sm uppercase tracking-wide">Programme Fidélité</p>
-                            <p className="text-gray-500 text-xs font-bold leading-relaxed">
-                                Rejoignez le club Mato's et commencez à cumuler des points à chaque bouchée.
-                            </p>
-                            <Link href="/register" className="inline-flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-6 py-3 rounded-xl font-black text-xs transition-all w-full justify-center shadow-lg shadow-yellow-400/10">
-                                S'inscrire maintenant
-                            </Link>
+                    {/* Loyalty Card App Style */}
+                    <div className="lg:pt-4">
+                        <div className="bg-[#0a0a0a] border border-white/5 p-8 rounded-[2.5rem] relative overflow-hidden group shadow-2xl">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 blur-[50px] rounded-full group-hover:bg-yellow-400/10 transition-all duration-1000"></div>
+                            <div className="relative z-10 space-y-6">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-400/10 border border-yellow-400/20">
+                                    <Crown className="w-3 h-3 text-yellow-400" />
+                                    <span className="text-yellow-400 font-black text-[8px] uppercase tracking-[0.4em] italic">Mato's Elite</span>
+                                </div>
+                                <h4 className="text-xl font-[1000] text-white italic uppercase tracking-tighter leading-tight">
+                                    {status === 'authenticated' ? `Bienvenue \n${session?.user?.name?.split(' ')[0]}` : 'Accès Privilège'}
+                                </h4>
+                                <p className="text-gray-500 text-[10px] font-black leading-relaxed uppercase tracking-widest italic">
+                                    {status === 'authenticated'
+                                        ? 'Découvrez vos récompenses et offres exclusives.'
+                                        : 'Cumulez des privilèges à chaque dégustation.'}
+                                </p>
+                                <Link
+                                    href={status === 'authenticated' ? "/account/loyalty" : "/register"}
+                                    className="flex items-center justify-between bg-white hover:bg-yellow-400 text-black px-6 py-4 rounded-2xl transition-all group/btn"
+                                >
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] italic">
+                                        {status === 'authenticated' ? 'Ma Carte Elite' : 'Rejoindre l\'Elite'}
+                                    </span>
+                                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>

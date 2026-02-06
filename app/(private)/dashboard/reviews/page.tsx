@@ -1,7 +1,8 @@
+// app/(private)/dashboard/reviews/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Star, MessageSquare, CheckCircle, XCircle, Search, Trash2, Home } from 'lucide-react';
+import { Star, MessageSquare, CheckCircle, XCircle, Search, Trash2, Home, Signal, Activity, Sparkles, Hash } from 'lucide-react';
 
 interface User {
     name: string | null;
@@ -69,79 +70,87 @@ export default function ReviewsManagement() {
     );
 
     return (
-        <div className="space-y-10 pb-20">
+        <div className="w-full pb-20 space-y-12 animate-in fade-in duration-700">
             {/* Header */}
-            <div>
-                <h1 className="text-5xl font-black text-white mb-2 uppercase italic tracking-tighter">
-                    Gestion des <span className="text-yellow-400">Avis</span>
-                </h1>
-                <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Gérez les témoignages clients et leur affichage sur la page d'accueil</p>
-            </div>
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10">
+                <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <MessageSquare size={12} className="text-yellow-400" />
+                        <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic">Feedback Intelligence</span>
+                    </div>
+                    <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none mb-4">
+                        Gestion des <span className="text-yellow-400">Avis</span>
+                    </h1>
+                    <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em] ml-1">Analyse des témoignages et protocoles d'affichage ({reviews.length} signaux)</p>
+                </div>
 
-            {/* Toolbar */}
-            <div className="bg-gray-900/40 p-8 rounded-[3rem] border border-gray-800 backdrop-blur-3xl shadow-3xl">
-                <div className="relative group max-w-xl">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-yellow-400 transition-colors" />
+                <div className="relative group w-full xl:w-96">
+                    <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-gray-700 w-5 h-5 group-focus-within:text-yellow-400 transition-colors" />
                     <input
                         type="text"
-                        placeholder="Rechercher par client, commentaire ou produit..."
+                        placeholder="Scanner les témoignages..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-8 py-5 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
+                        className="w-full bg-black/40 border border-white/5 text-white pl-16 pr-8 py-6 rounded-[2rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-xs uppercase italic tracking-widest placeholder:text-gray-800"
                     />
                 </div>
             </div>
 
-            {/* Table */}
-            <div className="bg-gray-900/30 rounded-[3rem] border border-gray-800 backdrop-blur-3xl overflow-hidden shadow-3xl relative">
-                <div className="overflow-x-auto">
+            {/* Table Matrix Container */}
+            <div className="bg-white/[0.01] rounded-[4rem] border border-white/5 backdrop-blur-3xl overflow-hidden shadow-3xl relative">
+                <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-gray-800/50 bg-gray-950/20">
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Client</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Note & Commentaire</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Produit</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest text-center">Page d'accueil</th>
+                            <tr className="bg-white/[0.02] border-b border-white/5">
+                                <th className="px-12 py-8 text-[10px] font-[1000] text-gray-600 uppercase tracking-[0.4em] italic leading-none">Messenger</th>
+                                <th className="px-12 py-8 text-[10px] font-[1000] text-gray-600 uppercase tracking-[0.4em] italic leading-none">Signal & Content</th>
+                                <th className="px-12 py-8 text-[10px] font-[1000] text-gray-600 uppercase tracking-[0.4em] italic leading-none">Vector (Product)</th>
+                                <th className="px-12 py-8 text-[10px] font-[1000] text-gray-600 uppercase tracking-[0.4em] italic leading-none text-center">Home Status</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-800/50">
+                        <tbody className="divide-y divide-white/[0.03]">
                             {filteredReviews.map((review) => (
-                                <tr key={review.id} className="group hover:bg-white/[0.02] transition duration-500">
-                                    <td className="px-8 py-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-gray-950 border border-gray-800 rounded-2xl flex items-center justify-center text-xl shadow-inner group-hover:border-yellow-400/30 transition-colors">
+                                <tr key={review.id} className="group/row hover:bg-yellow-400/[0.01] transition-all duration-500 relative">
+                                    <td className="px-12 py-10">
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-16 h-16 bg-black border border-white/5 rounded-[1.8rem] flex items-center justify-center text-3xl shadow-inner group-hover/row:border-yellow-400/30 transition-all duration-700 group-hover:scale-110">
                                                 {review.user.image || '👤'}
                                             </div>
-                                            <div>
-                                                <div className="font-black text-white italic uppercase tracking-tighter">{review.user.name || 'Client Anonyme'}</div>
-                                                <div className="text-[8px] text-yellow-400/50 font-black uppercase tracking-[0.2em]">{review.user.role}</div>
+                                            <div className="space-y-1">
+                                                <div className="font-[1000] text-white italic uppercase tracking-tighter text-xl leading-none group-hover/row:text-yellow-400 transition-colors">{review.user.name || 'ANONYMOUS CLIENT'}</div>
+                                                <div className="text-[10px] text-yellow-400/40 font-[1000] uppercase tracking-[0.2em] italic">{review.user.role}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-6 max-w-md">
-                                        <div className="flex gap-1 mb-2">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star key={i} className={`w-3 h-3 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-700'}`} />
-                                            ))}
+                                    <td className="px-12 py-10 max-w-lg">
+                                        <div className="space-y-4">
+                                            <div className="flex gap-1.5">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <Star key={i} size={14} className={`${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-800'}`} strokeWidth={3} />
+                                                ))}
+                                            </div>
+                                            <p className="text-gray-500 text-sm font-bold italic leading-relaxed uppercase tracking-widest opacity-80 group-hover/row:opacity-100 transition-opacity">
+                                                "{review.comment || 'NO VERBAL FEEDBACK TRANSMITTED.'}"
+                                            </p>
                                         </div>
-                                        <p className="text-gray-400 text-sm italic line-clamp-2">"{review.comment}"</p>
                                     </td>
-                                    <td className="px-8 py-6">
-                                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-950 border border-gray-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-300">
+                                    <td className="px-12 py-10">
+                                        <div className="inline-flex items-center gap-3 px-6 py-3 bg-black/40 border border-white/5 rounded-[1.5rem] text-[10px] font-[1000] uppercase tracking-[0.2em] text-gray-400 italic group-hover/row:border-yellow-400/30 transition-all">
+                                            <Hash size={12} className="text-yellow-400/50" />
                                             {review.menuItem.name}
                                         </div>
                                     </td>
-                                    <td className="px-8 py-6">
+                                    <td className="px-12 py-10">
                                         <div className="flex justify-center">
                                             <button
                                                 onClick={() => toggleHomeStatus(review)}
-                                                className={`group/sw flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all duration-500 border-2 ${review.showOnHome
-                                                        ? 'bg-yellow-400 text-gray-900 border-yellow-400'
-                                                        : 'bg-gray-950 text-gray-500 border-gray-800 hover:border-gray-600'
+                                                className={`group/sw flex items-center gap-4 px-10 py-4 rounded-[1.8rem] font-[1000] text-[10px] uppercase tracking-[0.3em] transition-all duration-700 italic border ${review.showOnHome
+                                                    ? 'bg-yellow-400 text-black border-yellow-400 shadow-[0_15px_30px_rgba(250,204,21,0.2)]'
+                                                    : 'bg-white/[0.02] text-gray-700 border-white/5 hover:border-white/20 hover:text-white'
                                                     }`}
                                             >
-                                                <Home className={`w-4 h-4 ${review.showOnHome ? 'fill-gray-900' : ''}`} />
-                                                {review.showOnHome ? 'Affiché' : 'Masqué'}
+                                                <Home className={`w-4 h-4 ${review.showOnHome ? 'fill-black' : ''}`} />
+                                                {review.showOnHome ? 'TRANSMITTING' : 'ARCHIVED'}
                                             </button>
                                         </div>
                                     </td>
@@ -152,15 +161,20 @@ export default function ReviewsManagement() {
                 </div>
 
                 {loading && (
-                    <div className="p-20 flex justify-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow-400 border-t-transparent"></div>
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-md z-20 flex flex-col items-center justify-center scale-90 opacity-0 animate-in fade-in zoom-in duration-500 fill-mode-forwards space-y-6">
+                        <div className="w-16 h-16 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin shadow-[0_0_50px_rgba(250,204,21,0.2)]"></div>
+                        <p className="text-gray-400 font-[1000] uppercase text-[10px] tracking-[0.6em] italic animate-pulse">Syncing Sensors...</p>
                     </div>
                 )}
 
                 {!loading && filteredReviews.length === 0 && (
-                    <div className="p-20 text-center">
-                        <MessageSquare className="w-12 h-12 text-gray-800 mx-auto mb-4" />
-                        <h3 className="text-xl font-black text-white italic uppercase">Aucun avis trouvé</h3>
+                    <div className="py-60 text-center space-y-8">
+                        <div className="bg-white/[0.02] p-12 rounded-[4rem] border border-white/5 border-dashed w-fit mx-auto relative group">
+                            <div className="absolute inset-0 bg-yellow-400/5 blur-[40px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <Signal className="w-20 h-20 text-gray-800 relative z-10" strokeWidth={1} />
+                        </div>
+                        <h3 className="text-4xl font-[1000] text-white italic uppercase tracking-tighter">Frequency Silent</h3>
+                        <p className="text-gray-700 font-black text-[10px] uppercase tracking-[0.5em] italic">Aucun feedback détecté sur cette longueur d'onde.</p>
                     </div>
                 )}
             </div>

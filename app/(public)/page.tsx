@@ -10,6 +10,7 @@ import Promotions from "./home/Promotions";
 import Fidelity from "./home/Fidelity";
 import Reviews from "./home/Reviews";
 import Localisation from "./home/Localisation";
+import FAQSection from "./home/FAQSection";
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -17,30 +18,40 @@ export default function HomePage() {
   const [promos, setPromos] = useState<any[]>([]);
   const [mapVisible, setMapVisible] = useState(false);
   const [settings, setSettings] = useState<any>(null);
+  const [realItems, setRealItems] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
 
   useEffect(() => {
-    const fetchSettings = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch('/api/settings');
-        const data = await res.json();
-        if (data) setSettings(data);
+        const [settingsRes, promosRes, menuRes] = await Promise.all([
+          fetch('/api/settings'),
+          fetch('/api/promotions?active=true'),
+          fetch('/api/menu-items?limit=100&status=active')
+        ]);
+
+        const settingsData = await settingsRes.json();
+        if (settingsData) setSettings(settingsData);
+
+        const promosData = await promosRes.json();
+        if (promosData.success) setPromos(promosData.promotions);
+
+        const menuData = await menuRes.json();
+        if (menuData.success) {
+          setRealItems(menuData.menuItems.map((item: any) => ({
+            ...item,
+            image: item.imageUrl || '🍴',
+            ingredients: item.description
+          })));
+        }
       } catch (error) {
-        console.error("Error loading settings:", error);
+        console.error("Error loading home page data:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchSettings();
-  }, []);
-
-  useEffect(() => {
-    const fetchPromos = async () => {
-      try {
-        const res = await fetch('/api/promotions?active=true');
-        const data = await res.json();
-        if (data.success) setPromos(data.promotions);
-      } catch (e) { console.error(e); }
-    };
-    fetchPromos();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -59,31 +70,13 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, []);
 
-  const heroSlides = categories
-    .filter(cat => cat.showInHero)
-    .map(cat => {
-      const items = menuItems[cat.id as keyof typeof menuItems] as MenuItem[];
-      const itemWithImage = items?.find(item => item.image.startsWith('/'));
-      const minPrice = items ? Math.min(...items.map(i =>
-        typeof i.price === 'number' ? i.price :
-          typeof i.price === 'object' && i.price?.xl ? i.price.xl : 999
-      )) : 0;
-
-      return {
-        image: itemWithImage?.image || '/images/default.png',
-        title: cat.heroTitle || cat.name,
-        subtitle: cat.heroSubtitle || '',
-        color: cat.heroColor || 'from-gray-900/80 to-gray-800/80',
-        price: `À partir de ${minPrice} DT`
-      };
-    });
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 5000);
+      setCurrentSlide((prev) => (prev + 1) % 3);
+    }, 6000);
     return () => clearInterval(timer);
-  }, [heroSlides.length]);
+  }, []);
 
   useEffect(() => {
     if (promos.length > 1) {
@@ -94,32 +87,22 @@ export default function HomePage() {
     }
   }, [promos.length]);
 
-  // Get actual bestsellers from menu data
-  const getBestsellers = (): MenuItem[] => {
-    const allItems = Object.values(menuItems).flat();
-    return allItems.filter(item => item.bestseller).slice(0, 3);
-  };
-
-  // Get popular items if not enough bestsellers
-  const getFeaturedItems = (): MenuItem[] => {
-    const bestsellers = getBestsellers();
-    if (bestsellers.length >= 3) return bestsellers;
-
-    const allItems = Object.values(menuItems).flat();
-    const popular = allItems.filter(item => item.popular);
-    return [...bestsellers, ...popular].slice(0, 3);
-  };
-
-  const featuredItems = getFeaturedItems();
+  // Get actual bestsellers from real items
+  const featuredItems = realItems.filter(item => item.bestseller).slice(0, 5);
+  const displayItems = featuredItems.length > 0 ? featuredItems : realItems.filter(item => item.popular).slice(0, 5);
+  const finalItems = displayItems.length > 0 ? displayItems : realItems.slice(0, 5);
 
   return (
-    <main className="bg-black">
-      <Hero slides={heroSlides} currentSlide={currentSlide} setCurrentSlide={setCurrentSlide} />
-      <Favorites items={featuredItems} />
+    <main className="bg-transparent">
+      <Hero currentSlide={currentSlide} setCurrentSlide={setCurrentSlide} />
+      <Favorites items={finalItems} />
       <Promotions promos={promos} promoSlide={promoSlide} setPromoSlide={setPromoSlide} />
       <Fidelity />
       <Reviews />
-      <Localisation mapVisible={mapVisible} settings={settings} />
+      <FAQSection />
+      <div id="localisation-section">
+        <Localisation settings={settings} />
+      </div>
     </main>
   );
 }

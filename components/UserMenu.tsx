@@ -5,14 +5,28 @@ import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import UserAvatar from './UserAvatar';
-import { UserCircle, LayoutDashboard, LogOut } from 'lucide-react';
+import { UserCircle, LayoutDashboard, LogOut, Loader2 } from 'lucide-react';
+import { useConfirm } from '@/app/context/ConfirmContext';
 
 export default function UserMenu() {
     const { data: session, status } = useSession();
+    const confirm = useConfirm();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const handleLogout = async () => {
-        await signOut({ callbackUrl: '/' });
+        const confirmed = await confirm({
+            title: 'Déconnexion',
+            message: 'Êtes-vous sûr de vouloir vous déconnecter ? Vous devrez vous reconnecter pour passer une commande ou consulter votre fidélité.',
+            type: 'warning',
+            confirmText: 'Me déconnecter',
+            cancelText: 'Rester connecté'
+        });
+
+        if (confirmed) {
+            setIsLoggingOut(true);
+            await signOut({ callbackUrl: '/' });
+        }
     };
 
     if (status !== 'authenticated') {
@@ -70,9 +84,11 @@ export default function UserMenu() {
 
                         <button
                             onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-red-400 hover:bg-red-400/10 transition font-bold text-sm mt-2 border-t border-gray-800 pt-4"
+                            disabled={isLoggingOut}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-red-400 hover:bg-red-400/10 transition font-bold text-sm mt-2 border-t border-gray-800 pt-4 disabled:opacity-50"
                         >
-                            <LogOut className="w-4 h-4" /> Déconnexion
+                            {isLoggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+                            {isLoggingOut ? 'Déconnexion...' : 'Déconnexion'}
                         </button>
                     </div>
                 </>

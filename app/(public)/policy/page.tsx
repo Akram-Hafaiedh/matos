@@ -28,12 +28,8 @@ export default function PrivacyPage() {
     ];
 
     return (
-        <main className="min-h-screen bg-black pt-32 pb-20 px-4 relative overflow-hidden">
-            {/* Background Atmosphere */}
-            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-yellow-400/5 blur-[120px] pointer-events-none"></div>
-            <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-orange-500/5 blur-[150px] pointer-events-none"></div>
-
-            <div className="max-w-4xl mx-auto relative z-10">
+        <main className="min-h-screen bg-black pt-32 pb-20 relative overflow-hidden">
+            <div className="max-w-4xl mx-auto px-6 md:px-12 relative z-10">
                 {/* Header */}
                 <div className="space-y-6 mb-16">
                     <Link

@@ -66,7 +66,7 @@ export default function PromotionConfigModal({ promotion, onClose, onConfirm }: 
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
             <div className="bg-gray-900 border border-gray-700 w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-3xl animate-scale-up relative">
 
                 {/* Decorative background glow */}

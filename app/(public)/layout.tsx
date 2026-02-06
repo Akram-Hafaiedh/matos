@@ -3,6 +3,8 @@
 import Navigation from "./layout/Navigation";
 import Footer from "./layout/Footer";
 import GlobalCart from "../cart/GlobalCart";
+import AmbientBackground from "@/components/AmbientBackground";
+
 export default function PublicLayout({
   children,
 }: Readonly<{
@@ -10,8 +12,9 @@ export default function PublicLayout({
 }>) {
   return (
     <>
+      <AmbientBackground />
       <Navigation />
-      <main>{children}</main>
+      <main className="relative z-0">{children}</main>
       <GlobalCart />
       <Footer />
     </>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     MapPin,
     Phone,
@@ -8,16 +8,14 @@ import {
     Mail,
     Send,
     MessageCircle,
-    Instagram,
-    Facebook,
     LifeBuoy,
     ExternalLink,
     ChevronRight,
     Sparkles,
-    ShieldCheck,
-    Video
+    ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 export default function ContactPage() {
     const [settings, setSettings] = useState<any>(null);
@@ -30,6 +28,11 @@ export default function ContactPage() {
     });
 
     const [submitted, setSubmitted] = useState(false);
+    const containerRef = useRef(null);
+    const { scrollYProgress } = useScroll({ target: containerRef });
+
+    const headerY = useTransform(scrollYProgress, [0, 0.1], [0, -30]);
+    const headerOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0.8]);
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -63,174 +66,203 @@ export default function ContactPage() {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white py-24 px-4 relative overflow-hidden">
-            {/* Background Accents */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-yellow-400/5 blur-[120px] -mr-64 -mt-64 pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-yellow-400/5 blur-[120px] -ml-64 -mb-64 pointer-events-none"></div>
+        <div ref={containerRef} className="min-h-screen bg-transparent text-white py-32 pb-40 relative overflow-hidden">
 
-            <div className="max-w-7xl mx-auto space-y-24 relative z-10">
-                {/* Header */}
-                <div className="text-center space-y-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 text-sm font-black uppercase tracking-widest animate-fade-in">
-                        <Sparkles className="w-4 h-4" />
-                        On reste en contact
-                    </div>
-                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none animate-slide-up">
-                        Contactez <span className="text-yellow-400">Nous</span>
-                    </h1>
-                    <p className="text-xl text-gray-500 max-w-2xl mx-auto font-bold animate-fade-in delay-200">
-                        Une question ? Une suggestion ? L'équipe Mato's est à votre entière disposition pour vous offrir la meilleure expérience.
-                    </p>
-                </div>
+            <div className="max-w-7xl mx-auto px-6 md:px-12 space-y-32 relative z-10">
 
-                <div className="grid lg:grid-cols-5 gap-12 items-start">
-                    {/* Contact Info Sidebar */}
-                    <div className="lg:col-span-2 space-y-6">
-                        {/* Support Promo Card */}
-                        <div className="bg-gradient-to-br from-yellow-400 to-yellow-600 p-8 rounded-[2.5rem] text-gray-900 shadow-2xl shadow-yellow-400/10 group transition-transform duration-500 hover:scale-[1.02]">
-                            <div className="flex items-center justify-between mb-8">
-                                <div className="p-3 bg-black/10 rounded-2xl">
-                                    <LifeBuoy className="w-8 h-8" />
-                                </div>
-                                <ShieldCheck className="w-6 h-6 opacity-40" />
+                {/* Header Section with Parallax */}
+                <motion.div
+                    style={{ y: headerY, opacity: headerOpacity }}
+                    className="flex flex-col items-center gap-12 text-center"
+                >
+                    <div className="space-y-6">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-yellow-400/10 border border-yellow-400/20"
+                        >
+                            <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
+                            <span className="text-yellow-400 font-black text-[10px] uppercase tracking-[0.4em] italic">On reste en contact</span>
+                        </motion.div>
+
+                        <div className="relative group">
+                            <div className="absolute -inset-16 bg-yellow-400/15 blur-[120px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+
+                            {/* THE PILL TITLE */}
+                            <div className="relative bg-yellow-400 py-8 px-12 md:px-20 -rotate-1 hover:rotate-0 transition-all duration-700 shadow-[20px_20px_0_rgba(0,0,0,1)] border-4 border-black overflow-hidden group">
+                                <h1 className="text-5xl md:text-[9rem] font-[1000] italic uppercase tracking-tighter text-black leading-none inline-block relative z-10 pr-[0.4em]">
+                                    Contact
+                                </h1>
                             </div>
-                            <h3 className="text-2xl font-black mb-3">Support Prioritaire</h3>
-                            <p className="font-bold text-black/70 mb-8">
-                                Nos membres bénéficient d'une assistance dédiée avec un suivi en temps réel de leurs demandes.
-                            </p>
-                            <Link href="/support" className="flex items-center justify-between bg-black text-white p-5 rounded-2xl font-black transition group-hover:bg-gray-900 shadow-xl">
-                                <span>Ouvrir un ticket</span>
-                                <ExternalLink className="w-5 h-5" />
-                            </Link>
                         </div>
 
+                        <p className="text-xl text-gray-500 max-w-2xl mx-auto font-bold uppercase tracking-widest text-[11px] italic pt-8">
+                            Une question ? Une suggestion ? <br /> L'équipe Mato's est à votre entière disposition.
+                        </p>
+                    </div>
+                </motion.div>
+
+                <div className="grid lg:grid-cols-5 gap-20 items-start">
+                    {/* Contact Info Sidebar */}
+                    <div className="lg:col-span-2 space-y-8">
+                        {/* Support Promo Card */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                            className="bg-yellow-400 p-10 rounded-[3.5rem] text-black shadow-[0_30px_60px_rgba(250,204,21,0.15)] group relative overflow-hidden"
+                        >
+                            <div className="relative z-10">
+                                <div className="flex items-center justify-between mb-10">
+                                    <div className="p-4 bg-black/10 rounded-2xl">
+                                        <LifeBuoy className="w-8 h-8" />
+                                    </div>
+                                    <ShieldCheck className="w-6 h-6 opacity-40 hover:opacity-100 transition-opacity" />
+                                </div>
+                                <h3 className="text-3xl font-[1000] uppercase italic tracking-tighter mb-4">Support Prioritaire</h3>
+                                <p className="font-bold text-black/70 mb-10 uppercase tracking-wide text-xs leading-relaxed">
+                                    Nos membres bénéficient d'une assistance dédiée avec un suivi en temps réel.
+                                </p>
+                                <Link href="/support" className="flex items-center justify-between bg-black text-white p-6 rounded-2xl font-black transition hover:bg-white hover:text-black shadow-2xl group/btn">
+                                    <span className="uppercase tracking-[0.2em] text-[10px]">Ouvrir un ticket</span>
+                                    <ExternalLink className="w-5 h-5 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                                </Link>
+                            </div>
+                        </motion.div>
+
                         {/* Quick Info Grid */}
-                        <div className="grid grid-cols-1 gap-4">
-                            <div className="bg-gray-900/40 border border-gray-800 p-6 rounded-3xl backdrop-blur-xl group hover:border-yellow-400/30 transition-colors">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-gray-950 rounded-2xl flex items-center justify-center border border-gray-800 group-hover:rotate-6 transition-transform">
-                                        <Phone className="w-5 h-5 text-yellow-400" />
+                        <div className="grid grid-cols-1 gap-6">
+                            {[
+                                { icon: Phone, label: 'Téléphone', value: settings?.phone || 'Loading...', delay: 0.1 },
+                                { icon: Mail, label: 'Email', value: 'hello@matos.tn', delay: 0.2 },
+                                { icon: MapPin, label: 'Localisation', value: settings?.address || 'Loading...', delay: 0.3 }
+                            ].map((info, i) => (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, x: -30 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: info.delay + 0.3, duration: 0.6 }}
+                                    className="bg-[#0a0a0a] border border-white/5 p-8 rounded-[2.5rem] group hover:border-yellow-400/30 transition-all duration-500"
+                                >
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:bg-yellow-400 group-hover:text-black transition-all duration-500 transform group-hover:rotate-6">
+                                            <info.icon className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-1 italic">{info.label}</p>
+                                            <p className="text-lg font-[1000] uppercase tracking-tighter text-white italic">{info.value}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Téléphone</p>
-                                        <p className="text-lg font-black">{settings?.phone || 'Loading...'}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-gray-900/40 border border-gray-800 p-6 rounded-3xl backdrop-blur-xl group hover:border-yellow-400/30 transition-colors">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-gray-950 rounded-2xl flex items-center justify-center border border-gray-800 group-hover:rotate-6 transition-transform">
-                                        <Mail className="w-5 h-5 text-yellow-400" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Email</p>
-                                        <p className="text-lg font-black">hello@matos.tn</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-gray-900/40 border border-gray-800 p-6 rounded-3xl backdrop-blur-xl group hover:border-yellow-400/30 transition-colors">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-gray-950 rounded-2xl flex items-center justify-center border border-gray-800 group-hover:rotate-6 transition-transform">
-                                        <MapPin className="w-5 h-5 text-yellow-400" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Localisation</p>
-                                        <p className="text-lg font-black">{settings?.address || 'Loading...'}</p>
-                                    </div>
-                                </div>
-                            </div>
+                                </motion.div>
+                            ))}
                         </div>
                     </div>
 
                     {/* Main Form */}
                     <div className="lg:col-span-3">
-                        <div className="bg-gray-900/40 border border-gray-800 p-10 md:p-12 rounded-[3.5rem] shadow-3xl backdrop-blur-3xl relative overflow-hidden">
-                            <h2 className="text-3xl font-black mb-10 flex items-center gap-4">
-                                <MessageCircle className="w-8 h-8 text-yellow-400" />
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                            className="bg-[#0a0a0a] border border-white/5 p-12 md:p-16 rounded-[4rem] shadow-3xl relative overflow-hidden group"
+                        >
+                            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-yellow-400/[0.02] blur-[100px] rounded-full pointer-events-none group-hover:bg-yellow-400/[0.04] transition-colors duration-1000"></div>
+
+                            <h2 className="text-4xl font-[1000] italic uppercase tracking-tighter mb-12 flex items-center gap-6 relative z-10">
+                                <div className="w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center text-black">
+                                    <MessageCircle className="w-6 h-6" />
+                                </div>
                                 Envoyez un message
                             </h2>
 
                             {submitted ? (
-                                <div className="py-20 text-center space-y-6 animate-fade-in">
-                                    <div className="w-24 h-24 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto text-4xl border border-green-500/30">
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="py-24 text-center space-y-8 relative z-10"
+                                >
+                                    <div className="w-24 h-24 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto text-4xl border border-green-500/20 shadow-[0_0_50px_rgba(34,197,94,0.1)]">
                                         ✓
                                     </div>
-                                    <h3 className="text-3xl font-black">Message Envoyé !</h3>
-                                    <p className="text-gray-500 font-bold max-w-sm mx-auto text-lg">
-                                        Nous avons bien reçu votre demande et reviendrons vers vous très prochainement.
-                                    </p>
-                                </div>
+                                    <div className="space-y-4">
+                                        <h3 className="text-4xl font-[1000] uppercase italic tracking-tighter">Message Envoyé !</h3>
+                                        <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px] italic leading-relaxed max-w-sm mx-auto">
+                                            Nous avons bien reçu votre demande et reviendrons vers vous dans les plus brefs délais.
+                                        </p>
+                                    </div>
+                                </motion.div>
                             ) : (
-                                <form onSubmit={handleSubmit} className="space-y-8">
-                                    <div className="grid md:grid-cols-2 gap-8">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-gray-600 uppercase tracking-widest ml-1">Nom Complet</label>
+                                <form onSubmit={handleSubmit} className="space-y-10 relative z-10">
+                                    <div className="grid md:grid-cols-2 gap-10">
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-2 italic">Nom Complet</label>
                                             <input
                                                 type="text"
                                                 name="name"
                                                 required
                                                 value={formData.name}
                                                 onChange={handleChange}
-                                                className="w-full bg-gray-950 border border-gray-800 p-5 rounded-2xl focus:border-yellow-400 focus:outline-none transition-colors font-bold"
+                                                className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl focus:border-yellow-400/50 focus:bg-white/10 focus:outline-none transition-all font-bold text-white uppercase tracking-widest text-xs"
                                                 placeholder="votre nom"
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-gray-600 uppercase tracking-widest ml-1">Email</label>
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-2 italic">Email</label>
                                             <input
                                                 type="email"
                                                 name="email"
                                                 required
                                                 value={formData.email}
                                                 onChange={handleChange}
-                                                className="w-full bg-gray-950 border border-gray-800 p-5 rounded-2xl focus:border-yellow-400 focus:outline-none transition-colors font-bold"
+                                                className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl focus:border-yellow-400/50 focus:bg-white/10 focus:outline-none transition-all font-bold text-white uppercase tracking-widest text-xs"
                                                 placeholder="votre@email.com"
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-gray-600 uppercase tracking-widest ml-1">Sujet de votre demande</label>
-                                        <select
-                                            name="subject"
-                                            required
-                                            value={formData.subject}
-                                            onChange={handleChange}
-                                            className="w-full bg-gray-950 border border-gray-800 p-5 rounded-2xl focus:border-yellow-400 focus:outline-none transition-colors font-black appearance-none"
-                                        >
-                                            <option value="">Choisissez un sujet</option>
-                                            <option value="commande">Suivi de commande</option>
-                                            <option value="partenariat">Partenariat</option>
-                                            <option value="reclamation">Réclamation</option>
-                                            <option value="autre">Autre chose</option>
-                                        </select>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-2 italic">Sujet de votre demande</label>
+                                        <div className="relative group/select">
+                                            <select
+                                                name="subject"
+                                                required
+                                                value={formData.subject}
+                                                onChange={handleChange}
+                                                className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl focus:border-yellow-400/50 focus:bg-white/10 focus:outline-none transition-all font-[1000] text-white uppercase tracking-widest text-xs appearance-none cursor-pointer"
+                                            >
+                                                <option value="" className="bg-[#0a0a0a]">Choisissez un sujet</option>
+                                                <option value="commande" className="bg-[#0a0a0a]">Suivi de commande</option>
+                                                <option value="partenariat" className="bg-[#0a0a0a]">Partenariat</option>
+                                                <option value="reclamation" className="bg-[#0a0a0a]">Réclamation</option>
+                                                <option value="autre" className="bg-[#0a0a0a]">Autre chose</option>
+                                            </select>
+                                            <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none transition-colors group-hover/select:text-yellow-400" />
+                                        </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-gray-600 uppercase tracking-widest ml-1">Message</label>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-2 italic">Votre Message</label>
                                         <textarea
                                             name="message"
                                             required
-                                            rows={5}
+                                            rows={6}
                                             value={formData.message}
                                             onChange={handleChange}
-                                            className="w-full bg-gray-950 border border-gray-800 p-5 rounded-2xl focus:border-yellow-400 focus:outline-none transition-colors font-bold resize-none"
+                                            className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl focus:border-yellow-400/50 focus:bg-white/10 focus:outline-none transition-all font-bold text-white uppercase tracking-widest text-xs resize-none"
                                             placeholder="Comment pouvons-nous vous aider ?"
                                         />
                                     </div>
 
                                     <button
                                         type="submit"
-                                        className="w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-6 rounded-2xl font-black text-xl transition-all transform hover:scale-[1.01] shadow-xl shadow-yellow-400/10 flex items-center justify-center gap-3 group"
+                                        className="w-full bg-yellow-400 hover:bg-white text-black py-8 rounded-2xl font-[1000] uppercase text-xs tracking-[0.3em] transition-all transform hover:scale-[1.01] shadow-[0_20px_50px_rgba(250,204,21,0.15)] flex items-center justify-center gap-4 group/form-btn active:scale-95"
                                     >
-                                        <Send className="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                                        Envoyer ma demande
+                                        <Send className="w-5 h-5 group-hover/form-btn:translate-x-1 group-hover/form-btn:-translate-y-1 transition-transform" />
+                                        <span>Envoyer ma demande</span>
                                     </button>
                                 </form>
                             )}
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </div>

@@ -11,6 +11,7 @@ declare module "next-auth" {
             phone?: string | null
             selectedBg?: string | null
             selectedFrame?: string | null
+            loyaltyPoints?: number
         } & DefaultSession["user"]
     }
 
@@ -20,6 +21,7 @@ declare module "next-auth" {
         phone?: string | null
         selectedBg?: string | null
         selectedFrame?: string | null
+        loyaltyPoints?: number
     }
 }
 
@@ -30,5 +32,6 @@ declare module "next-auth/jwt" {
         phone?: string | null
         selectedBg?: string | null
         selectedFrame?: string | null
+        loyaltyPoints?: number
     }
 }

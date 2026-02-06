@@ -1,9 +1,12 @@
+// app/(private)/dashboard/categories/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Pagination from '@/components/dashboard/Pagination';
-import { Plus, Edit, Trash2, Tag, Loader2, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Tag, Loader2, Search, Zap, Signal, Activity, Sparkles, Hash } from 'lucide-react';
+import { useToast } from '@/app/context/ToastContext';
+import { useConfirm } from '@/app/context/ConfirmContext';
 
 interface Category {
     id: number;
@@ -16,7 +19,10 @@ interface Category {
 }
 
 export default function CategoriesPage() {
+    const { toast } = useToast();
+    const confirm = useConfirm();
     const [categories, setCategories] = useState<Category[]>([]);
+    const [isNormalizing, setIsNormalizing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -62,101 +68,159 @@ export default function CategoriesPage() {
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')) return;
+    const handleNormalizeOrder = async () => {
+        const confirmed = await confirm({
+            title: 'Normalisation',
+            message: 'Voulez-vous normaliser l\'ordre de toutes les catégories ? (Pizzas en premier, Boissons/Suppléments à la fin)',
+            type: 'warning',
+            confirmText: 'Normaliser maintenant'
+        });
 
-        try {
-            const res = await fetch(`/api/categories/${id}`, {
-                method: 'DELETE'
-            });
-            const data = await res.json();
-
-            if (data.success) {
-                fetchCategories();
-            } else {
-                alert(data.error || 'Erreur lors de la suppression');
+        if (confirmed) {
+            setIsNormalizing(true);
+            try {
+                const res = await fetch('/api/admin/debug/fix-orders');
+                const data = await res.json();
+                if (data.success) {
+                    toast.success('Ordre normalisé avec succès');
+                    fetchCategories();
+                } else {
+                    toast.error(data.error || 'Erreur lors de la normalisation');
+                }
+            } catch (error) {
+                console.error('Error normalizing order:', error);
+                toast.error('Erreur serveur');
+            } finally {
+                setIsNormalizing(false);
             }
-        } catch (error) {
-            console.error('Error deleting category:', error);
-            alert('Erreur serveur lors de la suppression');
+        }
+    };
+
+    const handleDelete = async (id: number) => {
+        const confirmed = await confirm({
+            title: 'PURGE PROTOCOL',
+            message: 'Voulez-vous supprimer définitivement cette catégorie ? Tous les articles associés perdront leur classification.',
+            type: 'danger',
+            confirmText: 'PURGE DATA'
+        });
+
+        if (confirmed) {
+            try {
+                const res = await fetch(`/api/categories/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    toast.success('Catégorie purgée du système');
+                    fetchCategories();
+                } else {
+                    toast.error(data.error || 'Echec de l\'opération');
+                }
+            } catch (error) {
+                console.error('Error deleting category:', error);
+                toast.error('Erreur de transmission');
+            }
         }
     };
 
     return (
-        <div className="space-y-10 pb-20">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <div className="w-full space-y-12 animate-in fade-in duration-700 pb-20">
+            {/* Header Area */}
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10">
                 <div>
-                    <h1 className="text-5xl font-black text-white mb-2 uppercase italic tracking-tighter">
+                    <div className="flex items-center gap-3 mb-2">
+                        <Tag size={12} className="text-yellow-400" />
+                        <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic">Classification Matrix</span>
+                    </div>
+                    <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none mb-4">
                         Catégories <span className="text-yellow-400">Menu</span>
                     </h1>
-                    <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Gérez les catégories de votre restaurant ({pagination.totalItems})</p>
+                    <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em] ml-1">Organisation structurelle du catalogue ({pagination.totalItems} nœuds)</p>
                 </div>
 
-                <Link
-                    href="/dashboard/categories/new"
-                    className="flex items-center gap-2 bg-yellow-400 px-6 py-4 rounded-2xl text-gray-900 font-black uppercase text-[10px] tracking-widest hover:bg-yellow-300 transition duration-500 shadow-xl shadow-yellow-400/10"
-                >
-                    <Plus className="w-4 h-4" />
-                    Nouvelle
-                </Link>
-            </div>
-
-            {/* Toolbar */}
-            <div className="bg-gray-900/40 p-8 rounded-[3rem] border border-gray-800 backdrop-blur-3xl shadow-3xl">
-                <div className="relative group max-w-xl">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-yellow-400 transition-colors" />
-                    <input
-                        type="text"
-                        placeholder="Rechercher une catégorie..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-gray-950 border-2 border-gray-800 text-white pl-16 pr-8 py-5 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all text-sm"
-                    />
+                <div className="flex items-center gap-4 w-full xl:w-auto">
+                    <button
+                        onClick={handleNormalizeOrder}
+                        disabled={isNormalizing}
+                        className="flex-1 xl:flex-none flex items-center justify-center gap-4 bg-white/[0.02] border border-white/5 px-10 py-5 rounded-[2rem] text-white font-[1000] uppercase text-[10px] tracking-[0.3em] italic hover:bg-white hover:text-black transition-all duration-700 active:scale-95 group shadow-2xl disabled:opacity-50"
+                    >
+                        {isNormalizing ? <Loader2 className="w-4 h-4 animate-spin text-yellow-400" /> : <Zap className="w-4 h-4 text-yellow-400 group-hover:text-black transition-colors" />}
+                        {isNormalizing ? 'Normalizing...' : 'Reorder Matrix'}
+                    </button>
+                    <Link
+                        href="/dashboard/categories/new"
+                        className="flex-1 xl:flex-none flex items-center justify-center gap-4 bg-yellow-400 px-10 py-5 rounded-[2rem] text-black font-[1000] uppercase text-[10px] tracking-[0.3em] italic hover:scale-110 active:scale-95 transition-all shadow-[0_20px_40px_rgba(250,204,21,0.2)]"
+                    >
+                        <Plus className="w-4 h-4" strokeWidth={3} />
+                        New Node
+                    </Link>
                 </div>
             </div>
 
-            {/* Table Container */}
-            <div className="bg-gray-900/30 rounded-[3rem] border border-gray-800 backdrop-blur-3xl overflow-hidden shadow-3xl relative">
-                <div className="overflow-x-auto">
+            {/* Toolbar Area */}
+            <div className="max-w-xl relative group">
+                <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-gray-700 w-5 h-5 group-focus-within:text-yellow-400 transition-colors" />
+                <input
+                    type="text"
+                    placeholder="Scanner les classifications..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-black/40 border border-white/5 text-white pl-18 pr-8 py-6 rounded-[2.5rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-xs uppercase italic tracking-[0.2em] placeholder:text-gray-800"
+                />
+            </div>
+
+            {/* Data Table Matrix container */}
+            <div className="bg-white/[0.01] rounded-[4rem] border border-white/5 backdrop-blur-3xl shadow-3xl relative overflow-hidden">
+                <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-gray-800/50 bg-gray-950/20">
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Ordre</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Aperçu</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Désignation</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest text-right">Actions</th>
+                            <tr className="bg-white/[0.02] border-b border-white/5">
+                                <th className="px-12 py-8 text-[10px] font-[1000] text-gray-600 uppercase tracking-[0.4em] italic leading-none">Order Vector</th>
+                                <th className="px-12 py-8 text-[10px] font-[1000] text-gray-600 uppercase tracking-[0.4em] italic leading-none">Visual Asset</th>
+                                <th className="px-12 py-8 text-[10px] font-[1000] text-gray-600 uppercase tracking-[0.4em] italic leading-none">Désignation</th>
+                                <th className="px-12 py-8 text-[10px] font-[1000] text-gray-600 uppercase tracking-[0.4em] italic leading-none text-right">Control</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-800/50">
+                        <tbody className="divide-y divide-white/[0.03]">
                             {categories.map((category) => (
-                                <tr key={category.id} className="group hover:bg-white/[0.02] transition duration-500 relative">
-                                    <td className="px-8 py-6">
-                                        <span className="font-black text-yellow-400 italic text-xl">#{category.displayOrder}</span>
-                                    </td>
-                                    <td className="px-8 py-6">
-                                        <div className="w-16 h-16 bg-gray-950 rounded-2xl flex items-center justify-center text-4xl shadow-inner border border-gray-800 group-hover:border-yellow-400/30 transition duration-500">
-                                            {category.emoji || '📁'}
+                                <tr key={category.id} className="group/row hover:bg-yellow-400/[0.01] transition-all duration-500 relative">
+                                    <td className="px-12 py-10">
+                                        <div className="flex items-center gap-4">
+                                            <span className="font-[1000] text-yellow-400 italic text-2xl tracking-tighter group-hover/row:scale-125 transition-transform origin-left">#{category.displayOrder}</span>
+                                            <Activity size={12} className="text-gray-800 group-hover/row:text-yellow-400/30 transition-colors" />
                                         </div>
                                     </td>
-                                    <td className="px-8 py-6">
-                                        <div className="font-black text-white text-xl uppercase italic group-hover:text-yellow-400 transition duration-500 tracking-tight">
-                                            {category.name}
+                                    <td className="px-12 py-10">
+                                        <div className="w-20 h-20 bg-black rounded-[2.2rem] flex items-center justify-center text-4xl shadow-inner border border-white/5 group-hover/row:border-yellow-400/50 group-hover/row:scale-105 transition-all duration-700 relative overflow-hidden group/emoji">
+                                            <div className="absolute inset-0 bg-yellow-400/5 opacity-0 group-hover/emoji:opacity-100 transition-opacity blur-2xl"></div>
+                                            <span className="relative z-10">{category.emoji || '📁'}</span>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-6 text-right">
-                                        <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                    <td className="px-12 py-10">
+                                        <div className="space-y-1">
+                                            <div className="font-[1000] text-white text-3xl uppercase italic group-hover/row:text-yellow-400 transition-all duration-500 tracking-tighter leading-none">
+                                                {category.name}
+                                            </div>
+                                            <div className="flex items-center gap-3 text-[10px] text-gray-800 font-[1000] uppercase tracking-[0.2em] italic">
+                                                <Hash size={10} className="text-yellow-400/30" />
+                                                NODE_X{category.id}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-12 py-10 text-right">
+                                        <div className="flex items-center justify-end gap-4 opacity-0 group-hover/row:opacity-100 transition-all duration-500 translate-x-4 group-hover/row:translate-x-0">
                                             <Link
                                                 href={`/dashboard/categories/${category.id}`}
-                                                className="p-4 bg-gray-900 border border-gray-800 hover:border-yellow-400/50 text-white rounded-2xl transition duration-500"
-                                                title="Modifier"
+                                                className="w-14 h-14 bg-black/40 border border-white/5 hover:border-yellow-400/50 text-white hover:text-yellow-400 rounded-2xl transition-all duration-500 flex items-center justify-center shadow-2xl active:scale-90"
+                                                title="Modify Node"
                                             >
                                                 <Edit className="w-5 h-5" />
                                             </Link>
                                             <button
                                                 onClick={() => handleDelete(category.id)}
-                                                className="p-4 bg-red-500/5 border border-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl transition duration-500"
-                                                title="Supprimer"
+                                                className="w-14 h-14 bg-red-500/5 border border-red-500/10 hover:bg-red-500 hover:text-black text-red-500 rounded-2xl transition-all duration-500 flex items-center justify-center shadow-2xl active:scale-90"
+                                                title="Purge Node"
                                             >
                                                 <Trash2 className="w-5 h-5" />
                                             </button>
@@ -166,13 +230,13 @@ export default function CategoriesPage() {
                             ))}
                             {!loading && categories.length === 0 && (
                                 <tr>
-                                    <td colSpan={4} className="px-8 py-40">
-                                        <div className="flex flex-col items-center justify-center gap-4 text-center">
-                                            <div className="bg-gray-950 p-8 rounded-full mb-4">
-                                                <Tag className="w-12 h-12 text-gray-700" />
+                                    <td colSpan={4} className="px-12 py-60">
+                                        <div className="flex flex-col items-center justify-center gap-8 text-center opacity-20">
+                                            <Tag className="w-24 h-24 text-gray-500" strokeWidth={1} />
+                                            <div className="space-y-2">
+                                                <h3 className="text-4xl font-[1000] text-white uppercase italic tracking-tighter">Null classification</h3>
+                                                <p className="text-gray-500 font-bold text-[10px] uppercase tracking-[0.5em] italic">Aucune structure détectée dans la matrice.</p>
                                             </div>
-                                            <h3 className="text-2xl font-black text-white uppercase italic tracking-widest">Aucune catégorie</h3>
-                                            <p className="text-gray-500 font-bold text-sm">Votre menu semble encore vide.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -182,13 +246,14 @@ export default function CategoriesPage() {
                 </div>
 
                 {loading && (
-                    <div className="absolute inset-0 bg-gray-950/40 backdrop-blur-sm z-20 flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow-400 border-t-transparent"></div>
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-md z-20 flex flex-col items-center justify-center animate-in fade-in duration-500 scale-95 opacity-0 fill-mode-forwards space-y-6">
+                        <div className="w-16 h-16 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin shadow-[0_0_50px_rgba(250,204,21,0.2)]"></div>
+                        <p className="text-gray-500 font-[1000] uppercase text-[10px] tracking-[0.5em] italic animate-pulse">Syncing Structural Data...</p>
                     </div>
                 )}
             </div>
 
-            {/* Pagination */}
+            {/* Pagination Controls */}
             <Pagination
                 currentPage={pagination.currentPage}
                 totalPages={pagination.totalPages}

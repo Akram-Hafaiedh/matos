@@ -52,7 +52,8 @@ export default function CategoriesPage() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="w-full space-y-12 animate-in fade-in duration-700 pb-20">
+            {/* Control Center Protocol */}
             {/* Header */}
             <div className="flex items-center gap-4">
                 <Link

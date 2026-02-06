@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Save, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, X, Utensils, Loader2, FileImage, Activity, CheckCircle, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 interface Category {
@@ -158,239 +158,297 @@ export default function EditMenuItemPage() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-20">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link
-                        href="/dashboard/menu"
-                        className="p-2 bg-gray-800 rounded-xl text-gray-400 hover:text-white transition"
-                    >
-                        <ArrowLeft className="w-6 h-6" />
-                    </Link>
-                    <div>
-                        <h1 className="text-4xl font-black text-white">
-                            Editer <span className="text-yellow-400">Produit</span>
-                        </h1>
-                        <p className="text-gray-400">Modifier les détails du plat</p>
+        <div className="w-full space-y-12 animate-in fade-in duration-700 pb-20">
+            {/* Tactical Header */}
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-yellow-400/10 rounded-2xl flex items-center justify-center border border-yellow-400/20">
+                            <Utensils className="w-5 h-5 text-yellow-400" />
+                        </div>
+                        <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic leading-none">Cuisine Intelligence System</span>
+                    </div>
+                    <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none">
+                        Editer le <span className="text-yellow-400">Produit</span>
+                    </h1>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/dashboard/menu"
+                            className="bg-white/[0.02] border border-white/5 px-6 py-3 rounded-2xl text-gray-500 hover:text-white transition-all flex items-center gap-2 text-[10px] font-[1000] uppercase tracking-widest italic"
+                        >
+                            <ArrowLeft size={14} />
+                            Retour à l'Inventaire
+                        </Link>
+                        <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em]">Optimisation des paramètres de recette et actifs visuels</p>
                     </div>
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="grid md:grid-cols-3 gap-8">
+            <form onSubmit={handleSubmit} className="space-y-10">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    {/* Primary Matrix: Data & Ingredients */}
+                    <div className="lg:col-span-2 space-y-10">
+                        <div className="bg-white/[0.02] rounded-[4rem] p-10 border border-white/5 backdrop-blur-3xl shadow-3xl relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-full h-full bg-yellow-400/[0.01] pointer-events-none"></div>
 
-                    {/* Main Info */}
-                    <div className="md:col-span-2 space-y-6">
-                        <div className="bg-gray-800 rounded-2xl p-6 border-2 border-gray-700 space-y-6">
-                            <h2 className="text-xl font-bold text-white mb-4">Informations Générales</h2>
+                            <div className="relative z-10 space-y-8">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <div className="w-2 h-10 bg-yellow-400 rounded-full"></div>
+                                    <h2 className="text-3xl font-[1000] text-white uppercase italic tracking-tighter">Spec <span className="text-yellow-400">Générales</span></h2>
+                                </div>
 
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-gray-400 mb-2 text-sm font-bold ml-1">Nom du produit *</label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        required
-                                        value={formData.name}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <label className="flex items-center gap-3 text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">
+                                            Nom de la Recette
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full bg-black/40 border border-white/5 text-white px-8 py-6 rounded-[2rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-sm uppercase italic tracking-widest placeholder:text-gray-800 shadow-inner"
+                                            placeholder="EX: PIZZA BUFFALA SUPREME"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <label className="flex items-center gap-3 text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">
+                                            Classification
+                                        </label>
+                                        <select
+                                            name="categoryId"
+                                            value={formData.categoryId}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full bg-black/40 border border-white/5 text-white px-8 py-6 rounded-[2rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-xs uppercase italic tracking-widest shadow-inner appearance-none"
+                                        >
+                                            <option value="" className="bg-gray-900">Choisir Catégorie...</option>
+                                            {categories.map(cat => (
+                                                <option key={cat.id} value={cat.id} className="bg-gray-900">
+                                                    {cat.emoji} {cat.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="flex items-center gap-3 text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">
+                                        Description Stratégique
+                                    </label>
+                                    <textarea
+                                        name="description"
+                                        value={formData.description}
                                         onChange={handleChange}
-                                        className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 border border-gray-700"
-                                        placeholder="Ex: Pizza 4 Fromages"
+                                        className="w-full bg-black/40 border border-white/5 text-white px-8 py-6 rounded-[2.5rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-xs uppercase italic tracking-widest placeholder:text-gray-800 min-h-[120px] resize-none shadow-inner"
+                                        placeholder="Décrivez les attributs uniques de ce produit..."
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-gray-400 mb-2 text-sm font-bold ml-1">Catégorie *</label>
-                                    <select
-                                        name="categoryId"
-                                        required
-                                        value={formData.categoryId}
-                                        onChange={handleChange}
-                                        className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 border border-gray-700"
-                                    >
-                                        <option value="">Choisir une catégorie...</option>
-                                        {categories.map(cat => (
-                                            <option key={cat.id} value={cat.id}>
-                                                {cat.emoji} {cat.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
 
-                            <div>
-                                <label className="block text-gray-400 mb-2 text-sm font-bold ml-1">Description</label>
-                                <textarea
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleChange}
-                                    className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 border border-gray-700 min-h-[100px]"
-                                    placeholder="Description appétissante du plat..."
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-gray-400 mb-2 text-sm font-bold ml-1">Image</label>
                                 <div className="space-y-4">
-                                    {formData.imageUrl && (
-                                        <div className="relative h-48 w-full rounded-xl overflow-hidden bg-gray-900 border border-gray-700">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={formData.imageUrl}
-                                                alt="Preview"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
-                                                className="absolute top-2 right-2 p-1 bg-red-600 rounded-full text-white hover:bg-red-700"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    <div className="flex items-center gap-4">
-                                        <input
-                                            type="url"
-                                            name="imageUrl"
-                                            value={formData.imageUrl}
-                                            onChange={handleChange}
-                                            className="flex-1 bg-gray-900 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 border border-gray-700"
-                                            placeholder="URL de l'image ou emoji..."
-                                        />
-                                        <div className="relative">
-                                            <label
-                                                htmlFor="file-upload"
-                                                className={`cursor-pointer px-4 py-3 rounded-xl font-bold flex items-center gap-2 transition ${isUploading ? 'bg-gray-700 text-gray-400' : 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-600'}`}
-                                            >
-                                                {isUploading ? (
-                                                    <span className="animate-spin text-yellow-400">⌛</span>
-                                                ) : (
-                                                    <span>📤 Upload</span>
-                                                )}
-                                            </label>
-                                            <input
-                                                id="file-upload"
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleFileUpload}
-                                                className="hidden"
-                                                disabled={isUploading}
-                                            />
-                                        </div>
-                                    </div>
-                                    <p className="text-xs text-gray-500 ml-1">Collez une URL d'image, un emoji (ex: 🍔), ou uploadez une photo</p>
+                                    <label className="flex items-center gap-3 text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">
+                                        Vecteur Ingrédients (Séparés par virgules)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="ingredients"
+                                        value={formData.ingredients}
+                                        onChange={handleChange}
+                                        className="w-full bg-black/40 border border-white/5 text-white px-8 py-6 rounded-[2rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-xs uppercase italic tracking-widest placeholder:text-gray-800 shadow-inner"
+                                        placeholder="EX: TOMATE, MOZZARELLA, BASILIC..."
+                                    />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-gray-800 rounded-2xl p-6 border-2 border-gray-700 space-y-6">
-                            <h2 className="text-xl font-bold text-white mb-4">Détails</h2>
+                        {/* Visual Asset Control */}
+                        <div className="bg-white/[0.02] rounded-[4rem] p-10 border border-white/5 backdrop-blur-3xl shadow-3xl relative overflow-hidden group">
+                            <div className="relative z-10 space-y-8">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-2 h-10 bg-purple-500 rounded-full"></div>
+                                    <h2 className="text-3xl font-[1000] text-white uppercase italic tracking-tighter">Asset <span className="text-purple-500">Visual</span></h2>
+                                </div>
 
-                            <div>
-                                <label className="block text-gray-400 mb-2 text-sm font-bold ml-1">Ingrédients</label>
-                                <input
-                                    type="text"
-                                    name="ingredients"
-                                    value={formData.ingredients}
-                                    onChange={handleChange}
-                                    className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 border border-gray-700"
-                                    placeholder="Tomate, Mozzarella, Basilic... (séparés par des virgules)"
-                                />
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                                    <div className="space-y-6">
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">Source de l'Actif (URL / Emoji)</label>
+                                            <div className="flex gap-4">
+                                                <input
+                                                    type="text"
+                                                    name="imageUrl"
+                                                    value={formData.imageUrl}
+                                                    onChange={handleChange}
+                                                    className="flex-1 bg-black/40 border border-white/5 text-white px-8 py-5 rounded-[2rem] font-[1000] focus:outline-none focus:border-purple-500/50 transition-all text-[10px] italic placeholder:text-gray-800 shadow-inner"
+                                                    placeholder="URL OU EMOJI..."
+                                                />
+                                                <div className="relative">
+                                                    <label
+                                                        htmlFor="file-upload"
+                                                        className={`h-full px-8 rounded-[2rem] font-[1000] uppercase text-[10px] tracking-widest flex items-center gap-3 transition-all border ${isUploading ? 'bg-gray-800 border-white/5' : 'bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20 cursor-pointer'}`}
+                                                    >
+                                                        {isUploading ? (
+                                                            <Loader2 size={14} className="animate-spin" />
+                                                        ) : (
+                                                            <>
+                                                                <FileImage size={14} />
+                                                                Upload
+                                                            </>
+                                                        )}
+                                                    </label>
+                                                    <input
+                                                        id="file-upload"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleFileUpload}
+                                                        className="hidden"
+                                                        disabled={isUploading}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="relative group/preview">
+                                        <div className="w-full aspect-[16/9] bg-black/40 rounded-[3rem] border border-white/5 overflow-hidden relative flex items-center justify-center shadow-2xl">
+                                            {formData.imageUrl ? (
+                                                formData.imageUrl.length < 5 ? (
+                                                    <span className="text-9xl">{formData.imageUrl}</span>
+                                                ) : (
+                                                    <img
+                                                        src={formData.imageUrl}
+                                                        alt="Preview"
+                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover/preview:scale-110"
+                                                    />
+                                                )
+                                            ) : (
+                                                <div className="text-gray-800 font-[1000] text-[10px] uppercase tracking-[0.5em] italic">Aperçu Manquant</div>
+                                            )}
+                                            {formData.imageUrl && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
+                                                    className="absolute top-6 right-6 p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-2xl hover:bg-red-500/20 transition-all backdrop-blur-md opacity-0 group-hover/preview:opacity-100"
+                                                >
+                                                    <X size={16} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Sidebar */}
-                    <div className="md:col-span-1 space-y-6">
-                        <div className="bg-gray-800 rounded-2xl p-6 border-2 border-gray-700 space-y-6">
-                            <h2 className="text-xl font-bold text-white mb-4">Prix & Options</h2>
-
-                            <div>
-                                <label className="block text-gray-400 mb-2 text-sm font-bold ml-1">Prix (DT) *</label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        step="0.1"
-                                        name="price"
-                                        required
-                                        value={formData.price}
-                                        onChange={handleChange}
-                                        className="w-full bg-gray-900 text-white pl-4 pr-12 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 border border-gray-700 font-bold text-lg"
-                                        placeholder="0.0"
-                                    />
-                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">DT</span>
-                                </div>
+                    {/* Secondary Matrix: Finance & Logic */}
+                    <div className="space-y-10">
+                        {/* Financial Analytics */}
+                        <div className="bg-white/[0.02] rounded-[4rem] p-10 border border-white/5 backdrop-blur-3xl shadow-3xl space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="w-2 h-10 bg-red-500 rounded-full"></div>
+                                <h2 className="text-3xl font-[1000] text-white uppercase italic tracking-tighter">Metric <span className="text-red-500">Finance</span></h2>
                             </div>
 
-                            <div>
-                                <label className="block text-gray-400 mb-2 text-sm font-bold ml-1">Remise (%)</label>
-                                <div className="relative">
+                            <div className="space-y-8">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">Vecteur Prix Unitaire (DT)</label>
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            step="0.1"
+                                            name="price"
+                                            value={formData.price}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full bg-black/40 border border-white/5 text-white px-8 py-8 rounded-[2.5rem] font-[1000] text-4xl focus:outline-none focus:border-red-500/50 transition-all text-center placeholder:text-gray-800 shadow-inner"
+                                            placeholder="0.0"
+                                        />
+                                        <span className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-800 font-black text-xs uppercase tracking-widest italic pointer-events-none">Dinar Tun</span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">Ratio de Remise (%)</label>
                                     <input
                                         type="number"
-                                        min="0"
-                                        max="100"
                                         name="discount"
                                         value={formData.discount}
                                         onChange={handleChange}
-                                        className="w-full bg-gray-900 text-white pl-4 pr-12 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 border border-gray-700"
+                                        className="w-full bg-black/40 border border-white/5 text-white px-8 py-5 rounded-[2rem] font-[1000] focus:outline-none focus:border-red-500/50 transition-all text-center placeholder:text-gray-800 shadow-inner"
                                         placeholder="0"
                                     />
-                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="space-y-3 pt-4 border-t border-gray-700">
-                                <label className="flex items-center gap-3 cursor-pointer group">
-                                    <div className={`w-10 h-6 rounded-full border-2 flex items-center transition-all px-1 ${formData.isActive ? 'bg-green-500 border-green-500 justify-end' : 'bg-gray-700 border-gray-600 justify-start'}`}>
-                                        <div className="w-3 h-3 bg-white rounded-full shadow-sm" />
+                        {/* Logic Switches */}
+                        <div className="bg-white/[0.02] rounded-[4rem] p-10 border border-white/5 backdrop-blur-3xl shadow-3xl space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="w-2 h-10 bg-green-500 rounded-full"></div>
+                                <h2 className="text-3xl font-[1000] text-white uppercase italic tracking-tighter">System <span className="text-green-500">Status</span></h2>
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="flex items-center justify-between p-6 rounded-[2rem] bg-black/20 border border-white/5 cursor-pointer group transition-all hover:bg-black/30">
+                                    <div className="flex items-center gap-4">
+                                        <Activity className={`w-5 h-5 transition-colors ${formData.isActive ? 'text-green-500' : 'text-gray-700'}`} />
+                                        <span className={`text-[10px] font-[1000] uppercase tracking-widest italic ${formData.isActive ? 'text-white' : 'text-gray-600'}`}>Visibilité Online</span>
+                                    </div>
+                                    <div className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${formData.isActive ? 'bg-green-500' : 'bg-gray-800'}`}>
+                                        <div className={`w-4 h-4 bg-white rounded-full transition-all duration-300 transform ${formData.isActive ? 'translate-x-6' : 'translate-x-0'}`} />
                                     </div>
                                     <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} className="hidden" />
-                                    <span className="text-gray-300 font-bold group-hover:text-white">Actif (Visible)</span>
                                 </label>
 
-                                <div className="w-full h-px bg-gray-700 my-2" />
-
-                                <label className="flex items-center gap-3 cursor-pointer group">
-                                    <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition ${formData.popular ? 'bg-yellow-400 border-yellow-400' : 'border-gray-600 group-hover:border-white'}`}>
-                                        {formData.popular && <div className="w-3 h-3 bg-black rounded-sm" />}
+                                <label className="flex items-center justify-between p-6 rounded-[2rem] bg-black/20 border border-white/5 cursor-pointer group transition-all hover:bg-black/30">
+                                    <div className="flex items-center gap-4">
+                                        <CheckCircle className={`w-5 h-5 transition-colors ${formData.popular ? 'text-yellow-400' : 'text-gray-700'}`} />
+                                        <span className={`text-[10px] font-[1000] uppercase tracking-widest italic ${formData.popular ? 'text-white' : 'text-gray-600'}`}>Tendance Populaire</span>
+                                    </div>
+                                    <div className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${formData.popular ? 'bg-yellow-400' : 'bg-gray-800'}`}>
+                                        <div className={`w-4 h-4 bg-black rounded-full transition-all duration-300 transform ${formData.popular ? 'translate-x-6' : 'translate-x-0'}`} />
                                     </div>
                                     <input type="checkbox" name="popular" checked={formData.popular} onChange={handleChange} className="hidden" />
-                                    <span className="text-gray-300 font-bold group-hover:text-white">Populaire</span>
                                 </label>
 
-                                <label className="flex items-center gap-3 cursor-pointer group">
-                                    <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition ${formData.bestseller ? 'bg-yellow-400 border-yellow-400' : 'border-gray-600 group-hover:border-white'}`}>
-                                        {formData.bestseller && <div className="w-3 h-3 bg-black rounded-sm" />}
+                                <label className="flex items-center justify-between p-6 rounded-[2rem] bg-black/20 border border-white/5 cursor-pointer group transition-all hover:bg-black/30">
+                                    <div className="flex items-center gap-4">
+                                        <Zap className={`w-5 h-5 transition-colors ${formData.hot ? 'text-red-500' : 'text-gray-700'}`} />
+                                        <span className={`text-[10px] font-[1000] uppercase tracking-widest italic ${formData.hot ? 'text-white' : 'text-gray-600'}`}>Vecteur Piquant</span>
                                     </div>
-                                    <input type="checkbox" name="bestseller" checked={formData.bestseller} onChange={handleChange} className="hidden" />
-                                    <span className="text-gray-300 font-bold group-hover:text-white">Best Seller</span>
-                                </label>
-
-                                <label className="flex items-center gap-3 cursor-pointer group">
-                                    <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition ${formData.hot ? 'bg-red-500 border-red-500' : 'border-gray-600 group-hover:border-white'}`}>
-                                        {formData.hot && <div className="w-3 h-3 bg-white rounded-sm" />}
+                                    <div className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${formData.hot ? 'bg-red-500' : 'bg-gray-800'}`}>
+                                        <div className={`w-4 h-4 bg-white rounded-full transition-all duration-300 transform ${formData.hot ? 'translate-x-6' : 'translate-x-0'}`} />
                                     </div>
                                     <input type="checkbox" name="hot" checked={formData.hot} onChange={handleChange} className="hidden" />
-                                    <span className="text-gray-300 font-bold group-hover:text-white">Piquant / Hot</span>
                                 </label>
                             </div>
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full bg-yellow-400 hover:bg-yellow-300 text-black py-4 rounded-xl font-black text-lg transition flex items-center justify-center gap-2 disabled:opacity-50"
-                        >
-                            {isLoading ? (
-                                <>Enregistrement...</>
-                            ) : (
-                                <>
-                                    <Save className="w-5 h-5" />
-                                    Mettre à jour
-                                </>
-                            )}
-                        </button>
+                        {/* Actions Matrix */}
+                        <div className="bg-black/40 rounded-[3rem] p-4 flex flex-col gap-4">
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full bg-yellow-400 hover:bg-yellow-300 text-black py-8 rounded-[2.5rem] font-[1000] uppercase text-[13px] tracking-[0.4em] italic transition-all flex items-center justify-center gap-4 disabled:opacity-50 shadow-[0_20px_60px_rgba(250,204,21,0.2)] active:scale-95"
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="w-6 h-6 animate-spin" />
+                                ) : (
+                                    <>
+                                        <Save size={20} strokeWidth={3} />
+                                        Mise à Jour Système
+                                    </>
+                                )}
+                            </button>
+                            <Link
+                                href="/dashboard/menu"
+                                className="w-full bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] text-gray-500 hover:text-white py-6 rounded-[2rem] font-[1000] uppercase text-[10px] tracking-[0.3em] italic transition-all flex items-center justify-center gap-4 active:scale-95 text-center"
+                            >
+                                Annuler Opération
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </form>

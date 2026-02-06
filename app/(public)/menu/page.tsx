@@ -1,23 +1,38 @@
 'use client';
 
-// import { categories, menuItems } from '@/lib/data/menu';
-import { Flame, Minus, Plus, Star, Percent, ChevronRight, Search, ArrowRight, LayoutGrid, Grid3X3, Grid2X2, ChevronLeft, X, MessageSquare, Utensils, User } from 'lucide-react';
-import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
+import {
+    Flame,
+    Minus,
+    Plus,
+    Search,
+    ArrowRight,
+    ChevronLeft,
+    ChevronRight,
+    ShoppingBag,
+    Heart,
+    Star,
+    X,
+    Check,
+    Sparkles
+} from 'lucide-react';
+import { useState, useEffect, useCallback, Suspense, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 
 import { MenuItem } from '@/types/menu';
 import { useCart } from '../../cart/CartContext';
+import SelectionModal from '@/components/SelectionModal';
 
 export default function MenuPage() {
     return (
         <Suspense fallback={
             <div className="min-h-screen bg-black flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-white font-black uppercase text-xs tracking-widest">Chargement du menu...</p>
+                    <div className="w-16 h-16 border-t-2 border-l-2 border-yellow-400 rounded-full animate-spin"></div>
+                    <p className="text-yellow-400 font-black uppercase text-xs tracking-[0.5em] animate-pulse">Chargement de la Carte</p>
                 </div>
             </div>
         }>
@@ -30,52 +45,32 @@ function MenuContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
+    const { addToCart } = useCart();
+    const containerRef = useRef<HTMLDivElement>(null);
+    const { scrollYProgress } = useScroll({ target: containerRef });
 
-    // Mapping between URL slugs and DB category names/ids
-    const DB_URL_MAP: Record<string, string> = {
-        'pizza': 'Pizzas',
-        'tacos': 'Tacos',
-        'makloub': 'Makloub',
-        'sandwich': 'Sandwichs',
-        'burger': 'Burgers',
-        'plat': 'Plats',
-        'salade': 'Salades',
-        'sides': 'Sides',
-        'tunisian': 'Tunisien',
-        'kids': 'Enfants',
-        'drinks': 'Boissons',
-        'dessert': 'Desserts',
-        'supplements': 'Suppléments',
-        'promotions': 'Promos' // Map both to the same logic
-    };
-
-    // Read from URL or use defaults
+    // Initial State from URL
     const initialCategory = searchParams.get('category') || 'all';
-    const initialSauce = (searchParams.get('sauce') as 'all' | 'rouge' | 'blanche') || 'all';
     const initialSearch = searchParams.get('search') || '';
     const initialPage = Number(searchParams.get('page')) || 1;
 
+    // Local State
     const [dbCategories, setDbCategories] = useState<any[]>([]);
     const [dbItems, setDbItems] = useState<MenuItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
+    // UI State
     const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-    const [selectedSauce, setSelectedSauce] = useState<'all' | 'rouge' | 'blanche'>(initialSauce);
     const [searchQuery, setSearchQuery] = useState(initialSearch);
-    const [gridCols, setGridCols] = useState<2 | 3 | 4>(3);
     const [currentPage, setCurrentPage] = useState(initialPage);
     const [totalItems, setTotalItems] = useState(0);
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
-    const [reviews, setReviews] = useState<any[]>([]);
-    const [reviewStats, setReviewStats] = useState({ average: 0, total: 0 });
-    const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
-    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
-    const { data: session } = useSession();
-    const { addToCart } = useCart();
+    // Parallax Effects
+    const headerY = useTransform(scrollYProgress, [0, 0.1], [0, -30]);
+    const headerOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0.8]);
 
-    // URL Update Logic
+    // Filter Updates
     const createQueryString = useCallback(
         (params: Record<string, string | number | null>) => {
             const newParams = new URLSearchParams(searchParams.toString());
@@ -96,92 +91,63 @@ function MenuContent() {
         router.push(pathname + (query ? `?${query}` : ''), { scroll: false });
     }, [createQueryString, pathname, router]);
 
-    // Handle initial state and URL sync
+    // Sync State with URL
     useEffect(() => {
-        setSelectedCategory(searchParams.get('category') || 'all');
-        setSelectedSauce((searchParams.get('sauce') as 'all' | 'rouge' | 'blanche') || 'all');
-        setSearchQuery(searchParams.get('search') || '');
-        setCurrentPage(Number(searchParams.get('page')) || 1);
+        const cat = searchParams.get('category') || 'all';
+        const search = searchParams.get('search') || '';
+        const page = Number(searchParams.get('page')) || 1;
+
+        if (cat !== selectedCategory) setSelectedCategory(cat);
+        if (search !== searchQuery) setSearchQuery(search);
+        if (page !== currentPage) setCurrentPage(page);
     }, [searchParams]);
 
     // Fetch Categories
     useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const res = await fetch('/api/categories?limit=100');
-                const data = await res.json();
-                if (data.success) {
-                    setDbCategories(data.categories);
-                }
-            } catch (err) {
-                console.error('Failed to fetch categories:', err);
-            }
-        };
-        fetchCategories();
+        fetch('/api/categories?limit=100')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) setDbCategories(data.categories);
+            })
+            .catch(console.error);
     }, []);
 
-    // Fetch Menu Items & Promotions
+    // Fetch Items
     useEffect(() => {
         const fetchItems = async () => {
             setIsLoading(true);
-            setError(null);
             try {
                 let items: MenuItem[] = [];
                 let total = 0;
+                const itemsPerPage = 8; // Smaller limit for Boutique grid to feel more curated
 
-                const itemsPerPage = gridCols === 2 ? 6 : gridCols === 3 ? 9 : 12;
                 const isPromoFilter = selectedCategory === 'promos' || selectedCategory === 'promotions';
 
                 if (isPromoFilter) {
-                    // Fetch from both sources for Promotions
-                    const [promosRes, menuRes] = await Promise.all([
-                        fetch(`/api/promotions?active=true&search=${searchQuery}&page=${currentPage}&limit=${itemsPerPage}`),
-                        fetch(`/api/menu-items?categoryId=14&status=active&search=${searchQuery}&page=${currentPage}&limit=${itemsPerPage}`)
-                    ]);
-
-                    const [promosData, menuData] = await Promise.all([promosRes.json(), menuRes.json()]);
-
-                    if (promosData.success) {
-                        const promoModels = promosData.promotions.map((p: any) => ({
+                    const res = await fetch(`/api/promotions?active=true&search=${searchQuery}&page=${currentPage}&limit=${itemsPerPage}`);
+                    const data = await res.json();
+                    if (data.success) {
+                        items = data.promotions.map((p: any) => ({
                             id: p.id,
                             name: p.name,
                             price: p.price,
                             originalPrice: p.originalPrice,
-                            discount: p.discount,
                             savings: p.originalPrice && p.price ? p.originalPrice - p.price : 0,
                             ingredients: p.description,
                             image: p.imageUrl || p.emoji || '🎁',
                             category: 'promotions',
-                            isActive: p.isActive
+                            isActive: p.isActive,
+                            discount: p.discount,
+                            displayOrder: 0
                         }));
-                        items = [...items, ...promoModels];
-                        total += promosData.pagination.totalItems;
-                    }
-
-                    if (menuData.success) {
-                        const promoItems = menuData.menuItems.map((item: any) => ({
-                            id: item.id,
-                            name: item.name,
-                            price: item.price,
-                            ingredients: item.ingredients?.join(', '),
-                            popular: item.popular,
-                            bestseller: item.bestseller,
-                            hot: item.hot,
-                            image: item.imageUrl || item.emoji || '🍽️',
-                            category: 'promotions',
-                            sauce: item.sauce,
-                            discount: item.discount
-                        }));
-                        items = [...items, ...promoItems];
-                        total += menuData.pagination.totalItems;
+                        total = data.pagination.totalItems;
                     }
                 } else {
-                    // Find the DB category ID if a specific category is selected
                     let categoryId = null;
                     if (selectedCategory !== 'all') {
                         const dbCat = dbCategories.find(c =>
-                            c.name.toLowerCase() === DB_URL_MAP[selectedCategory]?.toLowerCase() ||
-                            c.name.toLowerCase() === selectedCategory.toLowerCase()
+                            c.name.toLowerCase() === selectedCategory.toLowerCase() ||
+                            c.name.toLowerCase().replace(/[^a-z0-9]/g, '') === selectedCategory.toLowerCase()
                         );
                         categoryId = dbCat?.id;
                     }
@@ -207,16 +173,13 @@ function MenuContent() {
                             bestseller: item.bestseller,
                             hot: item.hot,
                             image: item.imageUrl || item.emoji || '🍽️',
-                            category: Object.keys(DB_URL_MAP).find(key => DB_URL_MAP[key].toLowerCase() === item.category?.name.toLowerCase()) || item.category?.name.toLowerCase() || 'all',
-                            sauce: item.sauce,
-                            discount: item.discount
+                            category: item.category?.name || 'Général',
+                            discount: item.discount,
+                            displayOrder: item.displayOrder,
+                            likeCount: item.likeCount,
+                            rating: item.rating,
+                            reviewCount: item.reviewCount
                         }));
-
-                        // Client-side sauce filtering for Pizzas if needed
-                        if (selectedCategory === 'pizza' && selectedSauce !== 'all') {
-                            items = items.filter(item => item.sauce === selectedSauce);
-                        }
-
                         total = data.pagination.totalItems;
                     }
                 }
@@ -224,648 +187,342 @@ function MenuContent() {
                 setDbItems(items);
                 setTotalItems(total);
             } catch (err) {
-                console.error('Failed to fetch menu items:', err);
-                setError('Impossible de charger le menu. Veuillez réessayer plus tard.');
+                console.error("Fetch Error:", err);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        // Only fetch items when categories are available or if we're fetching everything
-        if (dbCategories.length > 0 || selectedCategory === 'all' || selectedCategory === 'promos' || selectedCategory === 'promotions') {
-            fetchItems();
-        }
-    }, [selectedCategory, selectedSauce, searchQuery, currentPage, gridCols, dbCategories]);
-
-    // Pagination logic
-    const itemsPerPage = gridCols === 2 ? 6 : gridCols === 3 ? 9 : 12;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const paginatedItems = dbItems; // Already paginated from server
-
-    const getPaginationRange = () => {
-        const delta = 1;
-        const range = [];
-        for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
-            range.push(i);
-        }
-
-        if (currentPage - delta > 2) range.unshift('...');
-        if (currentPage + delta < totalPages - 1) range.push('...');
-
-        range.unshift(1);
-        if (totalPages > 1) range.push(totalPages);
-
-        return range;
-    };
-
-    // Reset page when filters change and update URL
-    useEffect(() => {
-        // Only trigger update if values actually changed to avoid infinite loops
-        const currentCat = searchParams.get('category') || 'all';
-        const currentSauce = searchParams.get('sauce') || 'all';
-        const currentSearch = searchParams.get('search') || '';
-
-        if (selectedCategory !== currentCat || selectedSauce !== currentSauce || searchQuery !== currentSearch) {
-            setCurrentPage(1);
-            updateUrl({
-                category: selectedCategory,
-                sauce: selectedSauce,
-                search: searchQuery,
-                page: 1
-            });
-        }
-    }, [selectedCategory, selectedSauce, searchQuery, updateUrl, searchParams]);
-
-    // Sync page to URL
-    useEffect(() => {
-        const currentPageParam = Number(searchParams.get('page')) || 1;
-        if (currentPage !== currentPageParam) {
-            updateUrl({ page: currentPage });
-        }
-    }, [currentPage, updateUrl, searchParams]);
-
-    const fetchReviews = async (itemId: string | number) => {
-        try {
-            const res = await fetch(`/api/menu/reviews?menuItemId=${itemId}`);
-            const data = await res.json();
-            if (data.success) {
-                setReviews(data.reviews);
-                setReviewStats({ average: data.averageRating, total: data.totalReviews });
+        const timeoutId = setTimeout(() => {
+            if (dbCategories.length > 0 || selectedCategory === 'all' || selectedCategory === 'promotions') {
+                fetchItems();
             }
-        } catch (error) { console.error(error); }
-    };
+        }, 300);
 
+        return () => clearTimeout(timeoutId);
+    }, [selectedCategory, searchQuery, currentPage, dbCategories]);
+
+    // Handle Body Scroll Lock
     useEffect(() => {
         if (selectedItem) {
-            fetchReviews(selectedItem.id);
+            document.body.classList.add('selection-modal-open');
+        } else {
+            document.body.classList.remove('selection-modal-open');
         }
+        return () => document.body.classList.remove('selection-modal-open');
     }, [selectedItem]);
 
-    const handleReviewSubmit = async (e: React.FormEvent) => {
+    const handleItemClick = (e: React.MouseEvent, item: MenuItem) => {
         e.preventDefault();
-        if (!selectedItem || isSubmittingReview) return;
-        setIsSubmittingReview(true);
-        try {
-            const res = await fetch('/api/menu/reviews', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    menuItemId: String(selectedItem.id),
-                    rating: newReview.rating,
-                    comment: newReview.comment
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                setNewReview({ rating: 5, comment: '' });
-                fetchReviews(selectedItem.id);
-            }
-        } catch (error) { console.error(error); } finally { setIsSubmittingReview(false); }
+        setSelectedItem(item);
     };
 
-    const renderPriceAndButton = (item: MenuItem) => {
-        // Special rendering for promo items
-        if (item.category === 'promos' && item.originalPrice && item.price && typeof item.price === 'number') {
-            return (
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="bg-gradient-to-r from-red-600 to-orange-600 text-white px-3 py-1 rounded-lg text-[10px] font-black flex items-center gap-1 uppercase tracking-widest shadow-lg">
-                            <Percent className="w-3 h-3" />
-                            -{item.discount}%
-                        </div>
-                        <span className="text-green-400 font-bold text-xs">
-                            -{item.savings}DT
-                        </span>
-                    </div>
-
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-black text-white italic">
-                            {item.price}
-                            <span className="text-yellow-400 text-sm ml-1 not-italic font-bold">DT</span>
-                        </span>
-                        <span className="text-sm text-gray-500 line-through font-bold">
-                            {item.originalPrice}DT
-                        </span>
-                    </div>
-
-                    <button
-                        onClick={() => addToCart(item, 'menuItem')}
-                        className="w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 py-4 rounded-2xl font-black text-sm transition-all shadow-xl shadow-yellow-400/20 active:scale-95 flex items-center justify-center gap-2 group"
-                    >
-                        Profiter de l'offre
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                </div>
-            );
-        }
-
-        if (!item.price) {
-            return (
-                <div className="flex items-center justify-between">
-                    <span className="text-yellow-400 font-black text-xs uppercase tracking-widest">Prix variable</span>
-                    <button
-                        onClick={() => addToCart(item, 'menuItem')}
-                        className="bg-yellow-400 text-gray-900 w-10 h-10 rounded-xl flex items-center justify-center hover:bg-yellow-300 transition shadow-lg group-active:scale-90"
-                    >
-                        <Plus className="w-5 h-5" />
-                    </button>
-                </div>
-            );
-        }
-
-        if (typeof item.price === 'number') {
-            return (
-                <div className="flex items-center justify-between">
-                    <span className="text-2xl font-black text-white italic">
-                        {item.price}
-                        <span className="text-yellow-400 text-sm ml-1 not-italic font-bold">DT</span>
-                    </span>
-                    <button
-                        onClick={() => addToCart(item, 'menuItem')}
-                        className="bg-yellow-400 text-gray-900 w-10 h-10 rounded-xl flex items-center justify-center hover:bg-yellow-300 transition shadow-lg group-active:scale-90"
-                    >
-                        <Plus className="w-5 h-5" />
-                    </button>
-                </div>
-            );
-        }
-
-        if (typeof item.price === 'object') {
-            if ('xl' in item.price && 'xxl' in item.price) {
-                return (
-                    <div className="grid grid-cols-2 gap-2">
-                        <button
-                            onClick={() => addToCart(item, 'menuItem', 'xl')}
-                            className="bg-gray-800/50 hover:bg-yellow-400 hover:text-gray-900 text-white p-2 rounded-xl font-black text-[10px] transition-all flex flex-col items-center justify-center gap-1 border border-gray-700 hover:border-yellow-400"
-                        >
-                            <span className="uppercase tracking-widest opacity-60">XL</span>
-                            <span>{item.price.xl} DT</span>
-                        </button>
-                        <button
-                            onClick={() => addToCart(item, 'menuItem', 'xxl')}
-                            className="bg-gray-800/50 hover:bg-yellow-400 hover:text-gray-900 text-white p-2 rounded-xl font-black text-[10px] transition-all flex flex-col items-center justify-center gap-1 border border-gray-700 hover:border-yellow-400"
-                        >
-                            <span className="uppercase tracking-widest opacity-60">XXL</span>
-                            <span>{item.price.xxl} DT</span>
-                        </button>
-                    </div>
-                );
-            }
-            return (
-                <div className="flex items-center justify-between">
-                    <span className="text-yellow-400 font-black text-xs uppercase tracking-widest">Multi-tailles</span>
-                    <button
-                        onClick={() => addToCart(item, 'menuItem')}
-                        className="bg-yellow-400 text-gray-900 w-10 h-10 rounded-xl flex items-center justify-center hover:bg-yellow-300 transition shadow-lg group-active:scale-90"
-                    >
-                        <Plus className="w-5 h-5" />
-                    </button>
-                </div>
-            );
-        }
-
-        return null;
+    const handleConfirmSelection = (item: any, selectedSize?: string, choices?: any) => {
+        const isPromotion = item.category === 'promotions' || (item.discount !== undefined && item.discount > 0);
+        addToCart(item, isPromotion ? 'promotion' : 'menuItem', selectedSize, choices);
+        setSelectedItem(null);
     };
 
     return (
-        <div className="min-h-screen bg-black pb-32 overflow-hidden relative">
-            {/* Ambient Background Glows */}
-            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-yellow-400/5 blur-[150px] pointer-events-none"></div>
-            <div className="absolute bottom-1/4 left-0 w-[600px] h-[600px] bg-purple-600/5 blur-[120px] pointer-events-none"></div>
+        <div ref={containerRef} className="min-h-screen bg-transparent text-white selection:bg-yellow-400 selection:text-black pb-40 relative">
 
-            <div className="max-w-7xl mx-auto px-4 relative z-10">
-                {/* Modern Header Section */}
-                <div className="pt-32 pb-16 space-y-8">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                        <div className="space-y-4">
-                            <div className="inline-flex items-center gap-3 bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-[0.3em]">
-                                Carte Gastronomique
-                            </div>
-                            <h1 className="text-6xl md:text-8xl font-black text-white italic tracking-tighter leading-none uppercase">
-                                Notre <br />
-                                <span className="text-yellow-400">Menu.</span>
+            {/* Ambient Background Atmosphere */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+                <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-yellow-400/5 blur-[150px] rounded-full"></div>
+                <div className="absolute bottom-[-10%] left-[-5%] w-[50%] h-[50%] bg-orange-500/5 blur-[150px] rounded-full"></div>
+            </div>
+
+            {/* Header Section with Parallax */}
+            <motion.div
+                style={{ y: headerY, opacity: headerOpacity }}
+                className="pt-40 pb-20 px-6 md:px-12 max-w-7xl mx-auto flex flex-col items-center gap-12 text-center"
+            >
+                <div className="space-y-6">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-yellow-400/10 border border-yellow-400/20"
+                    >
+                        <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
+                        <span className="text-yellow-400 font-black text-[10px] uppercase tracking-[0.4em] italic">Visions Collective</span>
+                    </motion.div>
+
+                    <div className="relative group">
+                        <div className="absolute -inset-16 bg-yellow-400/15 blur-[120px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+
+                        {/* THE PILL TITLE */}
+                        <div className="relative bg-yellow-400 py-8 px-12 md:px-20 -rotate-1 hover:rotate-0 transition-all duration-700 shadow-[20px_20px_0_rgba(0,0,0,1)] border-4 border-black overflow-hidden group">
+                            <h1 className="text-5xl md:text-[9rem] font-[1000] italic uppercase tracking-tighter text-black leading-none inline-block relative z-10 pr-[0.4em]">
+                                La Carte
                             </h1>
                         </div>
-
-                        {/* Grid & Search Controls */}
-                        <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
-                            {/* Grid Switcher */}
-                            <div className="hidden lg:flex items-center gap-2 bg-gray-900/50 p-2 rounded-[1.5rem] border-2 border-gray-800/50 backdrop-blur-xl">
-                                {[2, 3, 4].map((cols) => (
-                                    <button
-                                        key={cols}
-                                        onClick={() => setGridCols(cols as any)}
-                                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${gridCols === cols
-                                            ? 'bg-yellow-400 text-gray-900 shadow-lg'
-                                            : 'text-gray-500 hover:text-white hover:bg-white/5'
-                                            }`}
-                                    >
-                                        {cols === 2 ? <Grid2X2 className="w-5 h-5" /> : cols === 3 ? <Grid3X3 className="w-5 h-5" /> : <LayoutGrid className="w-5 h-5" />}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Search Bar */}
-                            <div className="relative group w-full md:w-80">
-                                <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none z-10">
-                                    <Search className="w-5 h-5 text-gray-400 group-focus-within:text-yellow-400 transition-colors" />
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Rechercher..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-gray-900/50 border-2 border-gray-800 text-white pl-14 pr-6 py-4 rounded-[1.5rem] font-bold focus:outline-none focus:border-yellow-400/50 transition-all placeholder:text-gray-600 backdrop-blur-xl text-sm"
-                                />
-                            </div>
-                        </div>
                     </div>
                 </div>
+            </motion.div>
 
-                {/* Categories Navigation */}
-                <div className="flex flex-col gap-8 mb-16">
-                    <div className="flex flex-wrap gap-3">
-                        {/* All Category */}
+            {/* Kinetic Sticky Control Bar */}
+            <div className="sticky top-28 z-[100] px-6 md:px-12 py-8 flex justify-center">
+                <div className="max-w-7xl w-full flex flex-col md:flex-row items-center justify-between gap-6 p-3 bg-black/40 backdrop-blur-3xl border border-white/10 rounded-[3.5rem] shadow-2xl">
+
+                    {/* Categories Nav - NO SCROLLBAR */}
+                    <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide scroll-mask-h max-w-full px-4">
                         <button
-                            onClick={() => {
-                                setSelectedCategory('all');
-                                setSelectedSauce('all');
-                            }}
-                            className={`px-8 py-4 rounded-[1.5rem] font-black text-sm uppercase tracking-widest transition-all duration-300 flex items-center gap-3 active:scale-95 ${selectedCategory === 'all'
-                                ? 'bg-yellow-400 text-gray-900 shadow-2xl shadow-yellow-400/20'
-                                : 'bg-gray-900/40 text-gray-500 border-2 border-gray-800/50 hover:border-yellow-400/30 hover:text-white backdrop-blur-md'
+                            onClick={() => updateUrl({ category: 'all', page: 1 })}
+                            className={`relative px-8 py-4 rounded-[2.5rem] font-[1000] text-[10px] uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${selectedCategory === 'all' ? 'text-black' : 'text-gray-500 hover:text-white'
                                 }`}
                         >
-                            <span className="text-xl">🍽️</span>
-                            Tous
+                            {selectedCategory === 'all' && (
+                                <motion.div
+                                    layoutId="nav-pill"
+                                    className="absolute inset-0 bg-yellow-400 shadow-[0_0_40px_rgba(250,204,21,0.3)]"
+                                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                                />
+                            )}
+                            <span className="relative z-10">Tout Voir</span>
                         </button>
-
-                        {/* DB Categories */}
-                        {dbCategories.map(cat => {
-                            const rawSlug = Object.keys(DB_URL_MAP).find(key => DB_URL_MAP[key].toLowerCase() === cat.name.toLowerCase()) || cat.name.toLowerCase();
-                            const isPromoCategory = cat.name.toLowerCase() === 'promos' || cat.name.toLowerCase() === 'promotions';
-                            const slug = isPromoCategory ? 'promotions' : rawSlug;
-
-                            return (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => {
-                                        setSelectedCategory(slug);
-                                        setSelectedSauce('all');
-                                    }}
-                                    className={`px-8 py-4 rounded-[1.5rem] font-black text-sm uppercase tracking-widest transition-all duration-300 flex items-center gap-3 active:scale-95 ${selectedCategory === slug
-                                        ? 'bg-yellow-400 text-gray-900 shadow-2xl shadow-yellow-400/20'
-                                        : isPromoCategory
-                                            ? 'bg-yellow-400/10 text-yellow-500 border-2 border-yellow-400/20 hover:border-yellow-400/40 hover:text-yellow-400 backdrop-blur-md'
-                                            : 'bg-gray-900/40 text-gray-500 border-2 border-gray-800/50 hover:border-yellow-400/30 hover:text-white backdrop-blur-md'
-                                        }`}
-                                >
-                                    <span className="text-xl">{cat.emoji || '🍕'}</span>
-                                    {cat.name}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    {/* Sub-Filters for Pizza */}
-                    {selectedCategory === 'pizza' && (
-                        <div className="flex items-center gap-4 bg-gray-900/40 p-2 rounded-[2rem] border-2 border-gray-800/50 w-fit backdrop-blur-md animate-in fade-in slide-in-from-top-4">
+                        {dbCategories.map((cat) => (
                             <button
-                                onClick={() => setSelectedSauce('all')}
-                                className={`px-6 py-2.5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] transition ${selectedSauce === 'all'
-                                    ? 'bg-yellow-400/10 text-yellow-400 border border-yellow-400/20'
-                                    : 'text-gray-600 hover:text-white'
+                                key={cat.id}
+                                onClick={() => updateUrl({ category: cat.name.toLowerCase(), page: 1 })}
+                                className={`relative px-8 py-4 rounded-[2.5rem] font-[1000] text-[10px] uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${selectedCategory === cat.name.toLowerCase() ? 'text-black' : 'text-gray-500 hover:text-white'
                                     }`}
                             >
-                                Toutes
+                                {selectedCategory === cat.name.toLowerCase() && (
+                                    <motion.div
+                                        layoutId="nav-pill"
+                                        className="absolute inset-0 bg-yellow-400 shadow-[0_0_40px_rgba(250,204,21,0.3)]"
+                                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                                    />
+                                )}
+                                <span className="relative z-10">{cat.name}</span>
                             </button>
-                            <button
-                                onClick={() => setSelectedSauce('rouge')}
-                                className={`px-6 py-2.5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] transition flex items-center gap-2 ${selectedSauce === 'rouge'
-                                    ? 'bg-red-600 text-white shadow-lg'
-                                    : 'text-gray-600 hover:text-white'
-                                    }`}
-                            >
-                                🍅 Base Tomate
-                            </button>
-                            <button
-                                onClick={() => setSelectedSauce('blanche')}
-                                className={`px-6 py-2.5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] transition flex items-center gap-2 ${selectedSauce === 'blanche'
-                                    ? 'bg-blue-600 text-white shadow-lg'
-                                    : 'text-gray-600 hover:text-white'
-                                    }`}
-                            >
-                                🥛 Base Blanche
-                            </button>
+                        ))}
+                    </nav>
+
+                    {/* Kinetic Search Bar */}
+                    <div className="relative group/search w-full md:w-auto px-4 md:px-0">
+                        <div className="absolute inset-y-0 left-10 md:left-6 flex items-center pointer-events-none">
+                            <Search className="w-4 h-4 text-gray-500 group-focus-within/search:text-yellow-400 transition-colors" />
                         </div>
-                    )}
+                        <input
+                            type="text"
+                            placeholder="Rechercher..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="bg-white/5 border border-white/10 rounded-[2.5rem] py-4 pl-14 pr-8 text-[10px] uppercase font-[1000] tracking-widest text-white focus:outline-none focus:border-yellow-400/40 focus:ring-4 focus:ring-yellow-400/5 transition-all w-full md:w-72 placeholder:text-gray-700"
+                        />
+                    </div>
                 </div>
+            </div>
 
-                {/* Items Grid */}
+            {/* Boutique Grid (max-w-7xl) */}
+            <main className="max-w-7xl mx-auto px-6 md:px-12 mt-32">
                 {isLoading ? (
-                    <div className={`grid grid-cols-1 md:grid-cols-2 ${gridCols === 2 ? 'lg:grid-cols-2' :
-                        gridCols === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'
-                        } gap-8`}>
-                        {[...Array(itemsPerPage)].map((_, i) => (
-                            <div key={i} className="bg-gray-900/30 border-2 border-gray-800 rounded-[3rem] h-[500px] animate-pulse">
-                                <div className="h-64 bg-gray-800/50 rounded-t-[3rem]"></div>
-                                <div className="p-8 space-y-4">
-                                    <div className="h-8 bg-gray-800/50 rounded-xl w-3/4"></div>
-                                    <div className="h-4 bg-gray-800/50 rounded-lg w-1/2"></div>
-                                    <div className="h-20 bg-gray-800/50 rounded-2xl"></div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : error ? (
-                    <div className="text-center py-40 space-y-8">
-                        <div className="w-32 h-32 bg-red-900/20 rounded-[3rem] border border-red-900/50 flex items-center justify-center mx-auto text-6xl">
-                            ⚠️
-                        </div>
-                        <div className="space-y-2">
-                            <h3 className="text-3xl font-black text-white italic">Oups !</h3>
-                            <p className="text-gray-500 font-bold">{error}</p>
-                        </div>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="bg-yellow-400 text-gray-900 px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition"
-                        >
-                            Réessayer
-                        </button>
-                    </div>
-                ) : paginatedItems.length > 0 ? (
-                    <div className={`grid grid-cols-1 md:grid-cols-2 ${gridCols === 2 ? 'lg:grid-cols-2' :
-                        gridCols === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'
-                        } gap-8`}>
-                        {paginatedItems.map((item: MenuItem) => (
-                            <div
-                                key={item.id}
-                                onClick={() => setSelectedItem(item)}
-                                className={`group relative bg-gray-900/30 border-2 border-gray-800 rounded-[3rem] overflow-hidden backdrop-blur-3xl hover:border-yellow-400/30 transition-all duration-500 flex flex-col h-full hover:shadow-3xl hover:shadow-yellow-400/5 cursor-pointer ${item.category === 'promos' ? 'border-yellow-400/50' : ''
-                                    }`}
-                            >
-                                {/* Media Section */}
-                                <div className="relative h-64 overflow-hidden border-b-2 border-gray-800/50">
-                                    {item.image && (item.image.startsWith('/') || item.image.startsWith('http')) ? (
-                                        <Image
-                                            src={item.image}
-                                            alt={item.name}
-                                            fill
-                                            className="object-cover group-hover:scale-110 transition-transform duration-700 brightness-90 group-hover:brightness-100"
-                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                        />
-                                    ) : (
-                                        <div className="h-full w-full flex items-center justify-center bg-gray-900/50 group-hover:bg-gray-800/50 transition-colors">
-                                            <span className="text-8xl filter drop-shadow-2xl group-hover:rotate-12 transition-transform duration-500">
-                                                {item.image || '🍽️'}
-                                            </span>
-                                        </div>
-                                    )}
-
-                                    {/* Badges Overlays */}
-                                    <div className="absolute top-6 left-6 right-6 flex justify-between items-start pointer-events-none">
-                                        <div className="flex flex-col gap-2">
-                                            {item.bestseller && (
-                                                <span className="bg-yellow-400 text-gray-900 px-4 py-1.5 rounded-full font-black text-[9px] uppercase tracking-[0.2em] shadow-2xl ring-2 ring-black/50">
-                                                    TOP VENTE
-                                                </span>
-                                            )}
-                                            {item.popular && (
-                                                <span className="bg-orange-600 text-white px-4 py-1.5 rounded-full font-black text-[9px] uppercase tracking-[0.2em] shadow-2xl ring-2 ring-black/50 flex items-center gap-1 w-fit">
-                                                    <Flame className="w-3 h-3" /> POPULAIRE
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        {/* Category Badge */}
-                                        <span className="bg-black/40 backdrop-blur-md text-white/60 px-3 py-1.5 rounded-xl font-black text-[8px] uppercase tracking-widest border border-white/5">
-                                            {item.category}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Content Section */}
-                                <div className="p-8 flex flex-col flex-1 gap-6">
-                                    <div className="space-y-3">
-                                        <div className="flex justify-between items-start gap-4">
-                                            <h3 className="text-2xl font-black text-white italic group-hover:text-yellow-400 transition-colors line-clamp-2 uppercase leading-none tracking-tight">
-                                                {item.name}
-                                            </h3>
-                                        </div>
-
-                                        <div className="flex items-center gap-1">
-                                            {[1, 2, 3, 4, 5].map((s) => (
-                                                <Star key={s} className={`w-3 h-3 ${s <= 4 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-800'}`} />
-                                            ))}
-                                            <span className="text-[10px] font-black text-gray-500 ml-2 uppercase tracking-widest">(12 avis)</span>
-                                        </div>
-
-                                        {item.ingredients && (
-                                            <p className="text-gray-500 font-bold text-xs leading-relaxed line-clamp-3 italic opacity-70 group-hover:opacity-100 transition-opacity">
-                                                {item.ingredients}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Action Section */}
-                                    <div className="mt-auto pt-6 border-t border-gray-800/50" onClick={(e) => e.stopPropagation()}>
-                                        {renderPriceAndButton(item)}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="h-[50vh] flex items-center justify-center">
+                        <div className="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
                     </div>
                 ) : (
-                    <div className="text-center py-40 space-y-8 animate-in fade-in zoom-in duration-500">
-                        <div className="w-32 h-32 bg-gray-900/50 rounded-[3rem] border border-gray-800 flex items-center justify-center mx-auto text-6xl opacity-50">
-                            🥡
-                        </div>
-                        <div className="space-y-2">
-                            <h3 className="text-3xl font-black text-white italic">Aucune pépite trouvée</h3>
-                            <p className="text-gray-500 font-bold">Affinez votre recherche pour trouver votre bonheur.</p>
-                        </div>
-                        <button
-                            onClick={() => {
-                                setSelectedCategory('all');
-                                setSearchQuery('');
-                                setCurrentPage(1);
-                            }}
-                            className="bg-white/5 hover:bg-white/10 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition"
-                        >
-                            Réinitialiser
-                        </button>
-                    </div>
-                )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32">
+                        {dbItems.map((item, idx) => {
+                            // Boutique logic: First item of page 1 is featured, or items marked as bestseller get more prominence
+                            const isFeatured = idx === 0 && currentPage === 1 && !searchQuery;
+                            return (
+                                <ProductCard
+                                    key={item.id}
+                                    item={item}
+                                    idx={idx}
+                                    onSelect={(it) => setSelectedItem(it)}
+                                    className={isFeatured ? "md:col-span-2" : ""}
+                                    isFeatured={isFeatured}
+                                />
+                            );
+                        })}
 
-                {/* Compact Pagination */}
-                {totalPages > 1 && (
-                    <div className="mt-20 flex justify-center items-center gap-3">
-                        <button
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
-                            className="w-12 h-12 rounded-2xl bg-gray-900 border border-gray-800 flex items-center justify-center text-white disabled:opacity-20 disabled:cursor-not-allowed hover:border-yellow-400 transition-all active:scale-95 group"
-                            title="Précédent"
-                        >
-                            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                        </button>
-
-                        <div className="flex items-center gap-2 bg-gray-900/50 p-2 rounded-[1.5rem] border border-gray-800/50">
-                            {getPaginationRange().map((page, idx) => (
-                                page === '...' ? (
-                                    <span key={`dots-${idx}`} className="px-3 text-gray-700 font-black">•••</span>
-                                ) : (
-                                    <button
-                                        key={page}
-                                        onClick={() => setCurrentPage(page as number)}
-                                        className={`w-10 h-10 rounded-xl font-black text-xs transition-all duration-300 ${currentPage === page
-                                            ? 'bg-yellow-400 text-gray-900 shadow-xl shadow-yellow-400/20 scale-110'
-                                            : 'text-gray-500 hover:text-white hover:bg-white/5'
-                                            }`}
-                                    >
-                                        {page}
-                                    </button>
-                                )
-                            ))}
-                        </div>
-
-                        <button
-                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                            disabled={currentPage === totalPages}
-                            className="w-12 h-12 rounded-2xl bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:text-white hover:border-yellow-400/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                        >
-                            <ChevronRight className="w-5 h-5" />
-                        </button>
-                    </div>
-                )}
-
-                {/* Detail Modal */}
-                {selectedItem && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-8">
-                        <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={() => setSelectedItem(null)}></div>
-
-                        <div className="bg-gray-900 border border-gray-800 w-full max-w-5xl max-h-full overflow-y-auto rounded-[3.5rem] relative z-10 custom-scrollbar animate-in fade-in zoom-in duration-300">
-                            <button
-                                onClick={() => setSelectedItem(null)}
-                                className="absolute top-8 right-8 w-12 h-12 bg-white/5 hover:bg-white/10 text-white rounded-2xl flex items-center justify-center transition-all z-20"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
-
-                            <div className="grid grid-cols-1 lg:grid-cols-2">
-                                {/* Left: Media */}
-                                <div className="relative h-80 lg:h-full min-h-[400px] border-b lg:border-b-0 lg:border-r border-gray-800 bg-gray-950">
-                                    {selectedItem.image && (selectedItem.image.startsWith('/') || selectedItem.image.startsWith('http')) ? (
-                                        <Image src={selectedItem.image} alt={selectedItem.name} fill className="object-cover" />
-                                    ) : (
-                                        <div className="h-full w-full flex items-center justify-center text-9xl">{selectedItem.image || '🍽️'}</div>
-                                    )}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
-                                    <div className="absolute bottom-12 left-12 right-12">
-                                        <div className="bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest w-fit mb-4">
-                                            {selectedItem.category}
-                                        </div>
-                                        <h2 className="text-4xl md:text-5xl font-black text-white italic tracking-tighter uppercase leading-none">{selectedItem.name}</h2>
-                                    </div>
-                                </div>
-
-                                {/* Right: Details & Reviews */}
-                                <div className="p-8 md:p-12 space-y-12">
-                                    <div className="space-y-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex items-center gap-1">
-                                                {[1, 2, 3, 4, 5].map(s => (
-                                                    <Star key={s} className={`w-4 h-4 ${s <= Math.round(reviewStats.average) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-800'}`} />
-                                                ))}
-                                            </div>
-                                            <span className="text-sm font-black text-white">{reviewStats.average.toFixed(1)} <span className="text-gray-600 font-bold ml-1">({reviewStats.total} avis)</span></span>
-                                        </div>
-
-                                        <p className="text-gray-400 font-bold italic leading-relaxed text-lg">
-                                            {selectedItem.ingredients || "Une création artisanale signée Mato's."}
-                                        </p>
-
-                                        <div className="pt-6 border-t border-gray-800">
-                                            {renderPriceAndButton(selectedItem)}
-                                        </div>
-                                    </div>
-
-                                    {/* Reviews Section */}
-                                    <div className="space-y-8">
-                                        <h3 className="text-xl font-black text-white uppercase italic tracking-widest flex items-center gap-3">
-                                            <MessageSquare className="w-5 h-5 text-yellow-400" />
-                                            Avis Clients
-                                        </h3>
-
-                                        {/* Leave a Review */}
-                                        {session ? (
-                                            <form onSubmit={handleReviewSubmit} className="bg-gray-950 p-6 rounded-3xl border border-gray-800 space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-[10px] font-black text-gray-500 uppercase">Laisser une note</span>
-                                                    <div className="flex items-center gap-2">
-                                                        {[1, 2, 3, 4, 5].map(s => (
-                                                            <button
-                                                                key={s}
-                                                                type="button"
-                                                                onClick={() => setNewReview({ ...newReview, rating: s })}
-                                                                className="transition-transform active:scale-95"
-                                                            >
-                                                                <Star className={`w-5 h-5 ${s <= newReview.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-800'}`} />
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <textarea
-                                                    placeholder="Votre avis nous intéresse..."
-                                                    value={newReview.comment}
-                                                    onChange={e => setNewReview({ ...newReview, comment: e.target.value })}
-                                                    className="w-full bg-gray-900 border border-gray-800 text-white p-4 rounded-2xl font-bold focus:border-yellow-400/30 outline-none transition-all resize-none text-sm"
-                                                    rows={3}
-                                                />
-                                                <button
-                                                    type="submit"
-                                                    disabled={isSubmittingReview}
-                                                    className="w-full bg-yellow-400 hover:bg-yellow-300 disabled:bg-gray-800 text-gray-900 py-3 rounded-2xl font-black uppercase text-xs tracking-widest transition"
-                                                >
-                                                    Publier l'avis
-                                                </button>
-                                            </form>
-                                        ) : (
-                                            <div className="bg-gray-950 p-6 rounded-3xl border border-gray-800 text-center">
-                                                <p className="text-xs font-bold text-gray-500 mb-4">Connectez-vous pour laisser un avis sur ce délice.</p>
-                                                <Link href="/login" className="text-yellow-400 font-black uppercase text-[10px] tracking-widest border-b border-yellow-400/20 pb-1">Se connecter</Link>
-                                            </div>
-                                        )}
-
-                                        {/* Reviews List */}
-                                        <div className="space-y-6">
-                                            {reviews.length > 0 ? reviews.map(r => (
-                                                <div key={r.id} className="space-y-3">
-                                                    <div className="flex justify-between items-center">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center text-sm">{r.user.image || <User className="w-4 h-4" />}</div>
-                                                            <span className="text-white font-black text-xs">{r.user.name}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-1">
-                                                            {[1, 2, 3, 4, 5].map(s => (
-                                                                <Star key={s} className={`w-2.5 h-2.5 ${s <= r.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-800'}`} />
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                    <p className="text-gray-500 text-sm font-bold italic pl-11">{r.comment || "Pas de commentaire."}</p>
-                                                </div>
-                                            )) : (
-                                                <div className="text-center py-8">
-                                                    <p className="text-gray-600 font-bold italic text-sm">Soyez le premier à donner votre avis !</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+                        {dbItems.length === 0 && (
+                            <div className="md:col-span-2 py-40 text-center space-y-8 opacity-40">
+                                <div className="text-[10rem] animate-float">🍽️</div>
+                                <h2 className="text-4xl font-[1000] uppercase italic tracking-tighter">Aucun délice trouvé</h2>
+                                <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Ajustez votre recherche pour explorer d'autres saveurs</p>
                             </div>
-                        </div>
+                        )}
                     </div>
                 )}
-            </div>
+            </main>
+
+            {/* Pagination Controls */}
+            {!isLoading && totalItems > dbItems.length && (
+                <div className="mt-40 flex justify-center items-center gap-12">
+                    <button
+                        onClick={() => updateUrl({ page: Math.max(1, currentPage - 1) })}
+                        disabled={currentPage === 1}
+                        className="w-20 h-20 rounded-full border border-white/10 flex items-center justify-center text-white/20 hover:bg-yellow-400 hover:text-black hover:border-yellow-400 disabled:opacity-0 transition-all group"
+                    >
+                        <ChevronLeft className="w-8 h-8 group-hover:-translate-x-1 transition-transform" />
+                    </button>
+                    <div className="flex flex-col items-center gap-2">
+                        <span className="text-yellow-400 font-[1000] text-lg uppercase italic tracking-[0.6em]">
+                            {currentPage < 10 ? `0${currentPage}` : currentPage}
+                        </span>
+                        <div className="w-12 h-0.5 bg-white/10 relative overflow-hidden">
+                            <motion.div
+                                initial={{ x: "-100%" }}
+                                animate={{ x: "0%" }}
+                                transition={{ duration: 2, repeat: Infinity, repeatType: "mirror" }}
+                                className="absolute inset-y-0 w-1/2 bg-yellow-400"
+                            />
+                        </div>
+                        <span className="text-white/20 font-[1000] text-[10px] uppercase tracking-widest leading-none">Page</span>
+                    </div>
+                    <button
+                        onClick={() => updateUrl({ page: currentPage + 1 })}
+                        disabled={currentPage >= Math.ceil(totalItems / 8)}
+                        className="w-20 h-20 rounded-full border border-white/10 flex items-center justify-center text-white/20 hover:bg-yellow-400 hover:text-black hover:border-yellow-400 disabled:opacity-0 transition-all group"
+                    >
+                        <ChevronRight className="w-8 h-8 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                </div>
+            )}
+
+            {/* Selection Modal */}
+            <AnimatePresence>
+                {selectedItem && (
+                    <SelectionModal
+                        isOpen={!!selectedItem}
+                        onClose={() => setSelectedItem(null)}
+                        item={selectedItem}
+                        onConfirm={handleConfirmSelection}
+                    />
+                )}
+            </AnimatePresence>
+            {/* FOOTER CTA: SLANTED & REFINED */}
+            <section className="relative mt-40">
+                <div
+                    className="absolute inset-0 z-0 bg-yellow-400"
+                    style={{ clipPath: 'polygon(0 20%, 100% 0, 100% 100%, 0 100%)' }}
+                >
+                    <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(black 1px, transparent 1px)', backgroundSize: '10px 10px' }}></div>
+                </div>
+
+                <div className="relative z-10 pt-48 pb-24 flex flex-col items-center text-center text-black px-6">
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }} className="space-y-12">
+                        <h2 className="text-5xl md:text-[7rem] font-[1000] uppercase italic tracking-tighter leading-[0.7]">
+                            PRÊT POUR <br />
+                            <span className="relative text-black">L'ÉXPÉRIENCE ?</span>
+                        </h2>
+
+                        <div className="pt-6">
+                            <Link href="/register" className="relative group overflow-hidden px-12 py-5 bg-black text-white font-[1000] uppercase italic tracking-widest rounded-full text-xs hover:scale-105 transition-all shadow-2xl inline-block">
+                                <span className="relative z-10">Rejoindre le Syndicat</span>
+                                <div className="absolute inset-0 flex items-center justify-center bg-white text-black translate-y-full group-hover:translate-y-0 transition-transform duration-500 z-20 font-black uppercase text-xs">Accès Immédiat</div>
+                            </Link>
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
         </div>
     );
 }
+
+function ProductCard({ item, idx, onSelect, className = "", isFeatured = false }: { item: MenuItem, idx: number, onSelect: (it: MenuItem) => void, className?: string, isFeatured?: boolean }) {
+    const isMultiSize = typeof item.price === 'object' && item.price !== null;
+    const displayPrice = isMultiSize ? (item.price as any).xl || Object.values(item.price as object)[0] : item.price;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 80 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx % 4 * 0.1, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, margin: "-100px" }}
+            className={`group relative flex flex-col ${className}`}
+        >
+            <div className={`relative overflow-hidden rounded-[3.5rem] bg-[#0a0a0a] border border-white/[0.04] group-hover:border-yellow-400/20 transition-all duration-1000 flex flex-col ${isFeatured ? "md:flex-row min-h-[500px]" : ""}`}>
+
+                {/* Image Section */}
+                <div className={`relative bg-[#050505] overflow-hidden flex items-center justify-center p-12 ${isFeatured ? "md:w-3/5" : "aspect-square"}`}>
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+
+                    <motion.div
+                        whileHover={{ scale: 1.05, rotate: isFeatured ? 1 : 2 }}
+                        transition={{ type: "spring", stiffness: 60, damping: 15 }}
+                        className="relative z-10 w-full h-full flex items-center justify-center pointer-events-none"
+                    >
+                        {item.image && (item.image.startsWith('/') || item.image.startsWith('http')) ? (
+                            <Image
+                                src={item.image}
+                                alt={item.name}
+                                width={800}
+                                height={800}
+                                className="object-contain filter drop-shadow-[0_40px_80px_rgba(0,0,0,0.8)]"
+                            />
+                        ) : (
+                            <span className="text-9xl md:text-[12rem] filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]">{item.image || '🍽️'}</span>
+                        )}
+                    </motion.div>
+
+                    {/* Status Badges */}
+                    <div className="absolute top-10 left-10 flex flex-col gap-4 z-20">
+                        {item.bestseller && (
+                            <div className="bg-yellow-400 text-black px-6 py-2.5 rounded-2xl text-[10px] font-[1000] uppercase tracking-[0.2em] shadow-2xl italic flex items-center gap-3">
+                                <Flame className="w-4 h-4" />
+                                Highlight
+                            </div>
+                        )}
+                        <div className="flex gap-2">
+                            {item.rating && (
+                                <div className="bg-black/60 backdrop-blur-xl text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border border-white/10">
+                                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {item.rating.toFixed(1)}
+                                </div>
+                            )}
+                            {(item.likeCount ?? 0) > 0 && (
+                                <div className="bg-black/60 backdrop-blur-xl text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border border-white/10">
+                                    <Heart className="w-3 h-3 text-red-500 fill-red-500" /> {item.likeCount}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Content Section */}
+                <div className={`p-10 md:p-14 flex flex-col justify-center gap-8 bg-black/40 backdrop-blur-sm z-10 ${isFeatured ? "md:w-2/5 border-l border-white/5" : "pt-0"}`}>
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                            <span className="bg-yellow-400/10 text-yellow-400 px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-[0.4em] italic border border-yellow-400/20">
+                                {item.category}
+                            </span>
+                        </div>
+                        <h3 className={`font-[1000] uppercase italic tracking-tighter text-white group-hover:text-yellow-400 transition-colors leading-[0.85] ${isFeatured ? "text-6xl md:text-8xl" : "text-5xl"}`}>
+                            {item.name.split(' ').map((word: string, i: number) => (
+                                <span key={i} className="block pr-[0.4em] overflow-visible">{word}</span>
+                            ))}
+                        </h3>
+                        <p className="text-gray-500 font-bold text-[11px] uppercase tracking-[0.3em] leading-relaxed line-clamp-3">
+                            {item.ingredients}
+                        </p>
+                    </div>
+
+                    <div className="pt-8 flex items-center justify-between border-t border-white/5">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black uppercase text-gray-700 tracking-widest mb-1 italic">Prix Edition</span>
+                            <div className="text-4xl md:text-5xl font-[1000] italic tracking-tighter text-white">
+                                {isMultiSize ? `dès ${displayPrice}` : Number(displayPrice).toFixed(1)} <span className="text-xs not-italic font-black text-gray-600">DT</span>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => onSelect(item)}
+                            className="bg-yellow-400 text-black w-20 h-20 rounded-full flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-[0_0_30px_rgba(250,204,21,0.3)] relative"
+                        >
+                            <ShoppingBag className="w-7 h-7" />
+                            <motion.div
+                                className="absolute inset-[-4px] border border-yellow-400/40 rounded-full"
+                                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                            />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
