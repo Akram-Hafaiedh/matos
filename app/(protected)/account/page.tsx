@@ -9,13 +9,14 @@ import {
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
-import { TIERS, getUserTier } from '@/lib/loyalty';
+import { TIERS, getUserTier, isItemExpired } from '@/lib/loyalty';
 import UserAvatar from '@/components/UserAvatar';
 import TacticalAura from '@/components/TacticalAura';
 
 export default function AccountDashboard() {
     const { data: session } = useSession();
     const [userData, setUserData] = useState<any>(null);
+    const [quests, setQuests] = useState<any[]>([]);
     const [stats, setStats] = useState({
         totalOrders: 0,
         activeTickets: 0,
@@ -27,15 +28,17 @@ export default function AccountDashboard() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [profileRes, ordersRes, ticketsRes] = await Promise.all([
+                const [profileRes, ordersRes, ticketsRes, questsRes] = await Promise.all([
                     fetch('/api/user/profile'),
                     fetch('/api/orders'),
-                    fetch('/api/support/tickets')
+                    fetch('/api/support/tickets'),
+                    fetch('/api/quests')
                 ]);
 
                 const profileData = await profileRes.json();
                 const ordersData = await ordersRes.json();
                 const ticketsData = await ticketsRes.json();
+                const questsData = await questsRes.json();
 
                 if (profileData.success) {
                     setUserData(profileData.user);
@@ -55,6 +58,10 @@ export default function AccountDashboard() {
                         ...prev,
                         activeTickets: ticketsData.tickets.filter((t: any) => t.status !== 'RESOLVED').length
                     }));
+                }
+
+                if (questsData.success) {
+                    setQuests(questsData.quests || []);
                 }
             } catch (err) {
                 console.error(err);
@@ -78,6 +85,11 @@ export default function AccountDashboard() {
     }
 
     const tier = getUserTier(userData?.loyaltyPoints || 0);
+
+    const activeBoosters = userData?.inventory?.filter((item: any) => {
+        if (item.type !== 'Boosters') return false;
+        return !isItemExpired(item);
+    }) || [];
 
     const tacticalCards = [
         {
@@ -112,22 +124,51 @@ export default function AccountDashboard() {
         }
     ];
 
+    // Find the quest with most progress
+    const topQuest = quests.length > 0 ? quests.reduce((prev, current) => (prev.progress > current.progress) ? prev : current) : null;
+
     return (
         <div className="w-full space-y-12 animate-in fade-in slide-in-from-bottom-10 duration-1000">
             <TacticalAura />
             {/* Mission Briefing Header */}
-            <div>
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-16 h-1 bg-yellow-400 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)]"></div>
-                    <span className="text-[10px] font-[1000] uppercase tracking-[0.4em] text-gray-500 italic">Global Perspective Unit</span>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
+                <div>
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-16 h-1 bg-yellow-400 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)]"></div>
+                        <span className="text-[10px] font-[1000] uppercase tracking-[0.4em] text-gray-500 italic">Global Perspective Unit</span>
+                    </div>
+                    <h1 className="text-5xl md:text-6xl font-[1000] italic tracking-tighter leading-none uppercase text-white">
+                        Briefing <span className="text-yellow-400">Tactique</span>
+                    </h1>
+                    <p className="mt-6 text-gray-600 font-bold uppercase text-[11px] tracking-[0.5em] ml-1 max-w-xl leading-relaxed italic">
+                        Bienvenue dans votre centre de contrôle, <span className="text-white">{session?.user?.name}</span>.
+                        Supervision complète de vos protocoles et actifs Mato's.
+                    </p>
                 </div>
-                <h1 className="text-5xl md:text-6xl font-[1000] italic tracking-tighter leading-none uppercase text-white">
-                    Briefing <span className="text-yellow-400">Tactique</span>
-                </h1>
-                <p className="mt-6 text-gray-600 font-bold uppercase text-[11px] tracking-[0.5em] ml-1 max-w-xl leading-relaxed italic">
-                    Bienvenue dans votre centre de contrôle, <span className="text-white">{session?.user?.name}</span>.
-                    Supervision complète de vos protocoles et actifs Mato's.
-                </p>
+
+                {/* Highlights Bar */}
+                {(activeBoosters.length > 0 || topQuest) && (
+                    <div className="flex gap-4">
+                        {activeBoosters.slice(0, 2).map((boost: any) => (
+                            <div key={boost.id} className="px-6 py-4 bg-yellow-400/5 border border-yellow-400/20 rounded-[2rem] flex items-center gap-4 animate-in zoom-in duration-700">
+                                <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse appearance-none shadow-[0_0_10px_rgba(250,204,21,0.5)]"></div>
+                                <div className="flex flex-col">
+                                    <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Booster Actif</span>
+                                    <span className="text-[10px] font-[1000] text-yellow-400 uppercase italic tracking-tighter">{boost.name}</span>
+                                </div>
+                            </div>
+                        ))}
+                        {topQuest && topQuest.progress > 0 && (
+                            <div className="px-6 py-4 bg-white/5 border border-white/10 rounded-[2rem] flex items-center gap-4 animate-in zoom-in duration-700 delay-200">
+                                <Star className="w-4 h-4 text-yellow-500" />
+                                <div className="flex flex-col">
+                                    <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Objectif Proche</span>
+                                    <span className="text-[10px] font-[1000] text-white uppercase italic tracking-tighter">{topQuest.title} ({Math.round(topQuest.progress)}%)</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Tactical Grid Matrix */}

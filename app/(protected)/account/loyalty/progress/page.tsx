@@ -5,7 +5,7 @@ import {
     Star, ShieldCheck, History, Gift, Loader2, Sparkles, Target, Lock
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ACTS, TIERS, QUESTS, getUserTier, getNextTier, getDetailedProgress, getBoosterDescription } from '@/lib/loyalty';
+import { ACTS, TIERS, getUserTier, getNextTier, getDetailedProgress, isItemExpired } from '@/lib/loyalty';
 import TacticalAura from '@/components/TacticalAura';
 import { Coins, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
@@ -15,12 +15,12 @@ export default function PactePage() {
     const [quests, setQuests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [timeLeft, setTimeLeft] = useState<Record<string, string>>({});
+    const [showAllQuests, setShowAllQuests] = useState(false);
 
     // Hooks for booster countdown
     const activeBoosters = userData?.inventory?.filter((item: any) => {
         if (item.type !== 'Boosters') return false;
-        if (!item.expiresAt) return true;
-        return new Date(item.expiresAt) > new Date();
+        return !isItemExpired(item);
     }) || [];
 
     useEffect(() => {
@@ -29,7 +29,7 @@ export default function PactePage() {
         const timer = setInterval(() => {
             const newTimeLeft: Record<string, string> = {};
             activeBoosters.forEach((boost: any) => {
-                let expiryDate = boost.expiresAt ? new Date(boost.expiresAt) : null;
+                let expiryDate = (boost.expiresAt || boost.expires_at) ? new Date(boost.expiresAt || boost.expires_at) : null;
 
                 // Fallback for boosters without expiresAt (detect from name)
                 if (!expiryDate) {
@@ -101,6 +101,8 @@ export default function PactePage() {
 
     const hasBoosts = activeBoosters.length > 0;
 
+    const visibleQuests = showAllQuests ? quests : quests.slice(0, 3);
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -166,34 +168,39 @@ export default function PactePage() {
 
                         {/* Active Boosts Indicator */}
                         {hasBoosts && (
-                            <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-white/5">
-                                {activeBoosters.map((boost: any) => (
-                                    <div key={boost.id} className="group/booster relative flex items-center gap-3 px-5 py-2.5 bg-yellow-400/10 border border-yellow-400/30 rounded-2xl animate-in fade-in slide-in-from-bottom-2 duration-500 shadow-[0_0_20px_rgba(250,204,21,0.1)] cursor-help hover:bg-yellow-400/20 transition-colors">
-                                        <div className="relative">
-                                            <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></div>
-                                            <div className="absolute inset-0 bg-yellow-400 rounded-full blur-[4px] animate-pulse opacity-50"></div>
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-[1000] uppercase tracking-wider text-yellow-400 italic leading-none">
-                                                {boost.name}
-                                            </span>
-                                            {timeLeft[boost.id] && (
-                                                <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-yellow-500/70 italic mt-1">
-                                                    TEMPS RESTANT: {timeLeft[boost.id]}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        {/* Tooltip */}
-                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 px-3 py-2 bg-black/95 border border-yellow-400/20 rounded-xl backdrop-blur-md z-50 opacity-0 group-hover/booster:opacity-100 transition-opacity duration-300 pointer-events-none shadow-xl">
-                                            <div className="text-[9px] font-medium text-gray-300 italic text-center leading-relaxed">
-                                                {boost.description || (typeof getBoosterDescription === 'function' ? getBoosterDescription(boost.name) : 'Booster actif')}
+                            <div className="space-y-6 pt-6 border-t border-white/5">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 italic flex items-center gap-3">
+                                    <Sparkles size={14} className="text-yellow-500" /> Boosters Tactiques Activés
+                                </h4>
+                                <div className="flex flex-wrap items-center gap-4">
+                                    {activeBoosters.filter((boost: any) => timeLeft[boost.id] !== 'Expiré').map((boost: any) => (
+                                        <div key={boost.id} className="group/booster relative flex items-center gap-3 px-5 py-2.5 bg-yellow-400/10 border border-yellow-400/30 rounded-2xl animate-in fade-in slide-in-from-bottom-2 duration-500 shadow-[0_0_20px_rgba(250,204,21,0.1)] cursor-help hover:bg-yellow-400/20 transition-colors">
+                                            <div className="relative">
+                                                <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></div>
+                                                <div className="absolute inset-0 bg-yellow-400 rounded-full blur-[4px] animate-pulse opacity-50"></div>
                                             </div>
-                                            {/* Arrow */}
-                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black/95"></div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-[1000] uppercase tracking-wider text-yellow-400 italic leading-none">
+                                                    {boost.name}
+                                                </span>
+                                                {timeLeft[boost.id] && timeLeft[boost.id] !== 'Expiré' && (
+                                                    <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-yellow-500/70 italic mt-1">
+                                                        TEMPS RESTANT: {timeLeft[boost.id]}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Tooltip */}
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 px-3 py-2 bg-black/95 border border-yellow-400/20 rounded-xl backdrop-blur-md z-50 opacity-0 group-hover/booster:opacity-100 transition-opacity duration-300 pointer-events-none shadow-xl">
+                                                <div className="text-[9px] font-medium text-gray-300 italic text-center leading-relaxed">
+                                                    {boost.description || 'Booster actif'}
+                                                </div>
+                                                {/* Arrow */}
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black/95"></div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
                         )}
 
@@ -284,47 +291,36 @@ export default function PactePage() {
                     </Link>
                 </div>
 
-                {/* Benefits / Stats Card */}
-                <div className="bg-[#0a0a0a] border border-white/5 rounded-[4rem] p-12 space-y-10 shadow-2xl">
-                    <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 italic flex items-center gap-4">
-                        <Sparkles size={14} className="text-yellow-500" /> Avantages de Rang
-                    </h4>
-                    <div className="space-y-6">
-                        {[
-                            { label: currentTier.benefit, icon: Sparkles, highlight: true },
-                            { label: 'Drop Hebdomadaire', icon: Gift },
-                            { label: 'Support Prioritaire', icon: ShieldCheck },
-                            { label: 'Multiplicateur XP x1.2', icon: Coins }
-                        ].map((item, i) => (
-                            <div key={i} className="flex items-center gap-6 group cursor-default">
-                                <div className={`w-12 h-12 rounded-2xl ${item.highlight ? 'bg-yellow-400/10 text-yellow-400' : 'bg-white/5 text-gray-700'} flex items-center justify-center group-hover:text-yellow-400 group-hover:bg-yellow-400/5 transition-all`}>
-                                    <item.icon size={20} />
-                                </div>
-                                <span className={`text-[11px] font-black uppercase tracking-widest ${item.highlight ? 'text-white' : 'text-gray-400'} italic group-hover:text-white transition-colors`}>{item.label}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
+                {/* Quests Card (Compact) */}
                 <div className="bg-[#0a0a0a] border border-white/5 rounded-[4rem] p-10 space-y-8 shadow-2xl overflow-hidden relative">
                     <div className="absolute bottom-0 right-0 w-32 h-32 bg-yellow-400/5 blur-[60px]"></div>
-                    <div className="flex items-center gap-4">
-                        <Target className="w-5 h-5 text-yellow-500" />
-                        <h4 className="text-sm font-[1000] uppercase italic tracking-tighter text-white">Protocoles Actifs (Quêtes)</h4>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <Target className="w-5 h-5 text-yellow-500" />
+                            <h4 className="text-sm font-[1000] uppercase italic tracking-tighter text-white">Protocoles Actifs</h4>
+                        </div>
+                        {quests.length > 3 && (
+                            <Link
+                                href="/account/loyalty/quests"
+                                className="text-[9px] font-black uppercase tracking-widest text-yellow-500 hover:text-white transition-colors italic flex items-center gap-1"
+                            >
+                                Voir tout <ArrowRight size={10} />
+                            </Link>
+                        )}
                     </div>
 
                     <div className="space-y-4">
-                        {quests.length > 0 ? quests.filter(q => {
+                        {visibleQuests.length > 0 ? visibleQuests.filter(q => {
                             const currentActLevel = parseInt(act.id.split('-')[1]);
                             return currentActLevel >= (q.minAct || 0);
                         }).map((quest) => (
                             <div key={quest.id} className="group relative p-4 rounded-3xl bg-white/5 border border-white/5 hover:border-yellow-400/30 transition-all">
                                 <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                        <div className="text-[10px] font-black uppercase text-white tracking-widest">{quest.title}</div>
-                                        <div className="text-[9px] font-bold text-gray-500 italic mt-0.5">{quest.description}</div>
+                                    <div className="pr-4">
+                                        <div className="text-[10px] font-black uppercase text-white tracking-widest leading-tight">{quest.title}</div>
+                                        <div className="text-[8px] font-bold text-gray-500 italic mt-0.5 line-clamp-1 group-hover:line-clamp-none transition-all">{quest.description}</div>
                                     </div>
-                                    <div className="px-2 py-1 bg-yellow-400/10 rounded-lg border border-yellow-400/20 text-[8px] font-black text-yellow-500 tracking-wider">
+                                    <div className="px-2 py-1 bg-yellow-400/10 rounded-lg border border-yellow-400/20 text-[8px] font-black text-yellow-500 tracking-wider shrink-0">
                                         {quest.rewardAmount} {quest.rewardType}
                                     </div>
                                 </div>
@@ -336,8 +332,8 @@ export default function PactePage() {
                         )) : (
                             <div className="text-[10px] text-gray-600 italic text-center py-4 uppercase tracking-widest opacity-50">Aucun protocole détecté</div>
                         )}
-                        {/* Locked Quests */}
-                        {quests.length > 0 && quests.filter(q => parseInt(act.id.split('-')[1]) < (q.minAct || 0)).map((quest) => (
+                        {/* Show Locked Quests only if showAllQuests is true or there are no active quests */}
+                        {(showAllQuests || visibleQuests.length === 0) && quests.length > 0 && quests.filter(q => parseInt(act.id.split('-')[1]) < (q.minAct || 0)).map((quest) => (
                             <div key={quest.id} className="group relative p-4 rounded-3xl bg-black/40 border border-white/5 opacity-50 flex justify-between items-center cursor-not-allowed">
                                 <div className="flex items-center gap-4">
                                     <div className="p-2 bg-white/5 rounded-full">
@@ -349,7 +345,7 @@ export default function PactePage() {
                                     </div>
                                 </div>
                                 <div className="px-2 py-1 bg-white/5 rounded-lg border border-white/5 text-[8px] font-black text-gray-600 tracking-wider">
-                                    {quest.reward}
+                                    {quest.rewardAmount} {quest.rewardType}
                                 </div>
                             </div>
                         ))}

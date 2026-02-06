@@ -23,7 +23,14 @@ export async function GET() {
             }
         });
 
-        return NextResponse.json(reviews);
+        const formattedReviews = reviews.map(r => ({
+            ...r,
+            user: r.users,
+            menuItem: r.menu_items,
+            // Remove the raw plural fields if desired, or keep them for safety
+        }));
+
+        return NextResponse.json(formattedReviews);
     } catch (error) {
         console.error('Error fetching reviews:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

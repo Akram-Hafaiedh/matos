@@ -142,7 +142,7 @@ export default function CheckoutPage() {
             // Store last order for easy access
             localStorage.setItem('lastOrder', JSON.stringify(result.order));
 
-            router.push(`/tracking/${result.order.orderNumber}`);
+            router.push(`/track/${result.order.orderNumber}`);
 
         } catch (error) {
             console.error('Error submitting order:', error);
@@ -398,19 +398,32 @@ export default function CheckoutPage() {
                         </div>
                     </div>
 
-                    {/* Right Column - Order Summary */}
+                    {/* Right Column - Tactical Summary Panel */}
                     <div className="lg:col-span-1">
-                        <div className="bg-white/[0.02] rounded-[4rem] p-12 border border-white/5 backdrop-blur-3xl sticky top-24 shadow-3xl space-y-12">
-                            <h2 className="text-3xl font-[1000] text-white flex items-center gap-6 uppercase italic tracking-tighter">
-                                <div className="w-16 h-16 bg-white/[0.03] rounded-3xl border border-white/5 flex items-center justify-center shadow-2xl">
-                                    <ShoppingBag className="w-8 h-8 text-yellow-400" />
-                                </div>
-                                RÉSUMÉ
-                            </h2>
+                        <div className="bg-[#0a0a0a] rounded-[3.5rem] p-10 border border-white/5 sticky top-24 shadow-[0_40px_80px_rgba(0,0,0,0.8)] overflow-hidden group/panel">
+                            {/* Brand Accent Line */}
+                            <div className="absolute top-0 left-0 w-full h-[3px] bg-yellow-400 opacity-20" />
 
-                            {/* Cart Items */}
-                            <div className="space-y-6 max-h-[40vh] overflow-y-auto pr-4 custom-scrollbar">
-                                {Object.entries(cart).map(([key, cartItem]) => {
+                            {/* Decoration Circle */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/5 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none" />
+
+                            {/* Header - Kinetic Style */}
+                            <div className="flex items-center gap-6 mb-12 relative z-10">
+                                <div className="w-16 h-16 bg-yellow-400 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(250,204,21,0.2)] -rotate-3 group-hover/panel:rotate-0 transition-transform duration-500">
+                                    <ShoppingBag className="w-8 h-8 text-black" />
+                                </div>
+                                <div className="space-y-1">
+                                    <h2 className="text-4xl font-[1000] text-white uppercase italic tracking-tighter leading-none pr-[0.4em]">Résumé</h2>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-[2px] bg-yellow-400/30" />
+                                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-yellow-400/40 italic">Configuration Tactique</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Cart Items - Data Row Style */}
+                            <div className="flex-1 space-y-4 max-h-[35vh] overflow-y-auto pr-2 custom-scrollbar mb-12 relative z-10">
+                                {Object.entries(cart).map(([key, cartItem], idx) => {
                                     const { item, quantity, selectedSize } = cartItem;
                                     let itemPrice = 0;
                                     if (typeof item.price === 'number') {
@@ -420,68 +433,130 @@ export default function CheckoutPage() {
                                     }
 
                                     return (
-                                        <div key={key} className="flex justify-between items-center group">
-                                            <div className="space-y-1">
-                                                <p className="text-gray-500 font-black text-[11px] uppercase tracking-widest group-hover:text-white transition-colors italic">
-                                                    <span className="text-yellow-400 mr-2">{quantity}×</span> {item.name}
-                                                </p>
-                                                {selectedSize && (
-                                                    <p className="text-yellow-400/40 text-[8px] font-black uppercase tracking-[0.3em] ml-6 italic">{selectedSize}</p>
-                                                )}
+                                        <motion.div
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: idx * 0.05 }}
+                                            key={key}
+                                            className="group relative bg-white/[0.02] hover:bg-white/[0.04] p-4 rounded-3xl border border-white/5 transition-all duration-300"
+                                        >
+                                            <div className="flex justify-between items-start gap-4">
+                                                <div className="flex items-start gap-4 flex-1">
+                                                    <div className="bg-yellow-400 text-black font-[1000] text-[10px] w-8 h-8 rounded-xl flex items-center justify-center italic shrink-0">
+                                                        {quantity}
+                                                    </div>
+                                                    <div className="space-y-1 min-w-0">
+                                                        <p className="text-white font-[1000] text-sm uppercase tracking-tight group-hover:text-yellow-400 transition-colors leading-tight italic truncate pr-2">
+                                                            {item.name}
+                                                        </p>
+                                                        {selectedSize && (
+                                                            <div className="inline-flex px-2 py-0.5 rounded-lg bg-white/5 text-[8px] font-black text-gray-500 uppercase tracking-widest border border-white/5">
+                                                                Edition {selectedSize}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <span className="text-white font-[1000] text-base tabular-nums italic text-right whitespace-nowrap pt-1">
+                                                    {(itemPrice * quantity).toFixed(1)} <span className="text-[10px] text-gray-700 not-italic ml-0.5">DT</span>
+                                                </span>
                                             </div>
-                                            <span className="text-white font-[1000] text-xs tabular-nums italic">
-                                                {(itemPrice * quantity).toFixed(1)} <span className="text-[9px] opacity-20 not-italic ml-1">DT</span>
-                                            </span>
-                                        </div>
+                                        </motion.div>
                                     );
                                 })}
                             </div>
 
-                            <div className="border-t border-white/5 pt-10 space-y-6">
-                                <div className="flex justify-between text-gray-700 font-black uppercase text-[10px] tracking-[0.4em] italic">
-                                    <span>Base Tactique</span>
-                                    <span className="text-white">{totalPrice.toFixed(1)} DT</span>
+                            {/* Totals Section - Integrated Style */}
+                            <div className="space-y-6 pt-10 border-t border-white/5 relative z-10">
+                                <div className="flex justify-between items-center px-2 group/row">
+                                    <span className="text-gray-600 font-black uppercase text-[9px] tracking-[0.4em] italic group-hover/row:text-gray-400 transition-colors">Base Tactique</span>
+                                    <span className="text-white font-[1000] text-xl tabular-nums italic">{totalPrice.toFixed(1)} <span className="text-[12px] text-gray-700 ml-1">DT</span></span>
                                 </div>
-                                <div className="flex justify-between font-black uppercase text-[10px] tracking-[0.4em] italic">
-                                    <span className="text-gray-700">Déploiement</span>
-                                    <span className={deliveryFee === 0 ? 'text-green-500' : 'text-gray-700'}>
-                                        {deliveryFee === 0 ? 'LOGISTIQUE OFFERTE' : `${deliveryFee} DT`}
-                                    </span>
+
+                                <div className="flex justify-between items-center px-2 group/row">
+                                    <span className="text-gray-600 font-black uppercase text-[9px] tracking-[0.4em] italic group-hover/row:text-gray-400 transition-colors">Logistique</span>
+                                    <div className="text-right flex flex-col items-end">
+                                        <span className={`font-[1000] text-lg italic tracking-tight ${deliveryFee === 0 ? 'text-green-500' : 'text-white'}`}>
+                                            {deliveryFee === 0 ? 'Protocol Offert' : (`${deliveryFee.toFixed(1)}`)}
+                                            {deliveryFee !== 0 && <span className="text-[12px] text-gray-700 ml-1">DT</span>}
+                                        </span>
+                                    </div>
                                 </div>
+
+                                {/* UpSell */}
                                 {totalPrice < 30 && deliveryFee > 0 && (
-                                    <div className="bg-yellow-400/5 border border-yellow-400/10 p-5 rounded-2xl">
-                                        <p className="text-yellow-400/60 text-[8px] font-black uppercase tracking-[0.3em] leading-relaxed text-center italic">
-                                            Complétez {(30 - totalPrice).toFixed(1)} DT pour débloquer la livraison gratuite
+                                    <div className="bg-yellow-400/5 p-4 rounded-2xl border border-yellow-400/10 mb-2">
+                                        <p className="text-yellow-400 text-[8px] font-black uppercase tracking-[0.3em] leading-relaxed text-center italic">
+                                            Débloquez la logistique à <span className="text-white font-[1000]">30.0 DT</span>
                                         </p>
+                                        <div className="w-full h-1 bg-white/5 rounded-full mt-3 overflow-hidden">
+                                            <div
+                                                className="h-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)] transition-all duration-1000"
+                                                style={{ width: `${(totalPrice / 30) * 100}%` }}
+                                            />
+                                        </div>
                                     </div>
                                 )}
-                                <div className="flex justify-between items-center text-5xl font-[1000] text-yellow-400 pt-10 border-t border-white/5 skew-x-[-10deg]">
-                                    <span className="text-xs not-italic uppercase tracking-[0.5em] text-gray-700 self-center skew-x-[10deg] italic">Total Final</span>
-                                    <span className="tracking-tighter">{finalTotal.toFixed(1)} <span className="text-sm not-italic opacity-20 ml-1">DT</span></span>
+
+                                {/* Total Final - The "Big Reveal" */}
+                                <div className="pt-8 relative group/total">
+                                    <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                                    <div className="relative flex justify-between items-end px-2">
+                                        <div className="space-y-1">
+                                            <p className="text-gray-700 font-black uppercase text-[10px] tracking-[0.5em] italic leading-none">Total Final</p>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                                <p className="text-[8px] text-gray-800 font-black uppercase tracking-widest">Calcul Optimisé</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-6xl font-[1000] text-yellow-400 italic tracking-tighter tabular-nums leading-none pr-[0.2em] transform -skew-x-6">
+                                                {finalTotal.toFixed(1)}<span className="text-lg font-black text-yellow-400/30 ml-2 not-italic -skew-x-0">DT</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Submit Button Section */}
+                                <div className="space-y-6 pt-10">
+                                    <button
+                                        onClick={handleSubmit}
+                                        disabled={isSubmitting}
+                                        className="w-full relative group/btn active:scale-[0.97] transition-all duration-300 disabled:opacity-50"
+                                    >
+                                        {/* Button Body */}
+                                        <div className="bg-yellow-400 group-hover/btn:bg-white text-black py-8 rounded-3xl flex items-center justify-center gap-6 overflow-hidden transition-all duration-500 shadow-[0_20px_40px_rgba(250,204,21,0.1)] group-hover/btn:shadow-[0_20px_40px_rgba(250,204,21,0.3)]">
+                                            {isSubmitting ? (
+                                                <div className="flex items-center gap-4">
+                                                    <Loader2 className="w-6 h-6 animate-spin" />
+                                                    <span className="font-[1000] text-sm uppercase tracking-[0.4em] italic">Protocole...</span>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <span className="font-[1000] text-base uppercase tracking-[0.4em] italic relative z-10">Valider</span>
+                                                    <div className="w-10 h-[2px] bg-black/20 relative overflow-hidden group-hover/btn:w-16 transition-all duration-500">
+                                                        <motion.div
+                                                            animate={{ x: ['-100%', '100%'] }}
+                                                            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                                            className="absolute inset-x-0 h-full bg-black shadow-[0_0_10px_black]"
+                                                        />
+                                                    </div>
+                                                    <ArrowRight className="w-6 h-6 group-hover/btn:translate-x-2 transition-transform duration-500" strokeWidth={3} />
+                                                </>
+                                            )}
+                                        </div>
+                                    </button>
+
+                                    {/* Legal Protocol Box */}
+                                    <div className="flex gap-4 items-start px-2 opacity-40 group-hover/panel:opacity-80 transition-opacity">
+                                        <div className="bg-white/10 p-2 rounded-lg mt-1 shrink-0">
+                                            <AlertCircle size={10} className="text-gray-400" />
+                                        </div>
+                                        <p className="text-gray-600 text-[8px] font-black uppercase tracking-[0.2em] italic leading-relaxed">
+                                            En validant, vous approuvez les protocoles de service et l'accord tactique de Mato's Clan.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-
-                            {/* Submit Button */}
-                            <button
-                                onClick={handleSubmit}
-                                disabled={isSubmitting}
-                                className="w-full bg-yellow-400 hover:bg-white text-black py-8 rounded-[2rem] font-[1000] text-xs uppercase tracking-[0.4em] transition-all shadow-3xl shadow-yellow-400/10 active:scale-95 disabled:opacity-20 group relative overflow-hidden italic"
-                            >
-                                <span className="relative z-10 flex items-center justify-center gap-4">
-                                    {isSubmitting ? (
-                                        <Loader2 className="w-6 h-6 animate-spin" />
-                                    ) : (
-                                        <>
-                                            Confirmer le Règlement
-                                            <ArrowRight className="w-6 h-6 group-hover:translate-x-4 transition-transform" strokeWidth={3} />
-                                        </>
-                                    )}
-                                </span>
-                            </button>
-
-                            <p className="text-gray-800 text-[9px] font-black uppercase tracking-[0.3em] text-center italic leading-relaxed">
-                                En confirmant, vous acceptez les protocoles<br />et conditions générales Mato's.
-                            </p>
                         </div>
                     </div>
                 </div>

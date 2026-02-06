@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { SHOP_ITEMS, ITEM_TYPES } from '@/lib/loyalty';
+import { ITEM_TYPES, isItemExpired } from '@/lib/loyalty';
 import { useToast } from '@/app/context/ToastContext';
 import TacticalAura from '@/components/TacticalAura';
 
@@ -66,10 +66,19 @@ export default function ShopPage() {
                 toast.success(`${item.name} débloqué avec succès !`);
                 setPoints(prev => (prev !== null ? prev - item.price : null));
                 // Update local inventory to show "POSSÉDÉ" instantly
-                setUserData((prev: any) => ({
-                    ...prev,
-                    inventory: [...(prev?.inventory || []), data.item]
-                }));
+                setUserData((prev: any) => {
+                    if (!prev) return prev;
+                    const inventory = [...(prev.inventory || [])];
+                    const existingIndex = inventory.findIndex((i: any) => i.item_id === data.item.item_id);
+
+                    if (existingIndex > -1) {
+                        inventory[existingIndex] = data.item;
+                    } else {
+                        inventory.push(data.item);
+                    }
+
+                    return { ...prev, inventory };
+                });
             } else {
                 toast.error(data.error || 'Erreur lors de l\'achat');
             }
@@ -103,7 +112,8 @@ export default function ShopPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {currentItems.map((item) => {
-                    const isOwned = userData?.inventory?.some((i: any) => i.item_id === item.id);
+                    const inventoryItem = userData?.inventory?.find((i: any) => i.item_id === item.id);
+                    const isOwned = inventoryItem && !isItemExpired(inventoryItem);
 
                     return (
                         <div key={item.id} className={`group ${isOwned ? 'bg-yellow-400/5 border-yellow-400/40 shadow-[0_0_40px_rgba(250,204,21,0.05)]' : 'bg-[#0a0a0a] border-white/10'} border rounded-[3rem] p-8 flex flex-col space-y-6 relative overflow-hidden transition-all hover:border-yellow-400/30 hover:shadow-2xl hover:shadow-yellow-400/5 min-h-[400px]`}>

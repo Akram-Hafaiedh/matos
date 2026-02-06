@@ -64,9 +64,9 @@ export default function ReviewsManagement() {
     };
 
     const filteredReviews = reviews.filter(r =>
-        (r.user.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+        (r.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
         (r.comment?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-        r.menuItem.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (r.menuItem?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
     );
 
     return (
@@ -114,11 +114,11 @@ export default function ReviewsManagement() {
                                     <td className="px-12 py-10">
                                         <div className="flex items-center gap-6">
                                             <div className="w-16 h-16 bg-black border border-white/5 rounded-[1.8rem] flex items-center justify-center text-3xl shadow-inner group-hover/row:border-yellow-400/30 transition-all duration-700 group-hover:scale-110">
-                                                {review.user.image || '👤'}
+                                                {review.user?.image || '👤'}
                                             </div>
                                             <div className="space-y-1">
-                                                <div className="font-[1000] text-white italic uppercase tracking-tighter text-xl leading-none group-hover/row:text-yellow-400 transition-colors">{review.user.name || 'ANONYMOUS CLIENT'}</div>
-                                                <div className="text-[10px] text-yellow-400/40 font-[1000] uppercase tracking-[0.2em] italic">{review.user.role}</div>
+                                                <div className="font-[1000] text-white italic uppercase tracking-tighter text-xl leading-none group-hover/row:text-yellow-400 transition-colors">{review.user?.name || 'ANONYMOUS CLIENT'}</div>
+                                                <div className="text-[10px] text-yellow-400/40 font-[1000] uppercase tracking-[0.2em] italic">{review.user?.role || 'CLIENT'}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -137,7 +137,7 @@ export default function ReviewsManagement() {
                                     <td className="px-12 py-10">
                                         <div className="inline-flex items-center gap-3 px-6 py-3 bg-black/40 border border-white/5 rounded-[1.5rem] text-[10px] font-[1000] uppercase tracking-[0.2em] text-gray-400 italic group-hover/row:border-yellow-400/30 transition-all">
                                             <Hash size={12} className="text-yellow-400/50" />
-                                            {review.menuItem.name}
+                                            {review.menuItem?.name || 'N/A'}
                                         </div>
                                     </td>
                                     <td className="px-12 py-10">

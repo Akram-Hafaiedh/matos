@@ -112,7 +112,7 @@ export default function AccountCheckoutPage() {
             clearCart();
             toast.success('Commande validée !');
             localStorage.setItem('lastOrder', JSON.stringify(result.order));
-            router.push(`/tracking/${result.order.orderNumber}`);
+            router.push(`/track/${result.order.orderNumber}`);
         } catch (error) {
             console.error('Error:', error);
             toast.error('Une erreur est survenue.');
