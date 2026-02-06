@@ -1,6 +1,8 @@
+import 'dotenv/config';
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { PrismaClient } from '../app/generated/prisma/client'
+import bcrypt from 'bcryptjs';
 
 const connectionString = process.env.DATABASE_URL!;
 const pool = new Pool({ connectionString });
@@ -130,11 +132,11 @@ const categoryMap = new Map<string, number>();
 async function cleanup() {
     console.log('Cleaning up existing data...');
     // Only cleanup categories that we are about to seed to avoid deleting user data if any
-    const promoCat = await prisma.category.findFirst({ where: { name: 'Promos' } });
+    const promoCat = await prisma.categories.findFirst({ where: { name: 'Promos' } });
     if (promoCat) {
-        await prisma.menuItem.deleteMany({ where: { categoryId: promoCat.id } });
+        await prisma.menu_items.deleteMany({ where: { category_id: promoCat.id } });
     }
-    await prisma.promotion.deleteMany({});
+    // await prisma.promotion.deleteMany({}); 
 }
 
 async function seedCategories() {
@@ -156,14 +158,14 @@ async function seedCategories() {
     ];
 
     for (const cat of categoriesList) {
-        let category = await prisma.category.findFirst({ where: { name: cat.name } });
+        let category = await prisma.categories.findFirst({ where: { name: cat.name } });
 
         if (!category) {
-            category = await prisma.category.create({
+            category = await prisma.categories.create({
                 data: {
                     name: cat.name,
                     emoji: cat.emoji,
-                    displayOrder: categoriesList.indexOf(cat) + 1
+                    display_order: categoriesList.indexOf(cat) + 1
                 }
             });
             console.log(`Created Category: ${cat.name}`);
@@ -193,21 +195,22 @@ async function seedMenuItems() {
                 ? item.ingredients.split(',').map(s => s.trim())
                 : [];
 
-            const exists = await prisma.menuItem.findFirst({ where: { name: item.name } });
+            const exists = await prisma.menu_items.findFirst({ where: { name: item.name } });
 
             if (!exists) {
-                await prisma.menuItem.create({
+                await prisma.menu_items.create({
                     data: {
                         name: item.name,
                         price: finalPrice,
-                        categoryId: categoryId,
-                        imageUrl: (item as any).image,
+                        category_id: categoryId,
+                        image_url: (item as any).image,
                         ingredients: ingredientsArray,
                         popular: (item as any).popular || false,
                         bestseller: (item as any).bestseller || false,
                         hot: (item as any).hot || false,
                         discount: (item as any).discount || null,
                         sauce: (item as any).sauce || null,
+                        updated_at: new Date()
                     }
                 });
                 console.log(`Created Item: ${item.name}`);
@@ -221,42 +224,93 @@ async function seedMenuItems() {
 async function seedPromotions() {
     console.log('Seeding Promotions...');
 
-    for (const promo of menuItems.promos) {
-        let finalPrice: number | null = null;
-        if (typeof promo.price === 'number') {
-            finalPrice = promo.price;
+    const PROMOS = [
+        {
+            name: 'Festin du Baron',
+            badgeText: 'QUEST SYNC',
+            description: '3 Pizzas Signature + 2 Accompagnements + Giga Drink. Valide la quête "Le Festin du Baron".',
+            price: 48.9,
+            originalPrice: 62.0,
+            imageUrl: "/giga-sultan-promo.png",
+            badgeColor: '#EAB308', // yellow
+            tag: '+50 M-TOKENS',
+            isHot: true,
+            isActive: true,
+            selectionRules: [
+                { id: 'pizzas', label: 'Choisissez 3 Pizzas', quantity: 3, categoryId: categoryMap.get('pizza') },
+                { id: 'sides', label: 'Choisissez 2 Accompagnements', quantity: 2, categoryId: categoryMap.get('sides') },
+                { id: 'drinks', label: 'Choisissez 1 Boisson', quantity: 1, categoryId: categoryMap.get('drinks') }
+            ]
+        },
+        {
+            name: 'Mardi Infiltration',
+            badgeText: 'WEEKLY MISSION',
+            description: 'Infiltrez le menu classique à prix sacrifié. Cumulez des XP pour votre rang Syndicate.',
+            price: 12.0,
+            originalPrice: 18.5,
+            imageUrl: "/mardi-infiltration-promo.png",
+            badgeColor: '#A855F7', // purple
+            tag: 'SPECIAL XP',
+            isHot: false,
+            isActive: true,
+            selectionRules: [
+                { id: 'main', label: 'Choisissez votre Pizza', quantity: 1, categoryId: categoryMap.get('pizza') },
+                { id: 'drink', label: 'Choisissez votre Boisson', quantity: 1, categoryId: categoryMap.get('drinks') }
+            ]
+        },
+        {
+            name: 'Duo du Syndicat',
+            badgeText: 'LIMITED PACT',
+            description: '2 Pizzas + 12 Nuggets + Sauces. Le pacte parfait pour les duos de l\'ombre.',
+            price: 34.5,
+            originalPrice: 45.0,
+            imageUrl: "/duo-syndicate-promo.png",
+            badgeColor: '#06B6D4', // cyan
+            tag: 'RANK UP',
+            isHot: true,
+            isActive: true,
+            selectionRules: [
+                { id: 'pizzas', label: 'Choisissez 2 Pizzas', quantity: 2, categoryId: categoryMap.get('pizza') },
+                { id: 'sides', label: 'Choisissez 1 Side (ex: Nuggets)', quantity: 1, categoryId: categoryMap.get('sides') }
+            ]
+        },
+        {
+            name: 'Mission Solo',
+            badgeText: 'FIELD AGENT',
+            description: '1 Pizza Junior + 1 Frites + 1 Buvable. Rapide, efficace, létal.',
+            price: 15.9,
+            originalPrice: 21.0,
+            imageUrl: '/solo-promo.png',
+            badgeColor: '#EC4899', // pink
+            tag: 'QUICK XP',
+            isHot: false,
+            isActive: true,
+            selectionRules: [
+                { id: 'pizza', label: 'Choisissez 1 Pizza', quantity: 1, categoryId: categoryMap.get('pizza') },
+                { id: 'fries', label: 'Choisissez 1 Side / Frites', quantity: 1, categoryId: categoryMap.get('sides') },
+                { id: 'drink', label: 'Choisissez 1 Boisson', quantity: 1, categoryId: categoryMap.get('drinks') }
+            ]
         }
+    ];
 
-        const exists = await prisma.promotion.findFirst({ where: { name: promo.name } });
+    for (const promo of PROMOS) {
+        const exists = await prisma.promotions.findFirst({ where: { name: promo.name } });
 
         if (!exists) {
-            await prisma.promotion.create({
+            await prisma.promotions.create({
                 data: {
                     name: promo.name,
-                    description: promo.ingredients,
-                    price: finalPrice,
-                    originalPrice: promo.originalPrice || null,
-                    discount: promo.discount || null,
-                    imageUrl: promo.image,
-                    emoji: promo.image && promo.image.length <= 4 ? promo.image : '🎁',
-                    isActive: true,
-                    conditions: promo.name.includes('Pizzas') ? 'Valable sur XL et XXL' : null,
-                    selectionRules: promo.name === 'Menu Étudiant'
-                        ? [
-                            { id: 'burger', label: 'Votre Burger', type: 'category', categoryId: categoryMap.get('burger'), quantity: 1 },
-                            { id: 'boisson', label: 'Votre Boisson', type: 'category', categoryId: categoryMap.get('drinks'), quantity: 1 }
-                        ]
-                        : promo.name === 'Pizza + Boisson Offerte'
-                            ? [
-                                { id: 'pizza', label: 'Votre Pizza (XL ou XXL)', type: 'category', categoryId: categoryMap.get('pizza'), quantity: 1 },
-                                { id: 'boisson', label: 'Votre Boisson', type: 'category', categoryId: categoryMap.get('drinks'), quantity: 1 }
-                            ]
-                            : promo.name === '2 Pizzas = -30%'
-                                ? [
-                                    { id: 'pizza1', label: 'Première Pizza', type: 'category', categoryId: categoryMap.get('pizza'), quantity: 1 },
-                                    { id: 'pizza2', label: 'Deuxième Pizza', type: 'category', categoryId: categoryMap.get('pizza'), quantity: 1 }
-                                ]
-                                : []
+                    description: promo.description,
+                    price: promo.price,
+                    original_price: promo.originalPrice,
+                    image_url: promo.imageUrl,
+                    emoji: '🎁', // Default emoji 
+                    is_active: promo.isActive,
+                    badge_text: promo.badgeText,
+                    badge_color: promo.badgeColor,
+                    is_hot: promo.isHot,
+                    tag: promo.tag,
+                    selection_rules: promo.selectionRules as any // Assert as any to avoid strict JSON typing issues during seed if needed
                 }
             });
             console.log(`Created Promotion: ${promo.name}`);
@@ -268,39 +322,68 @@ async function seedPromotions() {
 
 async function seedUsers() {
     console.log('Seeding Users...');
-    // We can't easily use bcryptjs in some seed environments if it's not pre-bundled or if we have execution policy issues, 
-    // but Prisma seed usually runs with tsx which should be fine.
-    // For simplicity, we'll just create users with plain text or simple hashes if needed.
-    // However, the schema says password is a string.
 
-    const users = [
-        {
-            name: 'Admin Mato\'s',
-            email: 'admin@matos.com',
-            role: 'admin',
-        },
-        {
-            name: 'Yassine K.',
-            email: 'yassine@example.com',
-            role: 'customer',
-        },
-        {
-            name: 'Sonia M.',
-            email: 'sonia@example.com',
-            role: 'customer',
-        }
+    // Cleanup old DiceBear avatars
+    await prisma.user.updateMany({
+        where: { image: { contains: 'dicebear.com' } },
+        data: { image: null }
+    });
+    console.log('Cleared existing DiceBear avatars');
+
+    // Admin
+    const admin = {
+        name: 'Admin Mato\'s',
+        email: 'admin@matos.com',
+        role: 'admin',
+    };
+
+    const adminExists = await prisma.user.findUnique({ where: { email: admin.email } });
+    if (!adminExists) {
+        const hashedPassword = await bcrypt.hash('admin123', 12);
+        await prisma.user.create({
+            data: {
+                id: 'admin_1',
+                ...admin,
+                password: hashedPassword,
+            }
+        });
+        console.log(`Created Admin: ${admin.email}`);
+    }
+
+    const customers = [
+        { name: 'Ahmed Belhadj', email: 'ahmed@example.com', points: 5450 },
+        { name: 'Sarra Mansouri', email: 'sarra@example.com', points: 3820 },
+        { name: 'Yassine Ben Salem', email: 'yassine@example.com', points: 2950 },
+        { name: 'Meriem Dridi', email: 'meriem@example.com', points: 1840 },
+        { name: 'Firas Hammami', email: 'firas@example.com', points: 1250 },
+        { name: 'Ines Khalfallah', email: 'ines@example.com', points: 980 },
+        { name: 'Walid Rouissi', email: 'walid@example.com', points: 720 },
+        { name: 'Amel Trabelsi', email: 'amel@example.com', points: 450 },
+        { name: 'Skander Mejri', email: 'skander@example.com', points: 150 },
+        { name: 'Hela Gharbi', email: 'hela@example.com', points: 80 },
     ];
 
-    for (const u of users) {
-        const exists = await prisma.user.findUnique({ where: { email: u.email } });
+    const commonPassword = await bcrypt.hash('password123', 12);
+    for (const c of customers) {
+        const exists = await prisma.user.findUnique({ where: { email: c.email } });
         if (!exists) {
             await prisma.user.create({
                 data: {
-                    ...u,
-                    password: 'password123', // In a real app, hash this
+                    id: `customer_${c.email.split('@')[0]}`,
+                    name: c.name,
+                    email: c.email,
+                    role: 'customer',
+                    password: commonPassword,
+                    loyaltyPoints: c.points
                 }
             });
-            console.log(`Created User: ${u.email}`);
+            console.log(`Created Customer: ${c.email} with ${c.points} pts`);
+        } else {
+            await prisma.user.update({
+                where: { email: c.email },
+                data: { loyaltyPoints: c.points }
+            });
+            console.log(`Updated Customer: ${c.email} to ${c.points} pts`);
         }
     }
 }
@@ -308,7 +391,7 @@ async function seedUsers() {
 async function seedReviews() {
     console.log('Seeding Reviews...');
     const users = await prisma.user.findMany({ where: { role: 'customer' } });
-    const items = await prisma.menuItem.findMany({ take: 10 });
+    const items = await prisma.menu_items.findMany({ take: 10 });
 
     if (users.length === 0 || items.length === 0) {
         console.warn('Need users and items to seed reviews.');
@@ -329,41 +412,165 @@ async function seedReviews() {
         "Le milkshake à la fraise est une tuerie ! Parfait pour finir le repas.",
         "Le plat escalope grillée est healthy et savoureux. Top !"
     ];
-
     for (let i = 0; i < reviewTexts.length; i++) {
         const user = users[i % users.length];
         const item = items[i % items.length];
 
-        const exists = await prisma.review.findFirst({
+        const exists = await prisma.reviews.findFirst({
             where: {
-                userId: user.id,
-                menuItemId: item.id
+                user_id: user.id,
+                menu_item_id: item.id
             }
         });
 
         if (!exists) {
-            await prisma.review.create({
+            await prisma.reviews.create({
                 data: {
-                    userId: user.id,
-                    menuItemId: item.id,
+                    user_id: user.id,
+                    menu_item_id: item.id,
                     rating: 5,
                     comment: reviewTexts[i],
-                    showOnHome: i < 9 // Select first 9 for home page
+                    show_on_home: true
                 }
             });
         }
     }
 }
 
+async function seedShopItems() {
+    console.log('Seeding Shop Items...');
+    const ITEM_TYPES = ['Loot Boxes', 'Auras', 'Frames', 'Titles', 'Boosters', 'Exclusive'];
+    const SHOP_ITEMS = [
+        // LOOT BOXES
+        { id: 'shop-1', name: 'Shadow Crate', type: 'Loot Boxes', price: 500, act: 1, level: 1, rarity: 'Common', emoji: '📦', description: 'Une caisse basique contenant des items communs.' },
+        { id: 'shop-2', name: 'Operative Cache', type: 'Loot Boxes', price: 1200, act: 1, level: 5, rarity: 'Uncommon', emoji: '🎁', description: 'Cache tactique avec une chance d\'obtenir du rare.' },
+        { id: 'shop-3', name: 'Sultan Chest', type: 'Loot Boxes', price: 3000, act: 2, level: 2, rarity: 'Rare', emoji: '🎖️', description: 'Coffre royal garantissant au moins un item rare.' },
+        { id: 'shop-4', name: 'Syndicate Vault', type: 'Loot Boxes', price: 7500, act: 3, level: 1, rarity: 'Epic', emoji: '🔒', description: 'Le trésor du syndicat. Contient souvent du légendaire.' },
+        { id: 'shop-5', name: 'Obsidian Case', type: 'Loot Boxes', price: 15000, act: 4, level: 5, rarity: 'Legendary', emoji: '💎', description: 'Artefact ancien. Contenu ultra-légendaire garanti.' },
+
+        // AURAS (Backgrounds)
+        { id: 'shop-6', name: 'Neon Pulse', type: 'Auras', price: 800, act: 1, level: 3, rarity: 'Common', emoji: '🌈', description: 'Une aura vibrante pour illuminer votre profil.' },
+        { id: 'shop-7', name: 'Acid Rain', type: 'Auras', price: 1500, act: 2, level: 1, rarity: 'Uncommon', emoji: '🧪', description: 'Des gouttes acides qui tombent sur votre avatar.' },
+        { id: 'shop-8', name: 'Digital Ghost', type: 'Auras', price: 2500, act: 2, level: 4, rarity: 'Rare', emoji: '👻', description: 'Devenez un spectre dans la machine.' },
+        { id: 'shop-9', name: 'Solar Flare', type: 'Auras', price: 5000, act: 3, level: 3, rarity: 'Epic', emoji: '🌞', description: 'La puissance d\'une étoile en arrière-plan.' },
+        { id: 'shop-10', name: 'Void Matter', type: 'Auras', price: 12000, act: 4, level: 2, rarity: 'Legendary', emoji: '🌑', description: 'L\'obscurité totale du néant intersidéral.' },
+
+        // FRAMES
+        { id: 'shop-11', name: 'Steel Wire', type: 'Frames', price: 600, act: 1, level: 2, rarity: 'Common', emoji: '🖼️', description: 'Cadre industriel simple.' },
+        { id: 'shop-12', name: 'Carbon Fiber', type: 'Frames', price: 1800, act: 2, level: 1, rarity: 'Uncommon', emoji: '⬛', description: 'Résistant et léger. Style course.' },
+        { id: 'shop-13', name: 'Gold Trim', type: 'Frames', price: 4000, act: 2, level: 5, rarity: 'Rare', emoji: '✨', description: 'Une touche de luxe pour votre avatar.' },
+        { id: 'shop-14', name: 'Plasma Glow', type: 'Frames', price: 8000, act: 3, level: 4, rarity: 'Epic', emoji: '🟣', description: 'Bordure énergétique pulsante.' },
+        { id: 'shop-15', name: 'Reality Glitch', type: 'Frames', price: 20000, act: 4, level: 4, rarity: 'Legendary', emoji: '🌀', description: 'Un cadre qui défie la stabilité dimensionnelle.' },
+
+        // TITLES
+        { id: 'shop-16', name: 'Shadow', type: 'Titles', price: 300, act: 1, level: 1, rarity: 'Common', emoji: '👤', description: 'Pour ceux qui agissent dans l\'ombre.' },
+        { id: 'shop-17', name: 'Runner', type: 'Titles', price: 900, act: 1, level: 4, rarity: 'Uncommon', emoji: '🏃', description: 'Toujours en mouvement.' },
+        { id: 'shop-18', name: 'Mastermind', type: 'Titles', price: 2200, act: 2, level: 3, rarity: 'Rare', emoji: '🧠', description: 'Le cerveau de l\'opération.' },
+        { id: 'shop-19', name: 'Ghost in Shell', type: 'Titles', price: 5500, act: 3, level: 2, rarity: 'Epic', emoji: '🛸', description: 'Esprit numérique transcendant.' },
+        { id: 'shop-20', name: 'True Prophet', type: 'Titles', price: 15000, act: 4, level: 1, rarity: 'Legendary', emoji: '👁️', description: 'Celui qui a vu la vérité.' },
+
+        // BOOSTERS
+        { id: 'shop-21', name: 'XP Overdrive (1h)', type: 'Boosters', price: 400, act: 1, level: 1, rarity: 'Common', emoji: '⚡', description: 'Double XP sur toutes les commandes et quêtes pendant 1 heure.' },
+        { id: 'shop-22', name: 'Token Magnet (3h)', type: 'Boosters', price: 1100, act: 2, level: 1, rarity: 'Uncommon', emoji: '🧲', description: 'Chaque 1 TND dépensé donne 2 Jetons pendant 3 heures.' },
+        { id: 'shop-23', name: 'Lucky Drop (24h)', type: 'Boosters', price: 3500, act: 2, level: 5, rarity: 'Rare', emoji: '🍀', description: 'Augmente les chances de Loot légendaire de 50% pendant 24 heures.' },
+        { id: 'shop-24', name: 'Protocol Hack', type: 'Boosters', price: 7000, act: 3, level: 3, rarity: 'Epic', emoji: '💻', description: 'Réduit les pré-requis des quêtes de 1 niveau. Usage unique.' },
+
+        // EXCLUSIVE
+        { id: 'shop-25', name: 'VIP Pass - Act I', type: 'Exclusive', price: 1000, act: 1, level: 5, rarity: 'Epic', emoji: '🎟️', description: 'Accès exclusif aux événements Acte I.' },
+        { id: 'shop-26', name: 'Mato\'s Secret Sauce', type: 'Exclusive', price: 5000, act: 2, level: 10, rarity: 'Legendary', emoji: '🥫', description: 'La recette légendaire. (Cosmétique)' },
+
+        // NEW THEMATIC ADDITIONS
+        { id: 'shop-27', name: 'Agent Dormant', type: 'Titles', price: 1500, act: 1, level: 3, rarity: 'Uncommon', emoji: '💤', description: 'Toujours prêt à être activé.' },
+        { id: 'shop-28', name: 'Légende du Mato\'s', type: 'Titles', price: 25000, act: 4, level: 10, rarity: 'Legendary', emoji: '🏆', description: 'Le nom qui fait trembler les concurrents.' },
+        { id: 'shop-29', name: 'Maître des Tacos', type: 'Titles', price: 4500, act: 2, level: 5, rarity: 'Rare', emoji: '🌮', description: 'Il connaît chaque pli de la galette.' },
+        { id: 'shop-30', name: 'Infiltrateur d\'Élite', type: 'Titles', price: 9000, act: 3, level: 8, rarity: 'Epic', emoji: '🕵️', description: 'Passé inaperçu, même dans la file d\'attente.' },
+        { id: 'shop-31', name: 'L\'Ombre du Bazar', type: 'Titles', price: 1200, act: 1, level: 2, rarity: 'Uncommon', emoji: '🌆', description: 'Maître de la négociation discrète.' },
+        { id: 'shop-32', name: 'Surcharge Tactique', type: 'Auras', price: 7000, act: 3, level: 5, rarity: 'Epic', emoji: '⚡', description: 'Une aura d\'énergie pure qui pulse autour de vous.' },
+        { id: 'shop-33', name: 'Interférence Cyber', type: 'Auras', price: 3500, act: 2, level: 6, rarity: 'Rare', emoji: '🛰️', description: 'Distorsion visuelle de haute technologie.' },
+        { id: 'shop-34', name: 'Néon Syndicate', type: 'Frames', price: 8500, act: 3, level: 7, rarity: 'Epic', emoji: '🟣', description: 'Le cadre officiel des hauts dignitaires.' },
+        { id: 'shop-35', name: 'Chrome Industriel', type: 'Frames', price: 2200, act: 2, level: 2, rarity: 'Uncommon', emoji: '🔧', description: 'Brut, solide, efficace.' },
+        { id: 'shop-36', name: 'Surcharge de Données (6h)', type: 'Boosters', price: 2000, act: 3, level: 1, rarity: 'Epic', emoji: '📡', description: 'Triple XP sur les quêtes de piratage pendant 6 heures.' },
+    ];
+
+    for (const item of SHOP_ITEMS) {
+        await prisma.shop_items.upsert({
+            where: { id: item.id },
+            update: {
+                ...item,
+                updatedAt: new Date()
+            },
+            create: {
+                ...item,
+                updatedAt: new Date()
+            }
+        });
+    }
+}
+
+async function seedQuests() {
+    console.log('Seeding Quests...');
+    const quests = [
+        {
+            id: 'quest-intro-1',
+            title: 'Premier Pas',
+            description: 'Complétez votre premier profil.',
+            type: 'ONE_OFF',
+            rewardAmount: 100,
+            rewardType: 'TOKEN',
+            minAct: 1,
+            isActive: true,
+            emoji: '🌱'
+        },
+        {
+            id: 'quest-spend-1',
+            title: 'Gourmet Hunter',
+            description: 'Dépensez 100 TND au total.',
+            type: 'SPEND',
+            rewardAmount: 500,
+            rewardType: 'TOKEN',
+            minAct: 1,
+            isActive: true,
+            emoji: '🍔'
+        }
+    ];
+
+    for (const q of quests) {
+        await prisma.quests.upsert({
+            where: { id: q.id },
+            update: {
+                ...q,
+                updatedAt: new Date()
+            },
+            create: {
+                ...q,
+                updatedAt: new Date()
+            }
+        });
+    }
+}
+
 async function main() {
-    console.log('Start seeding...');
-    await cleanup();
-    await seedCategories();
-    await seedMenuItems();
-    await seedPromotions();
-    await seedUsers();
-    await seedReviews();
-    console.log('Seeding finished.');
+    try {
+        console.log('--- START SEEDING ---');
+        // await cleanup();
+
+        await seedCategories();
+        await seedMenuItems();
+        await seedPromotions();
+
+        // Prioritize Loyalty Data
+        await seedShopItems();
+        await seedQuests();
+
+        await seedUsers();
+        await seedReviews();
+
+        console.log('--- SEEDING FINISHED SUCCESSFULLY ---');
+    } catch (error) {
+        console.error('!!! SEEDING CRASHED !!!');
+        console.error(error);
+        throw error;
+    }
 }
 
 main()
@@ -374,4 +581,4 @@ main()
         console.error(e)
         await prisma.$disconnect()
         process.exit(1)
-    })
+    });
