@@ -4,7 +4,7 @@ import {
     Shield, Palette, Sparkles, Wand2, CheckCircle2, Loader2, Save
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TIERS, SHOP_ITEMS } from '@/lib/loyalty';
+import { TIERS } from '@/lib/loyalty';
 import TacticalAura from '@/components/TacticalAura';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/app/context/ToastContext';
