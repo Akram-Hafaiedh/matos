@@ -441,8 +441,6 @@ async function seedReviews() {
 
 async function seedShopItems() {
     console.log('Seeding Shop Items...');
-    // Clear old items to remove procedural placeholders (Proto #)
-    await prisma.shop_items.deleteMany({});
 
     const SHOP_ITEMS = [
         // ... (existing items)
@@ -640,6 +638,115 @@ async function seedQuests() {
     }
 }
 
+async function seedHeroSlides() {
+    console.log('Seeding Hero Slides...');
+    const slides = [
+        {
+            id: 1,
+            title: "The Ultimate Pizza",
+            subtitle: "Artisanale",
+            tagline: "Une immersion sensorielle au-delà de la gastronomie. Préparée avec une rigueur absolue.",
+            image_url: "/margherita-hero.png",
+            accent: "from-yellow-400 to-orange-600",
+            order: 1
+        },
+        {
+            id: 2,
+            title: "Signature Wagyu Burger",
+            subtitle: "Premium",
+            tagline: "Le bœuf Wagyu d'exception, sublimé par des ingrédients soigneusement sélectionnés.",
+            image_url: "/wagyu-hero.png",
+            accent: "from-orange-400 to-red-600",
+            order: 2
+        },
+        {
+            id: 3,
+            title: "Atelier Baguette",
+            subtitle: "Tradition",
+            tagline: "Le pain croustillant rencontre des garnitures gourmandes pour un plaisir authentique.",
+            image_url: "/images/baguette_farcie.png",
+            accent: "from-yellow-300 to-yellow-600",
+            order: 3
+        }
+    ];
+
+    for (const slide of slides) {
+        await prisma.hero_slides.upsert({
+            where: { id: slide.id },
+            update: slide,
+            create: slide
+        });
+    }
+}
+
+async function seedContentPages() {
+    console.log('Seeding Content Pages (Terms & Policy)...');
+    const pages = [
+        {
+            slug: 'terms',
+            title: 'Conditions Générales',
+            subtitle: "Merci de lire attentivement nos conditions générales de vente et d'utilisation avant de profiter de l'expérience Mato's.",
+            content: [
+                {
+                    icon: "Users",
+                    title: "Accès et Utilisation",
+                    content: "L'utilisation de la plateforme Mato's est réservée aux personnes âgées de 18 ans ou plus. Vous vous engagez à ne pas utiliser nos services à des fins illégales ou non autorisées."
+                },
+                {
+                    icon: "CreditCard",
+                    title: "Commandes et Paiements",
+                    content: "Toutes les commandes sont soumises à la disponibilité des produits. Les prix sont indiqués en Dinars Tunisiens (DT). Le paiement s'effectue à la livraison ou via les moyens de paiement acceptés sur notre site."
+                },
+                {
+                    icon: "Truck",
+                    title: "Livraison",
+                    content: "Nous nous efforçons de respecter les délais de livraison indiqués lors de votre commande. Toutefois, ces délais sont donnés à titre indicatif et Mato's ne peut être tenu responsable d'éventuels retards indépendants de sa volonté."
+                },
+                {
+                    icon: "Gavel",
+                    title: "Propriété Intellectuelle",
+                    content: "Tous les contenus présents sur la plateforme (logos, textes, images, designs) sont la propriété exclusive de Mato's et sont protégés par les lois sur le droit d'auteur."
+                }
+            ]
+        },
+        {
+            slug: 'policy',
+            title: 'Politique de Confidentialité',
+            subtitle: "Chez Mato's, nous prenons la protection de vos données personnelles très au sérieux. Cette politique détaille comment nous traitons vos informations.",
+            content: [
+                {
+                    icon: "Shield",
+                    title: "Collecte des Données",
+                    content: "Nous collectons les informations que vous nous fournissez directement lors de la création de votre compte, de vos commandes ou lors de vos échanges avec notre support. Cela inclut votre nom, adresse email, numéro de téléphone et adresse de livraison."
+                },
+                {
+                    icon: "Lock",
+                    title: "Sécurité de vos Informations",
+                    content: "La sécurité de vos données est notre priorité absolue. Nous utilisons des protocoles de cryptage de pointe (SSL) et des mesures de sécurité physiques pour protéger vos informations contre tout accès non autorisé."
+                },
+                {
+                    icon: "Eye",
+                    title: "Utilisation des Cookies",
+                    content: "Nous utilisons des cookies pour améliorer votre expérience sur notre plateforme, mémoriser vos préférences et analyser notre trafic. Vous pouvez gérer vos préférences de cookies dans les réglages de votre navigateur."
+                },
+                {
+                    icon: "FileText",
+                    title: "Vos Droits",
+                    content: "Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données personnelles. Vous pouvez également vous opposer au traitement de vos données pour des motifs légitimes."
+                }
+            ]
+        }
+    ];
+
+    for (const page of pages) {
+        await prisma.content_pages.upsert({
+            where: { slug: page.slug },
+            update: page,
+            create: page
+        });
+    }
+}
+
 async function main() {
     try {
         console.log('--- START SEEDING ---');
@@ -648,6 +755,8 @@ async function main() {
         await seedPromotions();
         await seedShopItems();
         await seedQuests();
+        await seedHeroSlides();
+        await seedContentPages();
         await seedUsers();
         await seedReviews();
         console.log('--- SEEDING FINISHED SUCCESSFULLY ---');

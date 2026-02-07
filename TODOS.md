@@ -29,6 +29,8 @@
 - [x] Home Page Map: Full-width interactive Leaflet map (Carthage)
 - [x] Premium Success Toast during checkout transitions
 - [x] **Reusable SideDrawer System**: Premium, animated sliding panel engine for complex content delivery.
+- [x] **Legal Protocol Redesign**: High-fidelity, animated "Elite" redesign of Terms and Privacy pages with split-highlight headers.
+- [x] **Standardized Content Pages**: Refactored all static pages into ISR-aware `...Content` components for performance and SEO.
 
 ## Advanced User Experience & Checkout Flow
 - [x] Dedicated Client Dashboard & Profile editing
@@ -60,13 +62,10 @@
 - [x] **Real-time Identity Profile**: Dynamic sync for user status, medals of service, and verified operation history.
 - [x] **Header Dropdown Sync**: Native `UserProfileHeader` for seamless visual persistence of customization across routes.
 
-## UI/UX Technical Challenges
-
-### Slanted Sections (Geometric Slopes)
-- **Status**: Exploration phase
-- **Context**: Used in `fidelity` and CTA sections.
-- **Challenge**: Absolute positioning and complex `clip-path` geometry make responsive layout tricky.
-- **Todo**: Research reliable responsive clip-path strategies or CSS skew transformations.
+## UI/UX Technical Challenges [Solved]
+- [x] **Slanted Sections (Geometric Slopes)**:
+    - **Status**: Production Ready.
+    - **Solution**: Implemented responsive `clip-path` geometry with aspect-ratio containers, ensuring stability across all viewports. Used in Fidelity, Home, and Legal sections.
 
 ## Pending & Future Roadmap
 - [x] **Admin Orders Page**: Redesigned with 'SideDrawer' expander for high-intensity worker usage and tactical status controls.

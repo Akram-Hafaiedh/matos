@@ -344,3 +344,25 @@ model verification_tokens {
 
   @@unique([identifier, token])
 }
+
+model hero_slides {
+  id         Int      @id @default(autoincrement())
+  title      String   @db.VarChar(255)
+  subtitle   String   @db.VarChar(255)
+  tagline    String
+  image_url  String   @db.VarChar(500)
+  accent     String   @default("from-yellow-400 to-orange-600") @db.VarChar(100)
+  order      Int      @default(0)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model content_pages {
+  id         Int      @id @default(autoincrement())
+  slug       String   @unique @db.VarChar(100) // 'terms', 'policy', etc.
+  title      String   @db.VarChar(255)
+  subtitle   String?
+  content    Json // Array of sections { icon, title, content }
+  updated_at DateTime @updatedAt
+}

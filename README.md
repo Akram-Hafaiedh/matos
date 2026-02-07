@@ -16,7 +16,8 @@ Mato's is a high-end, modern food ordering web application built with a focus on
 - **Transparent Cart**: Advanced promotion engine with real-time price breakdowns, strike-through original prices, and "badge-ified" bundle details.
 - **Fidelity Program**: Automated point awarding, global rank flairs (King/Challenger), and exclusive tiers.
 - **Real-time Engine**: Live typing indicators in support, instant notifications, and order status polling.
-- **Admin Command Center**: Visual stats dashboard, live order management with cancel reasons, and global settings control.
+- **Legal Protocols**: Premium, glassmorphism redesign of Terms and Policy pages with kinetic typography and animated brand cards.
+- **Admin Command Center**: Visual stats dashboard, live order management with 'SideDrawer' tactical controls, and global settings control.
 
 ## 🛠️ Getting Started
 
@@ -51,10 +52,11 @@ Open [http://localhost:3000](http://localhost:3000) to see the result.
 - [x] **Menu & Category Perfection**: Automated category shifting, order normalization, and dynamic database navigation.
 
 ### 🛠️ Infrastructure & Standardization (Active)
-- [x] **Database Schema Standardization**: Comprehensive migration to `snake_case` and pluralized model names (e.g., `orders`, `reviews`) to ensure strict PostgreSQL compatibility and maintainability.
-- [x] **API Route Harmonization**: Refactored the entire API layer (Admin, User, Public) to utilize the standardized schema, resolving naming inconsistencies and lint errors.
-- [x] **Enhanced Developer Tooling**: Updated all utility scripts and the diagnostic suite to remain compatible with the new naming conventions.
-- [x] **Security-First Seeding**: Updated the `prisma/seed.ts` engine with automated password hashing and strict field validation.
+- [x] **Next.js ISR Implementation**: Deployed Incremental Static Regeneration (revalidate: 60) across all content-heavy public pages (FAQ, Menu, Promos, Legal) for lightning-fast delivery.
+- [x] **Prisma Client Self-Healing**: Automated detection and re-instantiation of stale Prisma instances in development, ensuring zero-downtime during HMR.
+- [x] **Database Schema Standardization**: Comprehensive migration to `snake_case` and pluralized model names (e.g., `orders`, `reviews`) to ensure strict PostgreSQL compatibility.
+- [x] **API Route Harmonization**: Refactored the entire API layer to utilize theized schema, resolving naming inconsistencies and lint errors.
+- [x] **Security-First Seeder**: Updated the `prisma/seed.ts` engine with automated password hashing and strict field validation.
 
 ### 🎨 Visual & Infrastructure
 - [x] **Authentication Flow Redesign**: Full-bleed cinematic redesign of the Login, Register, and Forgot Password flow.
