@@ -1,9 +1,4 @@
-'use client';
-
-import { useEffect, useState } from "react";
-import { categories, menuItems } from '@/lib/data/menu';
-import { MenuItem } from '@/types/menu';
-import { useCart } from "../cart/CartContext";
+import { prisma } from '@/lib/prisma';
 import Hero from "./home/Hero";
 import Favorites from "./home/Favorites";
 import Promotions from "./home/Promotions";
@@ -12,96 +7,120 @@ import Reviews from "./home/Reviews";
 import Localisation from "./home/Localisation";
 import FAQSection from "./home/FAQSection";
 
-export default function HomePage() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [promoSlide, setPromoSlide] = useState(0);
-  const [promos, setPromos] = useState<any[]>([]);
-  const [mapVisible, setMapVisible] = useState(false);
-  const [settings, setSettings] = useState<any>(null);
-  const [realItems, setRealItems] = useState<MenuItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { addToCart } = useCart();
+export const revalidate = 60; // Regenerate page at most every 60 seconds
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [settingsRes, promosRes, menuRes] = await Promise.all([
-          fetch('/api/settings'),
-          fetch('/api/promotions?active=true'),
-          fetch('/api/menu-items?limit=100&status=active')
-        ]);
-
-        const settingsData = await settingsRes.json();
-        if (settingsData) setSettings(settingsData);
-
-        const promosData = await promosRes.json();
-        if (promosData.success) setPromos(promosData.promotions);
-
-        const menuData = await menuRes.json();
-        if (menuData.success) {
-          setRealItems(menuData.menuItems.map((item: any) => ({
-            ...item,
-            image: item.imageUrl || '🍴',
-            ingredients: item.description
-          })));
-        }
-      } catch (error) {
-        console.error("Error loading home page data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setMapVisible(true);
+export default async function HomePage() {
+  // Fetch everything in parallel on the server
+  const [settings, promotions, menuItems, rawReviews, heroSlides] = await Promise.all([
+    prisma.global_settings.findFirst(),
+    prisma.promotions.findMany({
+      where: {
+        is_active: true,
+        OR: [
+          { end_date: null },
+          { end_date: { gte: new Date() } }
+        ]
+      },
+      orderBy: { created_at: 'desc' }
+    }),
+    prisma.menu_items.findMany({
+      where: { is_active: true },
+      take: 100
+    }),
+    prisma.reviews.findMany({
+      where: { show_on_home: true },
+      include: {
+        users: {
+          select: {
+            name: true,
+            role: true,
+            image: true,
+            loyaltyPoints: true,
+            selectedBg: true,
+            selectedFrame: true,
+          }
+        },
+        menu_items: {
+          select: {
+            name: true,
+          }
         }
       },
-      { threshold: 0.1 }
-    );
+      take: 12,
+      orderBy: { created_at: 'desc' }
+    }),
+    prisma.hero_slides.findMany({
+      where: { is_active: true },
+      orderBy: { order: 'asc' }
+    })
+  ]);
 
-    const section = document.getElementById('localisation-section');
-    if (section) observer.observe(section);
+  // Format hero slides for the UI
+  const formattedSlides = heroSlides.map(slide => ({
+    id: slide.id,
+    title: slide.title,
+    subtitle: slide.subtitle,
+    tagline: slide.tagline,
+    image: slide.image_url,
+    accent: slide.accent
+  }));
 
-    return () => observer.disconnect();
-  }, []);
+  // Enrich reviews with ranks (server-side calculation)
+  const reviews = await Promise.all(rawReviews.map(async (review) => {
+    const rank = await prisma.user.count({
+      where: {
+        loyaltyPoints: {
+          gt: review.users.loyaltyPoints || 0
+        }
+      }
+    }) + 1;
 
+    return {
+      ...review,
+      user: { ...review.users, rank },
+      menuItem: review.menu_items
+    };
+  }));
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % 3);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, []);
+  // Format promotions for the UI
 
-  useEffect(() => {
-    if (promos.length > 1) {
-      const timer = setInterval(() => {
-        setPromoSlide((prev) => (prev + 1) % promos.length);
-      }, 6000);
-      return () => clearInterval(timer);
-    }
-  }, [promos.length]);
+  // Format promotions for the UI
+  const formattedPromos = promotions.map(promo => ({
+    ...promo,
+    imageUrl: promo.image_url,
+    selectionRules: promo.selection_rules,
+    isActive: promo.is_active,
+  }));
 
-  // Get actual bestsellers from real items
+  // Format menu items and identify favorites/popular
+  const realItems = menuItems.map((item: any) => ({
+    ...item,
+    image: item.image_url || '🍴',
+    ingredients: item.description,
+    price: item.price
+  }));
+
+  // Logic to identify display items (Favorites)
   const featuredItems = realItems.filter(item => item.bestseller).slice(0, 5);
   const displayItems = featuredItems.length > 0 ? featuredItems : realItems.filter(item => item.popular).slice(0, 5);
   const finalItems = displayItems.length > 0 ? displayItems : realItems.slice(0, 5);
 
+  // Format settings
+  const formattedSettings = settings ? {
+    ...settings,
+    googleMapsUrl: settings.google_maps_url
+  } : null;
+
   return (
     <main className="bg-transparent">
-      <Hero currentSlide={currentSlide} setCurrentSlide={setCurrentSlide} />
+      <Hero slides={formattedSlides as any} />
       <Favorites items={finalItems} />
-      <Promotions promos={promos} promoSlide={promoSlide} setPromoSlide={setPromoSlide} />
+      <Promotions promos={formattedPromos} />
       <Fidelity />
-      <Reviews />
+      <Reviews reviews={reviews} />
       <FAQSection />
       <div id="localisation-section">
-        <Localisation settings={settings} />
+        <Localisation settings={formattedSettings} />
       </div>
     </main>
   );

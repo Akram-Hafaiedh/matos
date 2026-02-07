@@ -27,7 +27,16 @@ export const pool = globalForPrisma.pool ?? new Pool({
 const adapter = new PrismaPg(pool);
 
 // Initialize or reuse the PrismaClient with the adapter
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
+let prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
+
+// Handle stale global instance in development (after schema changes)
+if (process.env.NODE_ENV !== 'production' && prisma && (!(prisma as any).content_pages || !(prisma as any).hero_slides)) {
+    console.log('[Prisma] Stale instance detected (missing models). Re-instantiating...');
+    prisma = new PrismaClient({ adapter });
+    globalForPrisma.prisma = prisma;
+}
+
+export { prisma };
 
 // In development, save the instances to the global object to prevent hot-reload leaks
 if (process.env.NODE_ENV !== 'production') {

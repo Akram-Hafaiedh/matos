@@ -1,3 +1,5 @@
+'use client';
+
 import { ArrowRight, ChevronRight, Star, Clock, Zap, Sparkles } from "lucide-react";
 import SectionHeader from '@/components/SectionHeader';
 import Link from "next/link";
@@ -51,8 +53,8 @@ export default function Favorites({ items }: FavoritesProps) {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-[700px]">
 
                     {/* Main Showcase (Focus) */}
-                    <div className="lg:col-span-8 relative group">
-                        <div className="absolute inset-0 bg-gray-950/40 border-2 border-white/5 rounded-[4rem] overflow-hidden backdrop-blur-3xl transition-all duration-700 group-hover:border-yellow-400/20 shadow-3xl">
+                    <div className="lg:col-span-8 relative group aspect-[4/5] sm:aspect-square md:aspect-video lg:aspect-auto min-h-[500px] lg:min-h-0">
+                        <div className="absolute inset-0 bg-gray-950/40 border-2 border-white/5 rounded-[2.5rem] md:rounded-[4rem] overflow-hidden backdrop-blur-3xl transition-all duration-700 group-hover:border-yellow-400/20 shadow-3xl">
 
                             {/* Technical Scanline Effect */}
                             <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden opacity-30">
@@ -60,7 +62,7 @@ export default function Favorites({ items }: FavoritesProps) {
                             </div>
 
                             {/* Large Image Reveal */}
-                            <div className="absolute inset-0 flex items-center justify-center p-12 md:p-20">
+                            <div className="absolute inset-0 flex items-center justify-center p-8 md:p-20">
                                 <div key={activeItem?.id} className="relative w-full h-full animate-in fade-in zoom-in duration-1000">
                                     {activeItem?.image && (activeItem.image.startsWith('/') || activeItem.image.startsWith('http')) ? (
                                         <Image
@@ -71,7 +73,7 @@ export default function Favorites({ items }: FavoritesProps) {
                                             priority
                                         />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-[15rem] filter drop-shadow-2xl animate-float select-none">
+                                        <div className="w-full h-full flex items-center justify-center text-[10rem] md:text-[15rem] filter drop-shadow-2xl animate-float select-none">
                                             {activeItem?.image || '✨'}
                                         </div>
                                     )}
@@ -79,44 +81,44 @@ export default function Favorites({ items }: FavoritesProps) {
                             </div>
 
                             {/* Floating Metadata */}
-                            <div className="absolute top-12 left-12 z-30 space-y-4">
-                                <div className="bg-yellow-400 text-gray-900 px-6 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl flex items-center gap-2 animate-bounce-subtle">
+                            <div className="absolute top-8 left-8 md:top-12 md:left-12 z-30 space-y-4">
+                                <div className="bg-yellow-400 text-gray-900 px-4 py-2 md:px-6 md:py-2 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest shadow-2xl flex items-center gap-2 animate-bounce-subtle">
                                     <Star className="w-3 h-3 fill-gray-900" />
                                     Signature Mato's
                                 </div>
                             </div>
 
                             {/* Product Info Overlay */}
-                            <div className="absolute bottom-12 left-12 right-12 z-30 flex flex-col md:flex-row md:items-end justify-between gap-8">
-                                <div className="space-y-4 max-w-xl">
-                                    <div className="text-yellow-400 font-black text-[10px] uppercase tracking-[0.5em] italic flex items-center gap-2">
+                            <div className="absolute bottom-8 left-8 right-8 md:bottom-12 md:left-12 md:right-12 z-30 flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8">
+                                <div className="space-y-3 md:space-y-4 max-w-xl">
+                                    <div className="text-yellow-400 font-black text-[9px] md:text-[10px] uppercase tracking-[0.4em] md:tracking-[0.5em] italic flex items-center gap-2">
                                         <Zap className="w-3 h-3" />
                                         Exclusivité Gastronomique
                                     </div>
-                                    <h3 className="text-5xl md:text-7xl font-[1000] text-white italic tracking-tighter uppercase leading-[0.8] animate-in slide-in-from-left-8 duration-700 overflow-visible">
+                                    <h3 className="text-4xl md:text-7xl font-[1000] text-white italic tracking-tighter uppercase leading-[0.8] animate-in slide-in-from-left-8 duration-700 overflow-visible">
                                         <span className="inline-block pr-[0.4em] overflow-visible">{activeItem?.name?.split(' ')[0]}</span> <br />
                                         <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 pr-[0.4em] overflow-visible">
                                             {activeItem?.name?.split(' ').slice(1).join(' ')}
                                         </span>
                                     </h3>
-                                    <p className="text-gray-400/80 font-bold text-sm leading-relaxed italic line-clamp-2 max-w-md">
+                                    <p className="text-gray-400/80 font-bold text-xs md:text-sm leading-relaxed italic line-clamp-2 max-w-md hidden sm:block">
                                         {activeItem?.ingredients}
                                     </p>
                                 </div>
 
-                                <div className="flex items-center gap-6">
-                                    <div className="text-right">
-                                        <div className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-1">Prix Signature</div>
-                                        <div className="text-5xl font-black text-white italic tracking-tighter">
+                                <div className="flex items-center justify-between md:justify-end gap-6 md:gap-8 w-full md:w-auto">
+                                    <div className="text-left md:text-right">
+                                        <div className="text-gray-500 text-[8px] md:text-[10px] font-black uppercase tracking-widest mb-0.5 md:mb-1">Prix Signature</div>
+                                        <div className="text-3xl md:text-5xl font-black text-white italic tracking-tighter">
                                             {getPrice(activeItem?.price)}
-                                            <span className="text-xl text-yellow-400 not-italic ml-1">DT</span>
+                                            <span className="text-lg md:text-xl text-yellow-400 not-italic ml-1">DT</span>
                                         </div>
                                     </div>
                                     <Link
                                         href={`/menu/${activeItem?.id}`}
-                                        className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 w-20 h-20 rounded-[2.5rem] flex items-center justify-center transition-all shadow-2xl shadow-yellow-400/20 hover:scale-110 active:scale-95 group/btn"
+                                        className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-[2.5rem] flex items-center justify-center transition-all shadow-2xl shadow-yellow-400/20 hover:scale-110 active:scale-95 group/btn"
                                     >
-                                        <ArrowRight className="w-8 h-8 group-hover/btn:translate-x-1 transition-transform" />
+                                        <ArrowRight className="w-6 h-6 md:w-8 md:h-8 group-hover/btn:translate-x-1 transition-transform" />
                                     </Link>
                                 </div>
                             </div>
