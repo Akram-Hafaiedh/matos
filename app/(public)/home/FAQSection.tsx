@@ -1,4 +1,6 @@
 
+'use client';
+
 import { useState } from 'react';
 import { Plus, Minus, HelpCircle, MessageCircle, ArrowRight, ChevronDown } from "lucide-react";
 import SectionHeader from "@/components/SectionHeader";

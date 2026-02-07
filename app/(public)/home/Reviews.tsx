@@ -23,43 +23,32 @@ interface Review {
     menuItem: MenuItem;
 }
 
-export default function Reviews() {
-    const [reviews, setReviews] = useState<Review[]>([]);
-    const [currentSlide, setCurrentSlide] = useState(0);
-    const [loading, setLoading] = useState(true);
+interface ReviewsProps {
+    reviews?: Review[];
+    currentSlide?: number;
+    onSlideChange?: (index: number) => void;
+}
 
-    useEffect(() => {
-        const fetchHomeReviews = async () => {
-            try {
-                const res = await fetch('/api/reviews?home=true');
-                const data = await res.json();
-                if (data.success) {
-                    setReviews(data.reviews);
-                } else if (Array.isArray(data)) {
-                    // Fallback for legacy raw array
-                    setReviews(data);
-                }
-            } catch (error) {
-                console.error('Error fetching home reviews:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchHomeReviews();
-    }, []);
+export default function Reviews({ reviews: initialReviews = [], currentSlide: controlledSlide, onSlideChange }: ReviewsProps) {
+    const [internalSlide, setInternalSlide] = useState(0);
 
+    const isControlled = controlledSlide !== undefined;
+    const activeSlideIndex = isControlled ? controlledSlide : internalSlide;
+
+    const reviews = initialReviews;
     const totalSlides = Math.ceil(reviews.length / 3);
 
-    const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % totalSlides);
-    const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
+    const handleSlideChange = (index: number) => {
+        if (onSlideChange) {
+            onSlideChange(index);
+        } else {
+            setInternalSlide(index);
+        }
+    };
 
-    if (loading) {
-        return (
-            <section className="py-20 px-4 bg-black flex items-center justify-center min-h-[400px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow-400 border-t-transparent"></div>
-            </section>
-        );
-    }
+    const nextSlide = () => handleSlideChange((activeSlideIndex + 1) % totalSlides);
+    const prevSlide = () => handleSlideChange((activeSlideIndex - 1 + totalSlides) % totalSlides);
+
 
     if (reviews.length === 0) return null;
 
@@ -94,7 +83,7 @@ export default function Reviews() {
                 <div className="relative overflow-hidden px-2">
                     <div
                         className="flex transition-transform duration-1000 cubic-bezier(0.4, 0, 0.2, 1)"
-                        style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                        style={{ transform: `translateX(-${activeSlideIndex * 100}%)` }}
                     >
                         {[...Array(totalSlides)].map((_, slideIdx) => (
                             <div key={slideIdx} className="w-full flex-shrink-0 grid md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -152,8 +141,8 @@ export default function Reviews() {
                         {[...Array(totalSlides)].map((_, i) => (
                             <button
                                 key={i}
-                                onClick={() => setCurrentSlide(i)}
-                                className={`h-1.5 rounded-full transition-all duration-700 ${i === currentSlide ? 'w-12 bg-yellow-400' : 'w-3 bg-white/10 hover:bg-white/20'}`}
+                                onClick={() => handleSlideChange(i)}
+                                className={`h-1.5 rounded-full transition-all duration-700 ${i === activeSlideIndex ? 'w-12 bg-yellow-400' : 'w-3 bg-white/10 hover:bg-white/20'}`}
                             />
                         ))}
                     </div>

@@ -1,3 +1,4 @@
+'use client';
 
 import { ChevronRight, ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
@@ -10,13 +11,33 @@ import SelectionModal from "@/components/SelectionModal";
 
 interface PromotionsProps {
     promos: any[];
-    promoSlide: number;
-    setPromoSlide: (i: number) => void;
+    promoSlide?: number;
+    onSlideChange?: (index: number) => void;
 }
 
-export default function Promotions({ promos, promoSlide, setPromoSlide }: PromotionsProps) {
+export default function Promotions({ promos, promoSlide: controlledSlide, onSlideChange }: PromotionsProps) {
     const { addToCart } = useCart();
     const [configPromo, setConfigPromo] = useState<any>(null);
+    const [internalSlide, setInternalSlide] = useState(0);
+
+    const isControlled = controlledSlide !== undefined;
+    const activeSlideIndex = isControlled ? controlledSlide : internalSlide;
+
+    useEffect(() => {
+        if (isControlled || promos.length <= 1) return;
+        const timer = setInterval(() => {
+            setInternalSlide((prev) => (prev + 1) % promos.length);
+        }, 6000);
+        return () => clearInterval(timer);
+    }, [isControlled, promos.length]);
+
+    const handleSlideChange = (index: number) => {
+        if (onSlideChange) {
+            onSlideChange(index);
+        } else {
+            setInternalSlide(index);
+        }
+    };
 
     const handleAddToCart = (promo: any) => {
         let rules = promo.selectionRules;
@@ -33,7 +54,7 @@ export default function Promotions({ promos, promoSlide, setPromoSlide }: Promot
 
     if (promos.length === 0) return null;
 
-    const currentPromo = promos[promoSlide];
+    const currentPromo = promos[activeSlideIndex % promos.length];
 
     return (
         <section className="py-12 md:py-16 bg-transparent relative overflow-hidden">
@@ -143,8 +164,8 @@ export default function Promotions({ promos, promoSlide, setPromoSlide }: Promot
                         {promos.map((_, i) => (
                             <button
                                 key={i}
-                                onClick={() => setPromoSlide(i)}
-                                className={`h-1 rounded-full transition-all duration-300 ${i === promoSlide ? 'w-10 bg-yellow-400' : 'w-4 bg-white/10 hover:bg-white/20'}`}
+                                onClick={() => handleSlideChange(i)}
+                                className={`h-1 rounded-full transition-all duration-300 ${i === activeSlideIndex ? 'w-10 bg-yellow-400' : 'w-4 bg-white/10 hover:bg-white/20'}`}
                             />
                         ))}
                     </div>

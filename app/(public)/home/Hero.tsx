@@ -1,12 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from 'framer-motion';
 
-const HERO_SLIDES = [
+export interface HeroSlide {
+    id: number;
+    title: string;
+    subtitle: string;
+    tagline: string;
+    image: string;
+    accent: string;
+}
+
+const DEFAULT_SLIDES: HeroSlide[] = [
     {
         id: 1,
         title: "The Ultimate Pizza",
@@ -34,18 +43,44 @@ const HERO_SLIDES = [
 ];
 
 interface HeroProps {
-    currentSlide: number;
-    setCurrentSlide: (index: number) => void;
+    slides?: HeroSlide[];
+    currentSlide?: number;
+    onSlideChange?: (index: number) => void;
 }
 
-export default function Hero({ currentSlide, setCurrentSlide }: HeroProps) {
-    const slide = HERO_SLIDES[currentSlide % HERO_SLIDES.length];
+export default function Hero({ slides = DEFAULT_SLIDES, currentSlide: controlledSlide, onSlideChange }: HeroProps) {
+    const [internalSlide, setInternalSlide] = useState(0);
+
+    // Use controlled prop if provided, otherwise fallback to internal state
+    const isControlled = controlledSlide !== undefined;
+    const activeSlideIndex = isControlled ? controlledSlide : internalSlide;
+
+    useEffect(() => {
+        // Only run timer if NOT controlled by props (or if you want autonomous rotation)
+        // Usually, if controlled, the parent handles the timer.
+        if (isControlled || !slides || slides.length <= 1) return;
+
+        const timer = setInterval(() => {
+            setInternalSlide((prev) => (prev + 1) % slides.length);
+        }, 6000);
+        return () => clearInterval(timer);
+    }, [isControlled, slides?.length]);
+
+    const handleSlideChange = (index: number) => {
+        if (onSlideChange) {
+            onSlideChange(index);
+        } else {
+            setInternalSlide(index);
+        }
+    };
+
+    const slide = slides[activeSlideIndex % slides.length];
 
     return (
         <section className="relative h-screen min-h-[700px] overflow-hidden bg-transparent">
             <AnimatePresence mode="wait">
                 <motion.div
-                    key={currentSlide}
+                    key={activeSlideIndex}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -105,7 +140,11 @@ export default function Hero({ currentSlide, setCurrentSlide }: HeroProps) {
                                     transition={{ delay: 0.7 }}
                                     className="inline-block pr-[0.4em]"
                                 >
-                                    {slide.title.split(' ').slice(0, 2).join(' ')} <br />
+                                    {(() => {
+                                        const words = slide.title.split(' ');
+                                        if (words.length <= 2) return words[0];
+                                        return words.slice(0, words.length - 2).join(' ');
+                                    })()} <br />
                                 </motion.span>
                                 <motion.span
                                     initial={{ opacity: 0, x: -50 }}
@@ -113,7 +152,11 @@ export default function Hero({ currentSlide, setCurrentSlide }: HeroProps) {
                                     transition={{ delay: 0.9 }}
                                     className={`text-transparent bg-clip-text bg-gradient-to-b ${slide.accent} block pr-[0.4em]`}
                                 >
-                                    {slide.title.split(' ').slice(2).join(' ')}
+                                    {(() => {
+                                        const words = slide.title.split(' ');
+                                        if (words.length <= 2) return words.slice(1).join(' ');
+                                        return words.slice(-2).join(' ');
+                                    })()}
                                 </motion.span>
                             </h1>
                         </div>
@@ -147,13 +190,13 @@ export default function Hero({ currentSlide, setCurrentSlide }: HeroProps) {
 
             {/* Slider Navigation Indicators */}
             <div className="absolute bottom-12 left-8 md:left-24 lg:left-[55%] lg:-translate-x-1/2 z-50 flex gap-4">
-                {HERO_SLIDES.map((_, i) => (
+                {slides.map((_: HeroSlide, i: number) => (
                     <button
                         key={i}
-                        onClick={() => setCurrentSlide(i)}
-                        className={`group relative h-1.5 transition-all duration-500 rounded-full overflow-hidden ${i === (currentSlide % HERO_SLIDES.length) ? 'w-24 bg-white/20' : 'w-8 bg-white/5 hover:bg-white/10'}`}
+                        onClick={() => handleSlideChange(i)}
+                        className={`group relative h-1.5 transition-all duration-500 rounded-full overflow-hidden ${i === (activeSlideIndex % slides.length) ? 'w-24 bg-white/20' : 'w-8 bg-white/5 hover:bg-white/10'}`}
                     >
-                        {i === (currentSlide % HERO_SLIDES.length) && (
+                        {i === (activeSlideIndex % slides.length) && (
                             <motion.div
                                 layoutId="active-bar"
                                 className="absolute inset-0 bg-yellow-400"
