@@ -8,16 +8,16 @@ async function test() {
                 id: true,
                 name: true,
                 email: true,
-                loyaltyPoints: true,
+                loyalty_points: true,
                 tokens: true,
                 phone: true,
                 address: true,
                 role: true,
                 image: true,
-                selectedFrame: true,
-                selectedBg: true,
-                selectedTitle: true,
-                createdAt: true,
+                selected_frame: true,
+                selected_bg: true,
+                selected_title: true,
+                created_at: true,
                 inventory: true,
                 _count: {
                     select: { orders: true }
@@ -26,7 +26,7 @@ async function test() {
         });
         console.log('User profile fetch successful:', user ? 'User found' : 'No users in DB');
         if (user) {
-            console.log('SelectedTitle value:', user.selectedTitle);
+            console.log('SelectedTitle value:', user.selected_title);
         }
     } catch (error) {
         console.error('Error fetching user profile:', error);

@@ -26,10 +26,10 @@ async function main() {
 
     const users = await prisma.user.findMany({
         take: 5,
-        orderBy: { loyaltyPoints: 'desc' }
+        orderBy: { loyalty_points: 'desc' }
     });
     console.log('Top Users by Points:');
-    users.forEach(u => console.log(`- ${u.email}: ${u.loyaltyPoints} pts`));
+    users.forEach(u => console.log(`- ${u.email}: ${u.loyalty_points} pts`));
 
     const admin = await prisma.user.findUnique({ where: { email: 'admin@example.com' } });
     console.log('Admin Check:', admin ? `Found (Role: ${admin.role})` : 'Not Found');
