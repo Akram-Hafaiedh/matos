@@ -374,14 +374,14 @@ async function seedUsers() {
                     email: c.email,
                     role: 'customer',
                     password: commonPassword,
-                    loyaltyPoints: c.points
+                    loyalty_points: c.points
                 }
             });
             console.log(`Created Customer: ${c.email}`);
         } else {
             await prisma.user.update({
                 where: { email: c.email },
-                data: { loyaltyPoints: c.points }
+                data: { loyalty_points: c.points }
             });
             console.log(`Updated Customer: ${c.email} (+XP Sync)`);
         }
@@ -472,10 +472,10 @@ async function seedShopItems() {
         { id: 'shop-20', name: 'True Prophet', type: 'Titles', price: 15000, act: 4, level: 1, rarity: 'Legendary', emoji: '👁️', description: 'Celui qui a vu la vérité.' },
 
         // BOOSTERS
-        { id: 'shop-21', name: 'XP Overdrive (1h)', type: 'Boosters', price: 400, act: 1, level: 1, rarity: 'Common', emoji: '⚡', description: 'Double XP sur toutes les commandes et quêtes pendant 1 heure.', multiplier: 2.0, boostType: 'XP' },
-        { id: 'shop-22', name: 'Token Magnet (3h)', type: 'Boosters', price: 1100, act: 2, level: 1, rarity: 'Uncommon', emoji: '🧲', description: 'Chaque 1 TND dépensé donne 2 Jetons pendant 3 heures.', multiplier: 3.0, boostType: 'TOKEN' },
-        { id: 'shop-23', name: 'Lucky Drop (24h)', type: 'Boosters', price: 3500, act: 2, level: 5, rarity: 'Rare', emoji: '🍀', description: 'Augmente les chances de Loot légendaire de 50% pendant 24 heures.', multiplier: 1.5, boostType: 'LOOT' },
-        { id: 'shop-24', name: 'Protocol Hack', type: 'Boosters', price: 7000, act: 3, level: 3, rarity: 'Epic', emoji: '💻', description: 'Réduit les pré-requis des quêtes de 1 niveau. Usage unique.', multiplier: 1.0, boostType: 'PROTOCOL' },
+        { id: 'shop-21', name: 'XP Overdrive (1h)', type: 'Boosters', price: 400, act: 1, level: 1, rarity: 'Common', emoji: '⚡', description: 'Double XP sur toutes les commandes et quêtes pendant 1 heure.', multiplier: 2.0, boost_type: 'XP' },
+        { id: 'shop-22', name: 'Token Magnet (3h)', type: 'Boosters', price: 1100, act: 2, level: 1, rarity: 'Uncommon', emoji: '🧲', description: 'Chaque 1 TND dépensé donne 2 Jetons pendant 3 heures.', multiplier: 3.0, boost_type: 'TOKEN' },
+        { id: 'shop-23', name: 'Lucky Drop (24h)', type: 'Boosters', price: 3500, act: 2, level: 5, rarity: 'Rare', emoji: '🍀', description: 'Augmente les chances de Loot légendaire de 50% pendant 24 heures.', multiplier: 1.5, boost_type: 'LOOT' },
+        { id: 'shop-24', name: 'Protocol Hack', type: 'Boosters', price: 7000, act: 3, level: 3, rarity: 'Epic', emoji: '💻', description: 'Réduit les pré-requis des quêtes de 1 niveau. Usage unique.', multiplier: 1.0, boost_type: 'PROTOCOL' },
 
         // EXCLUSIVE
         { id: 'shop-25', name: 'VIP Pass - Act I', type: 'Exclusive', price: 1000, act: 1, level: 5, rarity: 'Epic', emoji: '🎟️', description: 'Accès exclusif aux événements Acte I.' },
@@ -491,21 +491,21 @@ async function seedShopItems() {
         { id: 'shop-33', name: 'Interférence Cyber', type: 'Auras', price: 3500, act: 2, level: 6, rarity: 'Rare', emoji: '🛰️', description: 'Distorsion visuelle de haute technologie.' },
         { id: 'shop-34', name: 'Néon Syndicate', type: 'Frames', price: 8500, act: 3, level: 7, rarity: 'Epic', emoji: '🟣', description: 'Le cadre officiel des hauts dignitaires.' },
         { id: 'shop-35', name: 'Chrome Industriel', type: 'Frames', price: 2200, act: 2, level: 2, rarity: 'Uncommon', emoji: '🔧', description: 'Brut, solide, efficace.' },
-        { id: 'shop-36', name: 'Surcharge de Données (6h)', type: 'Boosters', price: 2000, act: 3, level: 1, rarity: 'Epic', emoji: '📡', description: 'Triple XP sur les quêtes de piratage pendant 6 heures.', multiplier: 3.0, boostType: 'XP' },
+        { id: 'shop-36', name: 'Surcharge de Données (6h)', type: 'Boosters', price: 2000, act: 3, level: 1, rarity: 'Epic', emoji: '📡', description: 'Triple XP sur les quêtes de piratage pendant 6 heures.', multiplier: 3.0, boost_type: 'XP' },
     ];
 
     const SEEDED_ITEMS = [
         // HIGH-QUALITY THEMATIC BOOSTERS
-        { id: 'shop-37', name: 'Mato\'s Mastery', type: 'Boosters', price: 1500, act: 1, level: 5, rarity: 'Uncommon', emoji: '🍗', description: 'Une sauce secrète qui double vos points de fidélité pour les 3 prochaines commandes.', multiplier: 2.0, boostType: 'XP' },
-        { id: 'shop-38', name: 'Cyber Recon', type: 'Boosters', price: 2500, act: 2, level: 3, rarity: 'Rare', emoji: '📡', description: 'Débloque instantanément la visibilité de toutes les quêtes cachées de l\'Acte II.', multiplier: 1.0, boostType: 'RECON' },
-        { id: 'shop-39', name: 'Shadow Stealth', type: 'Boosters', price: 4000, act: 2, level: 7, rarity: 'Epic', emoji: '👤', description: 'Réduit de 20% le prix de votre prochaine commande "Signature" passée après 22h.', multiplier: 1.0, boostType: 'STEALTH' },
-        { id: 'shop-40', name: 'Sultan\'s Blessing', type: 'Boosters', price: 8500, act: 3, level: 5, rarity: 'Legendary', emoji: '👑', description: 'Garantit un item épique ou légendaire dans votre prochain Loot Box.', multiplier: 1.0, boostType: 'LUCK' },
-        { id: 'shop-41', name: 'Data Override', type: 'Boosters', price: 3000, act: 2, level: 5, rarity: 'Rare', emoji: '💾', description: 'Permet de relancer une quête quotidienne échouée.', multiplier: 1.0, boostType: 'DATA_RESET' },
-        { id: 'shop-42', name: 'Neon Overdrive', type: 'Boosters', price: 5500, act: 3, level: 2, rarity: 'Epic', emoji: '⚡', description: 'Multiplie par 3 l\'XP gagnée pendant les 2 prochaines heures.', multiplier: 3.0, boostType: 'XP' },
-        { id: 'shop-43', name: 'Protocol Bypass', type: 'Boosters', price: 12000, act: 4, level: 1, rarity: 'Legendary', emoji: '🔓', description: 'Ignore les pré-requis de niveau pour n\'importe quel item du shop pendant 1h.', multiplier: 1.0, boostType: 'BYPASS' },
-        { id: 'shop-44', name: 'Bazaar Instinct', type: 'Boosters', price: 1800, act: 1, level: 4, rarity: 'Uncommon', emoji: '🏺', description: 'Affiche les promotions secrètes du jour dans le menu.', multiplier: 1.0, boostType: 'INSTINCT' },
-        { id: 'shop-45', name: 'Priority Uplink', type: 'Boosters', price: 6500, act: 3, level: 8, rarity: 'Epic', emoji: '🚀', description: 'Votre commande passe en priorité absolue dans la file de préparation.', multiplier: 1.0, boostType: 'PRIORITY' },
-        { id: 'shop-46', name: 'Legacy Protocol', type: 'Boosters', price: 15000, act: 4, level: 5, rarity: 'Legendary', emoji: '💾', description: 'Conservez vos bonus de palier (Acte) même si vos points descendent temporairement.', multiplier: 1.0, boostType: 'LEGACY' }
+        { id: 'shop-37', name: 'Mato\'s Mastery', type: 'Boosters', price: 1500, act: 1, level: 5, rarity: 'Uncommon', emoji: '🍗', description: 'Une sauce secrète qui double vos points de fidélité pour les 3 prochaines commandes.', multiplier: 2.0, boost_type: 'XP' },
+        { id: 'shop-38', name: 'Cyber Recon', type: 'Boosters', price: 2500, act: 2, level: 3, rarity: 'Rare', emoji: '📡', description: 'Débloque instantanément la visibilité de toutes les quêtes cachées de l\'Acte II.', multiplier: 1.0, boost_type: 'RECON' },
+        { id: 'shop-39', name: 'Shadow Stealth', type: 'Boosters', price: 4000, act: 2, level: 7, rarity: 'Epic', emoji: '👤', description: 'Réduit de 20% le prix de votre prochaine commande "Signature" passée après 22h.', multiplier: 1.0, boost_type: 'STEALTH' },
+        { id: 'shop-40', name: 'Sultan\'s Blessing', type: 'Boosters', price: 8500, act: 3, level: 5, rarity: 'Legendary', emoji: '👑', description: 'Garantit un item épique ou légendaire dans votre prochain Loot Box.', multiplier: 1.0, boost_type: 'LUCK' },
+        { id: 'shop-41', name: 'Data Override', type: 'Boosters', price: 3000, act: 2, level: 5, rarity: 'Rare', emoji: '💾', description: 'Permet de relancer une quête quotidienne échouée.', multiplier: 1.0, boost_type: 'DATA_RESET' },
+        { id: 'shop-42', name: 'Neon Overdrive', type: 'Boosters', price: 5500, act: 3, level: 2, rarity: 'Epic', emoji: '⚡', description: 'Multiplie par 3 l\'XP gagnée pendant les 2 prochaines heures.', multiplier: 3.0, boost_type: 'XP' },
+        { id: 'shop-43', name: 'Protocol Bypass', type: 'Boosters', price: 12000, act: 4, level: 1, rarity: 'Legendary', emoji: '🔓', description: 'Ignore les pré-requis de niveau pour n\'importe quel item du shop pendant 1h.', multiplier: 1.0, boost_type: 'BYPASS' },
+        { id: 'shop-44', name: 'Bazaar Instinct', type: 'Boosters', price: 1800, act: 1, level: 4, rarity: 'Uncommon', emoji: '🏺', description: 'Affiche les promotions secrètes du jour dans le menu.', multiplier: 1.0, boost_type: 'INSTINCT' },
+        { id: 'shop-45', name: 'Priority Uplink', type: 'Boosters', price: 6500, act: 3, level: 8, rarity: 'Epic', emoji: '🚀', description: 'Votre commande passe en priorité absolue dans la file de préparation.', multiplier: 1.0, boost_type: 'PRIORITY' },
+        { id: 'shop-46', name: 'Legacy Protocol', type: 'Boosters', price: 15000, act: 4, level: 5, rarity: 'Legendary', emoji: '💾', description: 'Conservez vos bonus de palier (Acte) même si vos points descendent temporairement.', multiplier: 1.0, boost_type: 'LEGACY' }
     ];
 
     const ALL_ITEMS = [...SHOP_ITEMS, ...SEEDED_ITEMS];
@@ -518,11 +518,11 @@ async function seedShopItems() {
             where: { id: item.id },
             update: {
                 ...item,
-                updatedAt: new Date()
+                updated_at: new Date()
             },
             create: {
                 ...item,
-                updatedAt: new Date()
+                updated_at: new Date()
             }
         });
 
@@ -552,10 +552,10 @@ async function seedQuests() {
             title: 'Premier Pas',
             description: 'Complétez votre premier profil.',
             type: 'ONE_OFF',
-            rewardAmount: 100,
-            rewardType: 'TOKEN',
-            minAct: 1,
-            isActive: true,
+            reward_amount: 100,
+            reward_type: 'TOKEN',
+            min_act: 1,
+            is_active: true,
             emoji: '🌱'
         },
         {
@@ -563,10 +563,10 @@ async function seedQuests() {
             title: 'Gourmet Hunter',
             description: 'Dépensez 100 TND au total.',
             type: 'SPEND',
-            rewardAmount: 500,
-            rewardType: 'TOKEN',
-            minAct: 1,
-            isActive: true,
+            reward_amount: 500,
+            reward_type: 'TOKEN',
+            min_act: 1,
+            is_active: true,
             emoji: '🍔'
         },
         {
@@ -574,10 +574,10 @@ async function seedQuests() {
             title: 'Tactical Lunch',
             description: 'Commande entre 12:00 et 14:00 (Mar-Sam).',
             type: 'TIME',
-            rewardAmount: 150,
-            rewardType: 'XP',
-            minAct: 0,
-            isActive: true,
+            reward_amount: 150,
+            reward_type: 'XP',
+            min_act: 0,
+            is_active: true,
             emoji: '🕛'
         },
         {
@@ -585,10 +585,10 @@ async function seedQuests() {
             title: 'Weekender Protocol',
             description: 'Une commande le Vendredi ou Samedi.',
             type: 'STREAK',
-            rewardAmount: 300,
-            rewardType: 'XP',
-            minAct: 0,
-            isActive: true,
+            reward_amount: 300,
+            reward_type: 'XP',
+            min_act: 0,
+            is_active: true,
             emoji: '🗓️'
         },
         {
@@ -596,10 +596,10 @@ async function seedQuests() {
             title: 'Signature Hunter',
             description: 'Essayez 5 items différents du menu.',
             type: 'COLLECTION',
-            rewardAmount: 500,
-            rewardType: 'XP',
-            minAct: 1,
-            isActive: true,
+            reward_amount: 500,
+            reward_type: 'XP',
+            min_act: 1,
+            is_active: true,
             emoji: '🕵️'
         },
         {
@@ -607,10 +607,10 @@ async function seedQuests() {
             title: 'Syndicate Recruit',
             description: 'Invitez un ami à rejoindre le rang.',
             type: 'SOCIAL',
-            rewardAmount: 100,
-            rewardType: 'TOKEN',
-            minAct: 1,
-            isActive: true,
+            reward_amount: 100,
+            reward_type: 'TOKEN',
+            min_act: 1,
+            is_active: true,
             emoji: '👥'
         }
     ];
@@ -622,11 +622,11 @@ async function seedQuests() {
             where: { id: q.id },
             update: {
                 ...q,
-                updatedAt: new Date()
+                updated_at: new Date()
             },
             create: {
                 ...q,
-                updatedAt: new Date()
+                updated_at: new Date()
             }
         });
 

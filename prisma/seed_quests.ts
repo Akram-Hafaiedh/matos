@@ -13,10 +13,10 @@ async function main() {
             title: 'First Contact',
             description: 'Passez votre première commande',
             type: 'ONE_OFF',
-            rewardType: 'XP',
-            rewardAmount: 100,
-            minAct: 0,
-            validationConfig: {
+            reward_type: 'XP',
+            reward_amount: 100,
+            min_act: 0,
+            validation_config: {
                 targetCount: 1
             }
         },
@@ -25,10 +25,10 @@ async function main() {
             title: 'Le Festin du Baron',
             description: 'Valider un Festin du Baron (Promo)',
             type: 'COLLECTION',
-            rewardType: 'TOKEN',
-            rewardAmount: 50,
-            minAct: 0,
-            validationConfig: {
+            reward_type: 'TOKEN',
+            reward_amount: 50,
+            min_act: 0,
+            validation_config: {
                 promoName: 'Festin du Baron'
             }
         },
@@ -41,10 +41,10 @@ async function main() {
             title: 'Tactical Lunch',
             description: 'Commande entre 12:00 et 14:00',
             type: 'TIME',
-            rewardType: 'XP',
-            rewardAmount: 300,
-            minAct: 1,
-            validationConfig: {
+            reward_type: 'XP',
+            reward_amount: 300,
+            min_act: 1,
+            validation_config: {
                 startTime: '12:00',
                 endTime: '14:00'
             }
@@ -54,10 +54,10 @@ async function main() {
             title: 'Syndicate Recruit',
             description: 'Invitez un ami',
             type: 'SOCIAL',
-            rewardType: 'TOKEN',
-            rewardAmount: 50,
-            minAct: 1,
-            validationConfig: {}
+            reward_type: 'TOKEN',
+            reward_amount: 50,
+            min_act: 1,
+            validation_config: {}
         },
 
         // ==========================================
@@ -68,10 +68,10 @@ async function main() {
             title: 'Night Owl',
             description: 'Commande après 22:00',
             type: 'TIME',
-            rewardType: 'XP',
-            rewardAmount: 600,
-            minAct: 2,
-            validationConfig: {
+            reward_type: 'XP',
+            reward_amount: 600,
+            min_act: 2,
+            validation_config: {
                 startTime: '22:00',
                 endTime: '23:59'
             }
@@ -81,10 +81,10 @@ async function main() {
             title: 'Supply Drop',
             description: 'Commande > 60 TND',
             type: 'COLLECTION',
-            rewardType: 'XP',
-            rewardAmount: 800,
-            minAct: 2,
-            validationConfig: {
+            reward_type: 'XP',
+            reward_amount: 800,
+            min_act: 2,
+            validation_config: {
                 minOrderValue: 60
             }
         },
@@ -93,10 +93,10 @@ async function main() {
             title: 'Weekender',
             description: 'Commande le Weekend',
             type: 'STREAK',
-            rewardType: 'TOKEN',
-            rewardAmount: 150,
-            minAct: 2,
-            validationConfig: {
+            reward_type: 'TOKEN',
+            reward_amount: 150,
+            min_act: 2,
+            validation_config: {
                 days: [5, 6, 0] // Fri-Sun
             }
         },
@@ -109,10 +109,10 @@ async function main() {
             title: 'The Regular',
             description: '3 Commandes en 7 jours',
             type: 'STREAK',
-            rewardType: 'XP',
-            rewardAmount: 1500,
-            minAct: 3,
-            validationConfig: {
+            reward_type: 'XP',
+            reward_amount: 1500,
+            min_act: 3,
+            validation_config: {
                 targetCount: 3,
                 timeframe: '7d'
             }
@@ -122,10 +122,10 @@ async function main() {
             title: 'Gourmet Hunter',
             description: 'Essayez 10 items différents',
             type: 'COLLECTION',
-            rewardType: 'XP',
-            rewardAmount: 2000,
-            minAct: 3,
-            validationConfig: {
+            reward_type: 'XP',
+            reward_amount: 2000,
+            min_act: 3,
+            validation_config: {
                 targetCount: 10
             }
         },
@@ -134,10 +134,10 @@ async function main() {
             title: 'High Roller',
             description: 'Dépensez 500 TND au total',
             type: 'SPEND',
-            rewardType: 'XP',
-            rewardAmount: 2500,
-            minAct: 3,
-            validationConfig: {
+            reward_type: 'XP',
+            reward_amount: 2500,
+            min_act: 3,
+            validation_config: {
                 spendAmount: 500
             }
         },
@@ -146,10 +146,10 @@ async function main() {
             title: 'Sharing is Caring',
             description: 'Invitez 3 amis',
             type: 'SOCIAL',
-            rewardType: 'TOKEN',
-            rewardAmount: 500,
-            minAct: 3,
-            validationConfig: {
+            reward_type: 'TOKEN',
+            reward_amount: 500,
+            min_act: 3,
+            validation_config: {
                 targetCount: 3
             }
         },
@@ -162,10 +162,10 @@ async function main() {
             title: 'Godfather Feast',
             description: 'Commande > 250 TND',
             type: 'COLLECTION',
-            rewardType: 'TOKEN',
-            rewardAmount: 1000,
-            minAct: 4,
-            validationConfig: {
+            reward_type: 'TOKEN',
+            reward_amount: 1000,
+            min_act: 4,
+            validation_config: {
                 minOrderValue: 250
             }
         },
@@ -174,10 +174,10 @@ async function main() {
             title: 'Loyalty King',
             description: 'Maintenir un streak de 10 jours',
             type: 'STREAK',
-            rewardType: 'XP',
-            rewardAmount: 5000,
-            minAct: 4,
-            validationConfig: {
+            reward_type: 'XP',
+            reward_amount: 5000,
+            min_act: 4,
+            validation_config: {
                 targetCount: 10
             }
         },
@@ -186,10 +186,10 @@ async function main() {
             title: 'Master Collector',
             description: 'Posséder 20 items du Shop',
             type: 'COLLECTION',
-            rewardType: 'XP',
-            rewardAmount: 7500,
-            minAct: 4,
-            validationConfig: {
+            reward_type: 'XP',
+            reward_amount: 7500,
+            min_act: 4,
+            validation_config: {
                 targetCount: 20
             }
         },
@@ -198,20 +198,20 @@ async function main() {
             title: 'The Philanthropist',
             description: 'Offrir une carte cadeau (Soon)',
             type: 'SOCIAL',
-            rewardType: 'TOKEN',
-            rewardAmount: 2000,
-            minAct: 4,
-            validationConfig: {}
+            reward_type: 'TOKEN',
+            reward_amount: 2000,
+            min_act: 4,
+            validation_config: {}
         },
         {
             id: 'q-act4-5',
             title: 'Syndicate Icon',
             description: 'Atteindre 50000 XP Total',
             type: 'ONE_OFF',
-            rewardType: 'TOKEN',
-            rewardAmount: 5000,
-            minAct: 4,
-            validationConfig: {
+            reward_type: 'TOKEN',
+            reward_amount: 5000,
+            min_act: 4,
+            validation_config: {
                 targetXP: 50000
             }
         }
@@ -225,11 +225,11 @@ async function main() {
             where: { id: q.id },
             update: {
                 ...q,
-                updatedAt: new Date()
+                updated_at: new Date()
             },
             create: {
                 ...q,
-                updatedAt: new Date()
+                updated_at: new Date()
             },
         });
     }
