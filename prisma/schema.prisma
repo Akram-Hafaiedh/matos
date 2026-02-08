@@ -195,19 +195,19 @@ model promotions {
 }
 
 model quests {
-  id               String        @id
-  title            String
-  description      String
-  type             String
-  rewardType       String
-  rewardAmount     Int
-  minAct           Int           @default(0)
-  validationConfig Json?
-  isActive         Boolean       @default(true)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime
-  emoji            String?
-  user_quests      user_quests[]
+  id                String        @id
+  title             String
+  description       String
+  type              String
+  reward_type       String
+  reward_amount     Int
+  min_act           Int           @default(0)
+  validation_config Json?
+  is_active         Boolean       @default(true)
+  created_at        DateTime      @default(now())
+  updated_at        DateTime
+  emoji             String?
+  user_quests       user_quests[]
 }
 
 model reviews {
@@ -239,12 +239,12 @@ model shop_items {
   level       Int      @default(1)
   rarity      String
   emoji       String
-  isActive    Boolean  @default(true)
+  is_active   Boolean  @default(true)
   metadata    Json?
   multiplier  Float    @default(1.0)
-  boostType   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime
+  boost_type  String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime
   description String?
 }
 
@@ -309,19 +309,19 @@ model User {
   id              String            @id
   name            String?
   email           String?           @unique
-  emailVerified   DateTime?         @map("email_verified")
+  email_verified  DateTime?
   password        String?           @db.VarChar(255)
   image           String?
   phone           String?           @db.VarChar(20)
   address         String?
   role            String            @default("customer") @db.VarChar(50)
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @updatedAt @map("updated_at")
-  loyaltyPoints   Int               @default(0) @map("loyalty_points")
-  selectedFrame   String?           @map("selected_frame")
-  selectedBg      String?           @map("selected_bg")
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  loyalty_points  Int               @default(0)
+  selected_frame  String?
+  selected_bg     String?
   tokens          Int               @default(0)
-  selectedTitle   String?           @map("selected_title")
+  selected_title  String?
   accounts        accounts[]
   cart_sessions   cart_sessions[]
   menu_likes      menu_likes[]
@@ -365,4 +365,25 @@ model content_pages {
   subtitle   String?
   content    Json // Array of sections { icon, title, content }
   updated_at DateTime @updatedAt
+}
+
+model email_settings {
+  id         Int      @id @default(1)
+  host       String   @default("smtp.gmail.com") @db.VarChar(255)
+  port       Int      @default(587)
+  user       String   @default("") @db.VarChar(255)
+  password   String   @default("") @db.VarChar(255)
+  from_email String   @default("hello@matos.tn") @db.VarChar(255)
+  from_name  String   @default("Mato's") @db.VarChar(255)
+  encryption String   @default("TLS") @db.VarChar(20)
+  updated_at DateTime @updatedAt
+}
+
+model sent_emails {
+  id         Int      @id @default(autoincrement())
+  to         String   @db.VarChar(255)
+  subject    String   @db.VarChar(255)
+  content    String   @db.Text
+  status     String   @default("sent") @db.VarChar(50)
+  created_at DateTime @default(now())
 }

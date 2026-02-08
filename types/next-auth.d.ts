@@ -9,9 +9,9 @@ declare module "next-auth" {
             id: string
             role?: string | null
             phone?: string | null
-            selectedBg?: string | null
-            selectedFrame?: string | null
-            loyaltyPoints?: number
+            selected_bg?: string | null
+            selected_frame?: string | null
+            loyalty_points?: number
         } & DefaultSession["user"]
     }
 
@@ -19,9 +19,9 @@ declare module "next-auth" {
         id: string
         role?: string | null
         phone?: string | null
-        selectedBg?: string | null
-        selectedFrame?: string | null
-        loyaltyPoints?: number
+        selected_bg?: string | null
+        selected_frame?: string | null
+        loyalty_points?: number
     }
 }
 
@@ -30,8 +30,8 @@ declare module "next-auth/jwt" {
         id: string
         role?: string | null
         phone?: string | null
-        selectedBg?: string | null
-        selectedFrame?: string | null
-        loyaltyPoints?: number
+        selected_bg?: string | null
+        selected_frame?: string | null
+        loyalty_points?: number
     }
 }

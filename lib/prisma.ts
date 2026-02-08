@@ -30,7 +30,7 @@ const adapter = new PrismaPg(pool);
 let prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 
 // Handle stale global instance in development (after schema changes)
-if (process.env.NODE_ENV !== 'production' && prisma && (!(prisma as any).content_pages || !(prisma as any).hero_slides)) {
+if (process.env.NODE_ENV !== 'production' && prisma && (!(prisma as any).content_pages || !(prisma as any).hero_slides || !(prisma as any).email_settings || !(prisma as any).sent_emails)) {
     console.log('[Prisma] Stale instance detected (missing models). Re-instantiating...');
     prisma = new PrismaClient({ adapter });
     globalForPrisma.prisma = prisma;
