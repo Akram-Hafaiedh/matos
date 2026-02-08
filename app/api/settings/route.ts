@@ -23,11 +23,7 @@ export async function GET() {
             });
         }
 
-        return NextResponse.json({
-            ...settings,
-            googleMapsUrl: settings.google_maps_url,
-            updatedAt: settings.updated_at
-        });
+        return NextResponse.json(settings);
     } catch (error) {
         console.error('Error fetching settings:', error);
         return NextResponse.json(
@@ -72,7 +68,7 @@ export async function PUT(req: Request) {
                 instagram: data.instagram || null,
                 tiktok: data.tiktok || null,
                 whatsapp: data.whatsapp || null,
-                google_maps_url: data.googleMapsUrl || null,
+                google_maps_url: data.google_maps_url || null,
                 updated_at: new Date()
             },
             create: {
@@ -85,7 +81,7 @@ export async function PUT(req: Request) {
                 instagram: data.instagram || null,
                 tiktok: data.tiktok || null,
                 whatsapp: data.whatsapp || null,
-                google_maps_url: data.googleMapsUrl || null,
+                google_maps_url: data.google_maps_url || null,
                 updated_at: new Date()
             },
         });

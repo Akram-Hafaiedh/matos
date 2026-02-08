@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
 
         // Fetch all active quests
         const allQuests = await prisma.quests.findMany({
-            where: { isActive: true },
-            orderBy: { minAct: 'asc' }
+            where: { is_active: true },
+            orderBy: { min_act: 'asc' }
         });
 
         // Fetch user progress
@@ -39,13 +39,13 @@ export async function GET(request: NextRequest) {
         // Fetch user data for points
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { loyaltyPoints: true }
+            select: { loyalty_points: true }
         });
 
         return NextResponse.json({
             success: true,
             quests: questsWithProgress,
-            userPoints: user?.loyaltyPoints || 0
+            userPoints: user?.loyalty_points || 0
         });
 
     } catch (error) {

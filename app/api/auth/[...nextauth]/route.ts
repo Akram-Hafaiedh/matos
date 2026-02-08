@@ -49,9 +49,9 @@ export const authOptions: NextAuthOptions = {
                     image: user.image,
                     role: user.role,
                     phone: user.phone,
-                    selectedBg: user.selectedBg,
-                    selectedFrame: user.selectedFrame,
-                    loyaltyPoints: user.loyaltyPoints
+                    selected_bg: user.selected_bg,
+                    selected_frame: user.selected_frame,
+                    loyalty_points: user.loyalty_points
                 };
             }
         })
@@ -64,16 +64,16 @@ export const authOptions: NextAuthOptions = {
                 token.picture = user.image;
                 token.role = (user as any).role;
                 token.phone = (user as any).phone;
-                token.selectedBg = (user as any).selectedBg;
-                token.selectedFrame = (user as any).selectedFrame;
-                token.loyaltyPoints = (user as any).loyaltyPoints;
+                token.selected_bg = (user as any).selected_bg;
+                token.selected_frame = (user as any).selected_frame;
+                token.loyalty_points = (user as any).loyalty_points;
             }
             // Logic to support session update
             if (trigger === "update" && session?.user) {
                 token.name = session.user.name;
                 token.picture = session.user.image;
-                token.selectedBg = session.user.selectedBg;
-                token.selectedFrame = session.user.selectedFrame;
+                token.selected_bg = session.user.selected_bg;
+                token.selected_frame = session.user.selected_frame;
             }
             return token;
         },
@@ -84,9 +84,9 @@ export const authOptions: NextAuthOptions = {
                 session.user.email = token.email;
                 session.user.image = token.picture as string | null | undefined;
                 session.user.phone = token.phone as string | null | undefined;
-                session.user.selectedBg = token.selectedBg as string | null | undefined;
-                session.user.selectedFrame = token.selectedFrame as string | null | undefined;
-                session.user.loyaltyPoints = token.loyaltyPoints as number | undefined;
+                session.user.selected_bg = token.selected_bg as string | null | undefined;
+                session.user.selected_frame = token.selected_frame as string | null | undefined;
+                session.user.loyalty_points = token.loyalty_points as number | undefined;
             }
             return session;
         },

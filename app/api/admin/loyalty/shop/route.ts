@@ -13,7 +13,7 @@ export async function GET(req: Request) {
 
     try {
         const items = await prisma.shop_items.findMany({
-            orderBy: { createdAt: 'desc' }
+            orderBy: { created_at: 'desc' }
         });
         return NextResponse.json({ success: true, items });
     } catch (error) {
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json();
-        const { name, type, price, act, level, rarity, emoji, isActive, metadata } = body;
+        const { name, type, price, act, level, rarity, emoji, is_active, metadata } = body;
 
         const item = await prisma.shop_items.create({
             data: {
@@ -42,9 +42,9 @@ export async function POST(req: Request) {
                 level: parseInt(level),
                 rarity,
                 emoji: emoji || '📦',
-                isActive: isActive ?? true,
+                is_active: is_active ?? true,
                 metadata: metadata || {},
-                updatedAt: new Date()
+                updated_at: new Date()
             }
         });
 

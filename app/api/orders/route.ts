@@ -204,49 +204,22 @@ export async function GET(request: NextRequest) {
         ]);
 
 
-        // Transform orders to match frontend expectations
-        const transformedOrders = (orders as any[]).map(order => ({
-            id: order.id.toString(),
-            orderNumber: order.order_number,
-            deliveryInfo: {
-                fullName: order.customer_name,
-                phone: order.customer_phone,
-                email: order.customer_email,
-                address: order.delivery_address,
-                city: order.city,
-                notes: order.notes
-            },
-            cart: order.order_items.map((oi: any) => ({
-                ...oi,
-                name: oi.item_name,
-                itemPrice: oi.item_price,
-                selectedSize: oi.selected_size,
-                menuItem: oi.menu_items,
-                promotion: oi.promotions
-            })),
-            paymentMethod: order.payment_method,
-            totalPrice: order.subtotal,
-            deliveryFee: order.delivery_fee,
-            finalTotal: order.total_amount,
-            status: order.status,
-            orderType: (order as any).order_type,
-            deliveryTime: order.delivery_time,
-            scheduledTime: order.scheduled_time,
-            createdAt: order.created_at.toISOString(),
-            updatedAt: order.updated_at.toISOString(),
-            confirmedAt: order.confirmed_at,
-            preparingAt: order.preparing_at,
-            readyAt: order.ready_at,
-            outForDeliveryAt: order.out_for_delivery_at,
-            deliveredAt: order.delivered_at,
-            cancelledAt: order.cancelled_at,
-            cancelMessage: order.cancel_message,
-            user: order.users
-        }));
-
         return NextResponse.json({
             success: true,
-            orders: transformedOrders,
+            orders: orders.map(order => ({
+                ...order,
+                id: order.id.toString(),
+                // Keep the 'cart' alias if it helps, but use snake_case for items
+                cart: order.order_items.map((oi: any) => ({
+                    ...oi,
+                    item_name: oi.item_name,
+                    item_price: oi.item_price,
+                    selected_size: oi.selected_size,
+                    menu_item: oi.menu_items,
+                    promotion: oi.promotions
+                })),
+                user: order.users
+            })),
             pagination: {
                 totalItems,
                 totalPages: Math.ceil(totalItems / limit),

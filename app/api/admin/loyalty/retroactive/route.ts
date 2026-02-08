@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
         // Find all users with 0 points (likely registered before the bonus was added)
         const usersToUpdate = await prisma.user.findMany({
             where: {
-                loyaltyPoints: 0
+                loyalty_points: 0
             }
         });
 
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
         for (const user of usersToUpdate) {
             await prisma.user.update({
                 where: { id: user.id },
-                data: { loyaltyPoints: 10 }
+                data: { loyalty_points: 10 }
             });
             usersCatchupCount++;
         }
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
                         prisma.user.update({
                             where: { id: order.user_id },
                             data: {
-                                loyaltyPoints: { increment: finalXP },
+                                loyalty_points: { increment: finalXP },
                                 tokens: { increment: finalTokens }
                             }
                         }),

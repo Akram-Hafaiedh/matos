@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
             ];
         }
 
-        const [totalItems, tickets] = await Promise.all([
+        const [totalItems, ticketsRaw] = await Promise.all([
             prisma.support_tickets.count({ where }),
             prisma.support_tickets.findMany({
                 where,
@@ -65,6 +65,12 @@ export async function GET(request: NextRequest) {
                 take: limit
             })
         ]);
+
+        const tickets = ticketsRaw.map(t => ({
+            ...t,
+            user: t.users,
+            order: t.orders,
+        }));
 
         return NextResponse.json({
             success: true,
@@ -94,7 +100,7 @@ export async function POST(request: NextRequest) {
         // Let's allow guest tickets but link to user if logged in
 
         const body = await request.json();
-        const { subject, description, orderId, priority } = body;
+        const { subject, description, orderId, priority, attachments } = body;
 
         if (!subject || !description) {
             return NextResponse.json({
@@ -114,6 +120,19 @@ export async function POST(request: NextRequest) {
                 updated_at: new Date()
             }
         });
+
+        // If there are attachments, create an initial auto-message to hold them
+        if (attachments && Array.isArray(attachments) && attachments.length > 0 && session?.user) {
+            await prisma.ticket_messages.create({
+                data: {
+                    ticket_id: ticket.id,
+                    user_id: (session.user as any).id,
+                    message: "📦 Pièces jointes initiales",
+                    attachments: attachments,
+                    is_admin: false
+                }
+            });
+        }
 
         return NextResponse.json({
             success: true,

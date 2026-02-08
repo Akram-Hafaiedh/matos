@@ -12,7 +12,7 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id: orderIdStr } = await params;
+        const { id: identifier } = await params;
         const session = await getServerSession(authOptions);
 
         if (!session) {
@@ -22,23 +22,50 @@ export async function GET(
             }, { status: 401 });
         }
 
-        const order = await prisma.orders.findUnique({
-            where: { id: parseInt(orderIdStr) },
-            include: {
-                order_items: {
-                    include: {
-                        menu_items: true
-                    }
-                },
-                users: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true
+        // Try lookup by ID if numeric, otherwise try order_number
+        const isNumeric = /^\d+$/.test(identifier);
+        let order = null;
+
+        if (isNumeric) {
+            order = await prisma.orders.findUnique({
+                where: { id: parseInt(identifier) },
+                include: {
+                    order_items: {
+                        include: {
+                            menu_items: true
+                        }
+                    },
+                    users: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
+
+        // If not found by ID or not numeric, try looking up by order_number
+        if (!order) {
+            order = await prisma.orders.findUnique({
+                where: { order_number: identifier },
+                include: {
+                    order_items: {
+                        include: {
+                            menu_items: true
+                        }
+                    },
+                    users: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true
+                        }
+                    }
+                }
+            });
+        }
 
         if (!order) {
             return NextResponse.json({
@@ -50,10 +77,11 @@ export async function GET(
         return NextResponse.json({
             success: true,
             order: {
+                ...order,
                 id: order.id.toString(),
-                orderNumber: order.order_number,
-                deliveryInfo: {
-                    fullName: order.customer_name,
+                // Grouping delivery info for frontend ease, but using snake_case keys
+                delivery_info: {
+                    full_name: order.customer_name,
                     phone: order.customer_phone,
                     email: order.customer_email,
                     address: order.delivery_address,
@@ -62,28 +90,11 @@ export async function GET(
                 },
                 cart: order.order_items.map((oi: any) => ({
                     ...oi,
-                    name: oi.item_name,
-                    itemPrice: oi.item_price,
-                    selectedSize: oi.selected_size,
-                    menuItem: oi.menu_items
+                    item_name: oi.item_name,
+                    item_price: oi.item_price,
+                    selected_size: oi.selected_size,
+                    menu_item: oi.menu_items
                 })),
-                paymentMethod: order.payment_method,
-                totalPrice: order.subtotal,
-                deliveryFee: order.delivery_fee,
-                finalTotal: order.total_amount,
-                status: order.status,
-                orderType: (order as any).order_type,
-                deliveryTime: order.delivery_time,
-                scheduledTime: order.scheduled_time,
-                createdAt: order.created_at.toISOString(),
-                updatedAt: order.updated_at.toISOString(),
-                confirmedAt: order.confirmed_at,
-                preparingAt: order.preparing_at,
-                readyAt: order.ready_at,
-                outForDeliveryAt: order.out_for_delivery_at,
-                deliveredAt: order.delivered_at,
-                cancelledAt: order.cancelled_at,
-                cancelMessage: order.cancel_message,
                 user: order.users
             }
         });
@@ -185,7 +196,7 @@ export async function PATCH(
                 prisma.user.update({
                     where: { id: order.user_id },
                     data: {
-                        loyaltyPoints: { increment: finalXP },
+                        loyalty_points: { increment: finalXP },
                         tokens: { increment: finalTokens }
                     }
                 }),
@@ -229,10 +240,10 @@ export async function PATCH(
         return NextResponse.json({
             success: true,
             order: {
+                ...order,
                 id: order.id.toString(),
-                orderNumber: order.order_number,
-                deliveryInfo: {
-                    fullName: order.customer_name,
+                delivery_info: {
+                    full_name: order.customer_name,
                     phone: order.customer_phone,
                     email: order.customer_email,
                     address: order.delivery_address,
@@ -241,27 +252,10 @@ export async function PATCH(
                 },
                 cart: (order as any).order_items?.map((oi: any) => ({
                     ...oi,
-                    name: oi.item_name,
-                    itemPrice: oi.item_price,
-                    selectedSize: oi.selected_size
+                    item_name: oi.item_name,
+                    item_price: oi.item_price,
+                    selected_size: oi.selected_size
                 })),
-                paymentMethod: order.payment_method,
-                totalPrice: order.subtotal,
-                deliveryFee: order.delivery_fee,
-                finalTotal: order.total_amount,
-                status: order.status,
-                orderType: (order as any).order_type,
-                deliveryTime: order.delivery_time,
-                scheduledTime: order.scheduled_time,
-                createdAt: order.created_at.toISOString(),
-                updatedAt: order.updated_at.toISOString(),
-                confirmedAt: order.confirmed_at,
-                preparingAt: order.preparing_at,
-                readyAt: order.ready_at,
-                outForDeliveryAt: order.out_for_delivery_at,
-                deliveredAt: order.delivered_at,
-                cancelledAt: order.cancelled_at,
-                cancelMessage: order.cancel_message,
                 user: order.users
             },
             message: 'Statut mis à jour avec succès'

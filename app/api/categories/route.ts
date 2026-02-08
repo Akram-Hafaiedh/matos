@@ -31,19 +31,9 @@ export async function GET(request: NextRequest) {
             })
         ]);
 
-        const formattedCategories = categories.map(cat => ({
-            ...cat,
-            displayOrder: cat.display_order,
-            isActive: cat.is_active,
-            showInHero: cat.show_in_hero,
-            heroTitle: cat.hero_title,
-            heroSubtitle: cat.hero_subtitle,
-            heroColor: cat.hero_color
-        }));
-
         return NextResponse.json({
             success: true,
-            categories: formattedCategories,
+            categories,
             pagination: {
                 totalItems,
                 totalPages: Math.ceil(totalItems / limit),
@@ -73,7 +63,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { name, emoji, displayOrder } = body;
+        const { name, emoji, display_order: displayOrder } = body;
 
         // Validation
         if (!name) {

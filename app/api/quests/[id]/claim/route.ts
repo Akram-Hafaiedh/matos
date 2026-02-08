@@ -46,14 +46,14 @@ export async function POST(
             });
 
             // 3. Award Rewards
-            const rewardType = userQuest.quests.rewardType;
-            let rewardAmount = userQuest.quests.rewardAmount;
+            const rewardType = userQuest.quests.reward_type;
+            let rewardAmount = userQuest.quests.reward_amount;
 
             if (rewardType === 'XP') {
                 rewardAmount = Math.floor(rewardAmount * xpMultiplier);
                 await tx.user.update({
                     where: { id: userId },
-                    data: { loyaltyPoints: { increment: rewardAmount } }
+                    data: { loyalty_points: { increment: rewardAmount } }
                 });
             } else if (rewardType === 'TOKEN') {
                 // Apply token multiplier to quest token rewards

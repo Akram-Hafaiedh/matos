@@ -6,18 +6,18 @@ export async function GET() {
         const topUsers = await prisma.user.findMany({
             where: {
                 role: 'customer',
-                loyaltyPoints: { gt: 0 }
+                loyalty_points: { gt: 0 }
             },
             select: {
                 id: true,
                 name: true,
                 image: true,
-                loyaltyPoints: true,
-                selectedFrame: true,
-                selectedBg: true
+                loyalty_points: true,
+                selected_frame: true,
+                selected_bg: true
             },
             orderBy: {
-                loyaltyPoints: 'desc'
+                loyalty_points: 'desc'
             },
             take: 10
         });

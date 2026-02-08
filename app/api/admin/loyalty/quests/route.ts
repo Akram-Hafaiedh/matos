@@ -13,7 +13,7 @@ export async function GET(req: Request) {
 
     try {
         const quests = await prisma.quests.findMany({
-            orderBy: { createdAt: 'desc' }
+            orderBy: { created_at: 'desc' }
         });
         return NextResponse.json({ success: true, quests });
     } catch (error) {
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json();
-        const { title, description, type, rewardType, rewardAmount, minAct, validationConfig, isActive, emoji } = body;
+        const { title, description, type, reward_type, reward_amount, min_act, validation_config, is_active, emoji } = body;
 
         const quest = await prisma.quests.create({
             data: {
@@ -38,13 +38,13 @@ export async function POST(req: Request) {
                 title,
                 description,
                 type,
-                rewardType,
-                rewardAmount: parseInt(rewardAmount),
-                minAct: parseInt(minAct),
-                validationConfig: validationConfig || {},
-                isActive: isActive ?? true,
+                reward_type,
+                reward_amount: parseInt(reward_amount),
+                min_act: parseInt(min_act),
+                validation_config: validation_config || {},
+                is_active: is_active ?? true,
                 emoji: emoji || '📜',
-                updatedAt: new Date()
+                updated_at: new Date()
             }
         });
 

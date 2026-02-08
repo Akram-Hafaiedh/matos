@@ -19,9 +19,9 @@ export async function GET(request: Request) {
                         name: true,
                         role: true,
                         image: true,
-                        loyaltyPoints: true,
-                        selectedBg: true,
-                        selectedFrame: true,
+                        loyalty_points: true,
+                        selected_bg: true,
+                        selected_frame: true,
                     }
                 },
                 menu_items: {
@@ -80,8 +80,8 @@ export async function GET(request: Request) {
         for (const review of reviews) {
             const rank = await prisma.user.count({
                 where: {
-                    loyaltyPoints: {
-                        gt: review.users.loyaltyPoints || 0
+                    loyalty_points: {
+                        gt: review.users.loyalty_points || 0
                     }
                 }
             }) + 1;
@@ -122,7 +122,7 @@ export async function POST(request: Request) {
                     select: {
                         name: true,
                         image: true,
-                        loyaltyPoints: true,
+                        loyalty_points: true,
                     }
                 }
             }

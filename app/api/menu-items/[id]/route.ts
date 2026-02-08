@@ -33,13 +33,7 @@ export async function GET(
 
         return NextResponse.json({
             success: true,
-            menuItem: {
-                ...menuItem,
-                imageUrl: (menuItem as any).image_url,
-                displayOrder: (menuItem as any).display_order,
-                categoryId: (menuItem as any).category_id,
-                isActive: (menuItem as any).is_active
-            }
+            menuItem: menuItem
         });
     } catch (error) {
         console.error('Error fetching menu item:', error);
@@ -77,14 +71,15 @@ export async function PUT(
             name,
             description,
             price,
-            categoryId,
+            category_id,
             image_url,
             ingredients,
             is_active,
             popular,
             bestseller,
             hot,
-            discount
+            discount,
+            display_order
         } = body;
 
         const updateData: any = {
@@ -96,12 +91,13 @@ export async function PUT(
             popular,
             bestseller,
             hot,
-            discount
+            discount,
+            display_order
         };
 
-        if (categoryId) {
+        if (category_id) {
             updateData.categories = {
-                connect: { id: parseInt(categoryId) }
+                connect: { id: parseInt(category_id as any) }
             };
         }
 
@@ -123,13 +119,7 @@ export async function PUT(
 
         return NextResponse.json({
             success: true,
-            menuItem: {
-                ...menuItem,
-                imageUrl: (menuItem as any).image_url,
-                displayOrder: (menuItem as any).display_order,
-                categoryId: (menuItem as any).category_id,
-                isActive: (menuItem as any).is_active
-            }
+            menuItem: menuItem
         });
 
     } catch (error) {

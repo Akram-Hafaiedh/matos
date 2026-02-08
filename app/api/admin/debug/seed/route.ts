@@ -26,17 +26,17 @@ export async function POST() {
             const email = `${name.toLowerCase().replace(/ /g, '.')}@example.com`;
 
             // Random points between 50 and 2500
-            const loyaltyPoints = Math.floor(Math.random() * 2450) + 50;
+            const loyalty_points = Math.floor(Math.random() * 2450) + 50;
 
             const user = await prisma.user.upsert({
                 where: { email },
-                update: { loyaltyPoints },
+                update: { loyalty_points },
                 create: {
                     id: `user_${Math.random().toString(36).slice(2, 11)}`,
                     name,
                     email,
                     password: hashedPassword,
-                    loyaltyPoints,
+                    loyalty_points,
                     role: 'customer',
                     image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
                 }
@@ -47,7 +47,7 @@ export async function POST() {
         return NextResponse.json({
             success: true,
             message: `Successfully seeded ${users.length} users.`,
-            users: users.map(u => ({ id: u.id, name: u.name, points: u.loyaltyPoints }))
+            users: users.map(u => ({ id: u.id, name: u.name, points: u.loyalty_points }))
         });
 
     } catch (error) {

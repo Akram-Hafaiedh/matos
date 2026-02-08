@@ -29,10 +29,10 @@ export async function GET(request: NextRequest) {
                 name: true,
                 phone: true,
                 role: true,
-                createdAt: true,
+                created_at: true,
                 // Explicitly OMIT password_hash
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { created_at: 'desc' },
         });
 
         return NextResponse.json({
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
                 name: true,
                 phone: true,
                 role: true,
-                createdAt: true,
+                created_at: true,
             },
         });
 

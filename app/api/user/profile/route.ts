@@ -21,16 +21,16 @@ export async function GET(request: NextRequest) {
                 id: true,
                 name: true,
                 email: true,
-                loyaltyPoints: true,
+                loyalty_points: true,
                 tokens: true,
                 phone: true,
                 address: true,
                 role: true,
                 image: true,
-                selectedFrame: true,
-                selectedBg: true,
-                selectedTitle: true,
-                createdAt: true,
+                selected_frame: true,
+                selected_bg: true,
+                selected_title: true,
+                created_at: true,
                 inventory: true,
                 _count: {
                     select: { orders: true }
@@ -47,8 +47,8 @@ export async function GET(request: NextRequest) {
 
         const rank = await prisma.user.count({
             where: {
-                loyaltyPoints: {
-                    gt: user.loyaltyPoints || 0
+                loyalty_points: {
+                    gt: user.loyalty_points || 0
                 }
             }
         }) + 1;
@@ -81,7 +81,7 @@ export async function PATCH(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { name, phone, address, image, selectedFrame, selectedBg, selectedTitle } = body;
+        const { name, phone, address, image, selected_frame, selected_bg, selected_title } = body;
 
         const updatedUser = await prisma.user.update({
             where: { id: (session.user as any).id },
@@ -90,9 +90,9 @@ export async function PATCH(request: NextRequest) {
                 phone,
                 address,
                 image,
-                selectedFrame,
-                selectedBg,
-                selectedTitle
+                selected_frame,
+                selected_bg,
+                selected_title
             },
             select: {
                 id: true,
@@ -101,9 +101,9 @@ export async function PATCH(request: NextRequest) {
                 phone: true,
                 address: true,
                 image: true,
-                selectedFrame: true,
-                selectedBg: true,
-                selectedTitle: true
+                selected_frame: true,
+                selected_bg: true,
+                selected_title: true
             }
         });
 

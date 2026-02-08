@@ -12,7 +12,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     try {
         const body = await req.json();
-        const { name, type, price, act, level, rarity, emoji, isActive, metadata } = body;
+        const { name, type, price, act, level, rarity, emoji, is_active, metadata } = body;
 
         const item = await prisma.shop_items.update({
             where: { id },
@@ -24,7 +24,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                 level: level !== undefined ? parseInt(level) : undefined,
                 rarity,
                 emoji,
-                isActive,
+                is_active,
                 metadata
             }
         });

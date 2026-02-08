@@ -65,14 +65,10 @@ export async function GET(request: NextRequest) {
                 // Flatten for frontend
                 const result = {
                     ...menuItem,
-                    imageUrl: menuItem.image_url,
-                    displayOrder: menuItem.display_order,
-                    categoryId: menuItem.category_id,
-                    isActive: menuItem.is_active,
-                    likeCount: displayLikeCount,
-                    isLiked: (menuItem as any).menu_likes?.length > 0,
+                    like_count: displayLikeCount,
+                    is_liked: (menuItem as any).menu_likes?.length > 0,
                     rating: avgRating,
-                    reviewCount: displayReviewCount
+                    review_count: displayReviewCount
                 };
                 return NextResponse.json({ success: true, menuItem: result });
             }
@@ -157,14 +153,11 @@ export async function GET(request: NextRequest) {
 
             return {
                 ...item,
-                imageUrl: item.image_url,
-                displayOrder: item.display_order,
-                categoryId: item.category_id,
-                isActive: item.is_active,
-                likeCount: displayLikeCount,
-                reviewCount: displayReviewCount,
+                like_count: displayLikeCount,
+                review_count: displayReviewCount,
                 rating: avgRating,
-                reviews: undefined
+                reviews: undefined,
+                category: item.categories // Rename categories to category for frontend consistency if needed, or just use categories.
             };
         });
 
@@ -204,18 +197,18 @@ export async function POST(request: NextRequest) {
             name,
             description,
             price,
-            categoryId,
-            imageUrl: image_url,
+            category_id,
+            image_url,
             ingredients,
             popular,
             bestseller,
             hot,
             discount,
-            displayOrder: display_order
+            display_order
         } = body;
 
         // Validation
-        if (!name || !price || !categoryId) {
+        if (!name || !price || !category_id) {
             return NextResponse.json({
                 success: false,
                 error: 'Les champs obligatoires sont manquants (Nom, Prix, Catégorie)'
@@ -234,7 +227,7 @@ export async function POST(request: NextRequest) {
                 description,
                 price: price, // JSON object or number
                 categories: {
-                    connect: { id: parseInt(categoryId) }
+                    connect: { id: parseInt(category_id as any) }
                 },
                 image_url,
                 ingredients: ingredientsArray || [],

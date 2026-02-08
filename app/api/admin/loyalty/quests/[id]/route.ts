@@ -12,7 +12,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     try {
         const body = await req.json();
-        const { title, description, type, rewardType, rewardAmount, minAct, validationConfig, isActive, emoji } = body;
+        const { title, description, type, reward_type, reward_amount, min_act, validation_config, is_active, emoji } = body;
 
         const quest = await prisma.quests.update({
             where: { id },
@@ -20,12 +20,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                 title,
                 description,
                 type,
-                rewardType,
-                rewardAmount: rewardAmount !== undefined ? parseInt(rewardAmount) : undefined,
-                minAct: minAct !== undefined ? parseInt(minAct) : undefined,
-                validationConfig,
+                reward_type,
+                reward_amount: reward_amount !== undefined ? parseInt(reward_amount) : undefined,
+                min_act: min_act !== undefined ? parseInt(min_act) : undefined,
+                validation_config,
                 emoji,
-                isActive
+                is_active
             }
         });
 

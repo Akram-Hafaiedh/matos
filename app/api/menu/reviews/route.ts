@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
             await prisma.user.update({
                 where: { id: (session.user as any).id },
                 data: {
-                    loyaltyPoints: {
+                    loyalty_points: {
                         increment: pointsToAward
                     }
                 }

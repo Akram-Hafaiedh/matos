@@ -49,22 +49,9 @@ export async function GET(request: NextRequest) {
             })
         ]);
 
-        const formattedPromotions = promotions.map(promo => ({
-            ...promo,
-            imageUrl: promo.image_url,
-            selectionRules: promo.selection_rules,
-            originalPrice: promo.original_price,
-            isActive: promo.is_active,
-            isHot: promo.is_hot,
-            badgeText: promo.badge_text,
-            badgeColor: promo.badge_color,
-            startDate: promo.start_date,
-            endDate: promo.end_date
-        }));
-
         return NextResponse.json({
             success: true,
-            promotions: formattedPromotions,
+            promotions,
             pagination: {
                 totalItems,
                 totalPages: Math.ceil(totalItems / limit),
@@ -98,19 +85,19 @@ export async function POST(request: NextRequest) {
             name,
             description,
             price,
-            originalPrice: original_price,
+            original_price,
             discount,
-            imageUrl: image_url,
+            image_url,
             emoji,
-            badgeText: badge_text,
-            badgeColor: badge_color,
-            isActive: is_active,
-            isHot: is_hot,
+            badge_text,
+            badge_color,
+            is_active,
+            is_hot,
             tag,
-            startDate: start_date,
-            endDate: end_date,
+            start_date,
+            end_date,
             conditions,
-            selectionRules: selection_rules
+            selection_rules
         } = body;
 
         if (!name) {

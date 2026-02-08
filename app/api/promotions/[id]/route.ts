@@ -68,19 +68,19 @@ export async function PUT(
             name,
             description,
             price,
-            originalPrice: original_price,
+            original_price,
             discount,
-            imageUrl: image_url,
+            image_url,
             emoji,
-            badgeText: badge_text,
-            badgeColor: badge_color,
-            isActive: is_active,
-            isHot: is_hot,
+            badge_text,
+            badge_color,
+            is_active,
+            is_hot,
             tag,
-            startDate: start_date,
-            endDate: end_date,
+            start_date,
+            end_date,
             conditions,
-            selectionRules: selection_rules
+            selection_rules
         } = body;
 
         const promotion = await prisma.promotions.update({
