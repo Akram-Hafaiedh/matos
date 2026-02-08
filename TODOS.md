@@ -45,7 +45,10 @@
 - [x] Dedicated `/cart` page (Mobile-optimized UX).
 
 ## Admin & Control Panel
-- [x] Fix search & pagination in all Admin lists
+- [x] **Global Admin Pagination**: Implemented server-side pagination for Customers, Reviews, and Support lists.
+- [x] **Communications Hub Architecture**: Grouped Inbox and Email Hub in sidebar for optimized workflow.
+- [x] **Inbox UI Parity**: Synchronized Contact Inbox with Email Hub design standards (spacing, UserAvatar).
+- [x] **Data Mapping Fix**: Harmonized `user` relation naming across Support APIs.
 - [x] Admin Notification Center (Order updates, Tickets)
 - [x] Admin Account Management (Profile & Security)
 - [x] **Client CRM**: Manage customers and loyalty points directly
