@@ -16,18 +16,26 @@ interface Customer {
     phone: string | null;
     address: string | null;
     image: string | null;
-    loyaltyPoints: number;
+    loyalty_points: number;
     tokens: number;
-    totalOrders: number;
-    totalRevenue: number;
-    createdAt: string;
+    total_orders: number;
+    total_revenue: number;
+    created_at: string;
 }
+
+import UserAvatar from '@/components/UserAvatar';
 
 export default function AdminCustomersPage() {
     const { toast } = useToast();
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pagination, setPagination] = useState({
+        totalItems: 0,
+        totalPages: 1,
+        limit: 10
+    });
     const [editingPoints, setEditingPoints] = useState<string | null>(null);
     const [editingTokens, setEditingTokens] = useState<string | null>(null);
     const [newValue, setNewValue] = useState<number>(0);
@@ -35,16 +43,18 @@ export default function AdminCustomersPage() {
     const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchCustomers();
+        fetchCustomers(1);
     }, [search]);
 
-    const fetchCustomers = async () => {
+    const fetchCustomers = async (page = 1) => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/admin/customers?search=${search}`);
+            const res = await fetch(`/api/admin/customers?search=${search}&page=${page}&limit=10`);
             const data = await res.json();
             if (data.success) {
                 setCustomers(data.customers);
+                setPagination(data.pagination);
+                setCurrentPage(data.pagination.currentPage);
             }
         } catch (error) {
             console.error('Error fetching customers:', error);
@@ -53,7 +63,7 @@ export default function AdminCustomersPage() {
         }
     };
 
-    const handleUpdate = async (userId: string, field: 'loyaltyPoints' | 'tokens') => {
+    const handleUpdate = async (userId: string, field: 'loyalty_points' | 'tokens') => {
         setUpdating(true);
         try {
             const res = await fetch('/api/admin/customers', {
@@ -90,7 +100,7 @@ export default function AdminCustomersPage() {
                     <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none mb-4">
                         Gestion <span className="text-yellow-400">Clients</span>
                     </h1>
-                    <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em] ml-1">Analyse des flux et protocoles de fidélité</p>
+                    <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em] ml-1">Analyse des flux et protocoles de fidélité ({pagination.totalItems} cibles)</p>
                 </div>
 
                 <div className="relative group w-full xl:w-96">
@@ -108,10 +118,10 @@ export default function AdminCustomersPage() {
             {/* Stats matrix */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
                 {[
-                    { label: 'Base Clients', value: customers.length, icon: Users, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
-                    { label: 'Revenue Global', value: `${customers.reduce((acc, c) => acc + c.totalRevenue, 0).toLocaleString()} DT`, icon: Activity, color: 'text-green-500', bg: 'bg-green-500/10' },
-                    { label: 'Points Actifs', value: customers.reduce((acc, c) => acc + c.loyaltyPoints, 0).toLocaleString(), icon: Zap, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-                    { label: 'Total Services', value: customers.reduce((acc, c) => acc + c.totalOrders, 0).toLocaleString(), icon: Package, color: 'text-blue-500', bg: 'bg-blue-500/10' }
+                    { label: 'Base Clients', value: pagination.totalItems, icon: Users, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+                    { label: 'Revenue Global', value: `${customers.reduce((acc, c) => acc + c.total_revenue, 0).toLocaleString()} DT`, icon: Activity, color: 'text-green-500', bg: 'bg-green-500/10' },
+                    { label: 'Points Actifs', value: customers.reduce((acc, c) => acc + c.loyalty_points, 0).toLocaleString(), icon: Zap, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+                    { label: 'Total Services', value: customers.reduce((acc, c) => acc + c.total_orders, 0).toLocaleString(), icon: Package, color: 'text-blue-500', bg: 'bg-blue-500/10' }
                 ].map((stat, i) => (
                     <div key={i} className="bg-white/[0.02] p-8 rounded-[3rem] border border-white/5 flex items-center gap-8 group hover:border-white/10 transition-all shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] -rotate-45 translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform duration-700"></div>
@@ -159,15 +169,12 @@ export default function AdminCustomersPage() {
                                 <tr key={customer.id} className="hover:bg-yellow-400/[0.01] transition-all duration-500 group relative">
                                     <td className="px-12 py-10">
                                         <div className="flex items-center gap-6">
-                                            <div className="w-20 h-20 bg-black rounded-[2.2rem] border border-white/5 overflow-hidden flex items-center justify-center font-[1000] text-white text-2xl transition-all duration-700 group-hover:scale-105 group-hover:border-yellow-400/50 shadow-inner group-hover:shadow-[0_0_40px_rgba(250,204,21,0.1)] relative">
-                                                {customer.image ? (
-                                                    <img src={customer.image} alt="" className="w-full h-full object-cover brightness-75 group-hover:brightness-100 transition-all" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black text-gray-800 group-hover:text-yellow-400 transition-colors uppercase italic">
-                                                        {customer.name?.charAt(0) || <User className="w-8 h-8" />}
-                                                    </div>
-                                                )}
-                                            </div>
+                                            <UserAvatar
+                                                image={customer.image}
+                                                name={customer.name || 'U'}
+                                                size="lg"
+                                                className="border-white/5 group-hover:border-yellow-400/50 shadow-inner group-hover:shadow-[0_0_40px_rgba(250,204,21,0.1)] transition-all duration-700"
+                                            />
                                             <div className="space-y-2">
                                                 <div className="text-white font-[1000] text-2xl uppercase italic tracking-tighter group-hover:text-yellow-400 transition-colors leading-none">{customer.name || 'ANONYMOUS ENTITY'}</div>
                                                 <div className="flex items-center gap-3 text-[10px] text-gray-700 font-[1000] uppercase tracking-[0.2em] italic">
@@ -190,10 +197,10 @@ export default function AdminCustomersPage() {
                                     <td className="px-12 py-10 text-right">
                                         <div className="space-y-1">
                                             <div className="text-3xl font-[1000] text-white italic tracking-tighter leading-none group-hover:text-yellow-400 transition-colors transition-all">
-                                                {customer.totalRevenue.toFixed(1)} <span className="text-sm not-italic text-gray-700 uppercase ml-1">DT</span>
+                                                {customer.total_revenue.toFixed(1)} <span className="text-sm not-italic text-gray-700 uppercase ml-1">DT</span>
                                             </div>
                                             <div className="text-[10px] font-[1000] uppercase tracking-[0.3em] text-gray-800 italic">
-                                                {customer.totalOrders} Mission Logged
+                                                {customer.total_orders} Mission Logged
                                             </div>
                                         </div>
                                     </td>
@@ -210,7 +217,7 @@ export default function AdminCustomersPage() {
                                                         disabled={updating}
                                                     />
                                                     <button
-                                                        onClick={() => handleUpdate(customer.id, 'loyaltyPoints')}
+                                                        onClick={() => handleUpdate(customer.id, 'loyalty_points')}
                                                         className="w-12 h-12 flex items-center justify-center bg-yellow-400 rounded-xl text-black hover:scale-110 active:scale-90 transition-all shadow-[0_10px_30px_rgba(250,204,21,0.2)]"
                                                         disabled={updating}
                                                     >
@@ -228,13 +235,13 @@ export default function AdminCustomersPage() {
                                                 <div className="flex items-center gap-6">
                                                     <div className="w-40 px-6 py-3 bg-yellow-400/5 border border-yellow-400/10 rounded-[1.5rem] text-yellow-500 font-[1000] text-base italic tracking-tighter group-hover:bg-yellow-400/10 transition-all shadow-inner flex items-center gap-3">
                                                         <Zap className="w-3.5 h-3.5 text-yellow-400" />
-                                                        {customer.loyaltyPoints.toLocaleString()} <span className="text-[9px] uppercase not-italic opacity-40 ml-1 tracking-[0.2em]">PTS</span>
+                                                        {customer.loyalty_points.toLocaleString()} <span className="text-[9px] uppercase not-italic opacity-40 ml-1 tracking-[0.2em]">PTS</span>
                                                     </div>
                                                     <button
                                                         onClick={() => {
                                                             setEditingPoints(customer.id);
                                                             setEditingTokens(null);
-                                                            setNewValue(customer.loyaltyPoints);
+                                                            setNewValue(customer.loyalty_points);
                                                         }}
                                                         className="w-10 h-10 flex items-center justify-center text-gray-800 hover:text-yellow-400 hover:bg-yellow-400/5 rounded-xl transition-all opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
                                                     >
@@ -298,6 +305,31 @@ export default function AdminCustomersPage() {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Pagination Matrix */}
+                {pagination.totalPages > 1 && (
+                    <div className="p-8 bg-white/[0.02] border-t border-white/5 flex items-center justify-between">
+                        <div className="text-[10px] font-[1000] text-gray-700 uppercase tracking-[0.4em] italic leading-none">
+                            Transmissions {currentPage} / {pagination.totalPages} <span className="mx-4 text-gray-800">•</span> Total: {pagination.totalItems}
+                        </div>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => fetchCustomers(currentPage - 1)}
+                                disabled={currentPage === 1 || loading}
+                                className="px-8 py-4 rounded-xl border border-white/5 text-gray-500 font-bold text-[10px] uppercase tracking-widest hover:text-white hover:bg-white/5 disabled:opacity-20 disabled:pointer-events-none transition-all italic"
+                            >
+                                Previous
+                            </button>
+                            <button
+                                onClick={() => fetchCustomers(currentPage + 1)}
+                                disabled={currentPage === pagination.totalPages || loading}
+                                className="px-8 py-4 rounded-xl border border-white/5 text-gray-500 font-bold text-[10px] uppercase tracking-widest hover:text-white hover:bg-white/5 disabled:opacity-20 disabled:pointer-events-none transition-all italic"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

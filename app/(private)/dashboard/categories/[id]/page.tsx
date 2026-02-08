@@ -15,7 +15,7 @@ export default function CategoryFormPage(props: { params: Promise<{ id: string }
     const [formData, setFormData] = useState({
         name: '',
         emoji: '',
-        displayOrder: 0
+        display_order: 0
     });
     const [loading, setLoading] = useState(!isNew);
     const [saving, setSaving] = useState(false);
@@ -38,7 +38,7 @@ export default function CategoryFormPage(props: { params: Promise<{ id: string }
                     setFormData({
                         name: category.name,
                         emoji: category.emoji || '',
-                        displayOrder: category.displayOrder || 0
+                        display_order: category.display_order || 0
                     });
                 } else {
                     setError('Catégorie introuvable');
@@ -191,8 +191,8 @@ export default function CategoryFormPage(props: { params: Promise<{ id: string }
                                         </label>
                                         <input
                                             type="number"
-                                            value={formData.displayOrder}
-                                            onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+                                            value={formData.display_order}
+                                            onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
                                             className="w-full bg-black/40 border border-white/5 text-white px-8 py-6 rounded-[2rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-center text-sm placeholder:text-gray-800 shadow-inner"
                                             placeholder="0"
                                         />

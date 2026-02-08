@@ -8,10 +8,12 @@ import { TIERS, getUserTier } from '@/lib/loyalty';
 import UserAvatar from '@/components/UserAvatar';
 import EmojiPicker from '@/components/EmojiPicker';
 import TacticalAura from '@/components/TacticalAura';
+import { useSupportModal } from '@/hooks/useSupportModal';
 
 
 
 export default function ProfilePage() {
+    const { openSupportModal } = useSupportModal();
     const { data: session, update: updateSession } = useSession();
     const [userData, setUserData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -116,22 +118,24 @@ export default function ProfilePage() {
             <TacticalAura opacity={0.5} />
             <div className="flex flex-col xl:flex-row items-start xl:items-end justify-between gap-12 border-b border-white/5 pb-16">
                 <div className="space-y-6">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-yellow-400/20 bg-yellow-400/5 backdrop-blur-md">
-                        <UserIcon className="w-3 h-3 text-yellow-400" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-400">Identity Matrix Control</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-yellow-400/10 rounded-2xl flex items-center justify-center border border-yellow-400/20">
+                            <UserIcon className="w-5 h-5 text-yellow-400" />
+                        </div>
+                        <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic leading-none text-left">Identity Matrix Control</span>
                     </div>
-                    <h1 className="text-5xl md:text-8xl font-[1000] uppercase italic tracking-tighter leading-none text-white">
-                        VOTRE <span className="text-yellow-400 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">PROFIL</span>
+                    <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none text-left">
+                        VOTRE <span className="text-yellow-400">PROFIL</span>
                     </h1>
                 </div>
                 {hasChanges() && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center gap-4 px-8 py-5 rounded-[2rem] bg-yellow-400/5 border border-yellow-400/20 shadow-2xl"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex items-center gap-4 px-8 py-4 rounded-[1.5rem] bg-yellow-400 text-black shadow-[0_0_50px_rgba(250,204,21,0.2)]"
                     >
-                        <div className="w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)] animate-pulse"></div>
-                        <span className="text-[10px] text-yellow-400 font-[1000] uppercase tracking-widest italic">
+                        <div className="w-2 h-2 rounded-full bg-black animate-pulse"></div>
+                        <span className="text-[10px] font-[1000] uppercase tracking-widest italic">
                             Modifications en Attente
                         </span>
                     </motion.div>
@@ -231,11 +235,18 @@ export default function ProfilePage() {
                 </div>
 
 
-                <div className="pt-16 border-t border-white/5 flex justify-end">
+                <div className="pt-16 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
+                    <button
+                        type="button"
+                        onClick={() => openSupportModal({ module: 'account', subject: 'Aide avec mon Compte' })}
+                        className="text-gray-500 hover:text-yellow-400 font-black uppercase text-[10px] tracking-widest transition-all italic flex items-center gap-2"
+                    >
+                        Besoin d'aide avec vos accès ?
+                    </button>
                     <button
                         type="submit"
                         disabled={saving || !hasChanges()}
-                        className="bg-yellow-400 hover:bg-white disabled:bg-white/5 disabled:text-gray-700 text-black px-16 py-6 rounded-[2rem] font-[1000] text-[11px] uppercase tracking-[0.3em] transition-all shadow-2xl shadow-yellow-400/10 active:scale-95 flex items-center gap-4 italic"
+                        className="bg-yellow-400 hover:bg-white disabled:bg-white/5 disabled:text-gray-700 text-black px-16 py-6 rounded-[2rem] font-[1000] text-[11px] uppercase tracking-[0.3em] transition-all shadow-2xl shadow-yellow-400/10 active:scale-95 flex items-center gap-4 italic w-full md:w-auto justify-center"
                     >
                         {saving ? (
                             <Loader2 className="w-5 h-5 animate-spin" />

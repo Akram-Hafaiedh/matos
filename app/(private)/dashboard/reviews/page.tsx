@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { Star, MessageSquare, CheckCircle, XCircle, Search, Trash2, Home, Signal, Activity, Sparkles, Hash } from 'lucide-react';
+import UserAvatar from '@/components/UserAvatar';
 
 interface User {
     name: string | null;
@@ -16,31 +17,41 @@ interface MenuItem {
 
 interface Review {
     id: number;
-    userId: string;
-    menuItemId: number;
+    user_id: string;
+    menu_item_id: number;
     rating: number;
     comment: string | null;
-    showOnHome: boolean;
-    createdAt: string;
+    show_on_home: boolean;
+    created_at: string;
     user: User;
-    menuItem: MenuItem;
+    menu_item: MenuItem;
 }
 
 export default function ReviewsManagement() {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pagination, setPagination] = useState({
+        totalItems: 0,
+        totalPages: 1,
+        limit: 10
+    });
 
     useEffect(() => {
-        fetchReviews();
-    }, []);
+        fetchReviews(1);
+    }, [searchQuery]);
 
-    const fetchReviews = async () => {
+    const fetchReviews = async (page = 1) => {
         setLoading(true);
         try {
-            const res = await fetch('/api/admin/reviews');
+            const res = await fetch(`/api/admin/reviews?page=${page}&limit=10`);
             const data = await res.json();
-            setReviews(data);
+            if (data.success) {
+                setReviews(data.reviews);
+                setPagination(data.pagination);
+                setCurrentPage(data.pagination.currentPage);
+            }
         } catch (error) {
             console.error('Error fetching reviews:', error);
         } finally {
@@ -53,10 +64,10 @@ export default function ReviewsManagement() {
             const res = await fetch('/api/admin/reviews', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: review.id, showOnHome: !review.showOnHome })
+                body: JSON.stringify({ id: review.id, show_on_home: !review.show_on_home })
             });
             if (res.ok) {
-                setReviews(prev => prev.map(r => r.id === review.id ? { ...r, showOnHome: !r.showOnHome } : r));
+                setReviews(prev => prev.map(r => r.id === review.id ? { ...r, show_on_home: !r.show_on_home } : r));
             }
         } catch (error) {
             console.error('Error updating review:', error);
@@ -66,7 +77,7 @@ export default function ReviewsManagement() {
     const filteredReviews = reviews.filter(r =>
         (r.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
         (r.comment?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-        (r.menuItem?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
+        (r.menu_item?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
     );
 
     return (
@@ -81,7 +92,7 @@ export default function ReviewsManagement() {
                     <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none mb-4">
                         Gestion des <span className="text-yellow-400">Avis</span>
                     </h1>
-                    <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em] ml-1">Analyse des témoignages et protocoles d'affichage ({reviews.length} signaux)</p>
+                    <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em] ml-1">Analyse des témoignages et protocoles d'affichage ({pagination.totalItems} signaux)</p>
                 </div>
 
                 <div className="relative group w-full xl:w-96">
@@ -109,13 +120,16 @@ export default function ReviewsManagement() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/[0.03]">
-                            {filteredReviews.map((review) => (
+                            {reviews.map((review) => (
                                 <tr key={review.id} className="group/row hover:bg-yellow-400/[0.01] transition-all duration-500 relative">
                                     <td className="px-12 py-10">
                                         <div className="flex items-center gap-6">
-                                            <div className="w-16 h-16 bg-black border border-white/5 rounded-[1.8rem] flex items-center justify-center text-3xl shadow-inner group-hover/row:border-yellow-400/30 transition-all duration-700 group-hover:scale-110">
-                                                {review.user?.image || '👤'}
-                                            </div>
+                                            <UserAvatar
+                                                image={review.user?.image}
+                                                name={review.user?.name || 'A'}
+                                                size="md"
+                                                className="border-white/5 group-hover/row:border-yellow-400/30 transition-all duration-700"
+                                            />
                                             <div className="space-y-1">
                                                 <div className="font-[1000] text-white italic uppercase tracking-tighter text-xl leading-none group-hover/row:text-yellow-400 transition-colors">{review.user?.name || 'ANONYMOUS CLIENT'}</div>
                                                 <div className="text-[10px] text-yellow-400/40 font-[1000] uppercase tracking-[0.2em] italic">{review.user?.role || 'CLIENT'}</div>
@@ -137,20 +151,20 @@ export default function ReviewsManagement() {
                                     <td className="px-12 py-10">
                                         <div className="inline-flex items-center gap-3 px-6 py-3 bg-black/40 border border-white/5 rounded-[1.5rem] text-[10px] font-[1000] uppercase tracking-[0.2em] text-gray-400 italic group-hover/row:border-yellow-400/30 transition-all">
                                             <Hash size={12} className="text-yellow-400/50" />
-                                            {review.menuItem?.name || 'N/A'}
+                                            {review.menu_item?.name || 'N/A'}
                                         </div>
                                     </td>
                                     <td className="px-12 py-10">
                                         <div className="flex justify-center">
                                             <button
                                                 onClick={() => toggleHomeStatus(review)}
-                                                className={`group/sw flex items-center gap-4 px-10 py-4 rounded-[1.8rem] font-[1000] text-[10px] uppercase tracking-[0.3em] transition-all duration-700 italic border ${review.showOnHome
+                                                className={`group/sw flex items-center gap-4 px-10 py-4 rounded-[1.8rem] font-[1000] text-[10px] uppercase tracking-[0.3em] transition-all duration-700 italic border ${review.show_on_home
                                                     ? 'bg-yellow-400 text-black border-yellow-400 shadow-[0_15px_30px_rgba(250,204,21,0.2)]'
                                                     : 'bg-white/[0.02] text-gray-700 border-white/5 hover:border-white/20 hover:text-white'
                                                     }`}
                                             >
-                                                <Home className={`w-4 h-4 ${review.showOnHome ? 'fill-black' : ''}`} />
-                                                {review.showOnHome ? 'TRANSMITTING' : 'ARCHIVED'}
+                                                <Home className={`w-4 h-4 ${review.show_on_home ? 'fill-black' : ''}`} />
+                                                {review.show_on_home ? 'TRANSMITTING' : 'ARCHIVED'}
                                             </button>
                                         </div>
                                     </td>
@@ -160,6 +174,31 @@ export default function ReviewsManagement() {
                     </table>
                 </div>
 
+                {/* Pagination Matrix */}
+                {pagination.totalPages > 1 && (
+                    <div className="p-8 bg-white/[0.02] border-t border-white/5 flex items-center justify-between">
+                        <div className="text-[10px] font-[1000] text-gray-700 uppercase tracking-[0.4em] italic">
+                            Signal {currentPage} / {pagination.totalPages} <span className="mx-4 text-gray-800">•</span> Total: {pagination.totalItems}
+                        </div>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => fetchReviews(currentPage - 1)}
+                                disabled={currentPage === 1 || loading}
+                                className="px-8 py-4 rounded-xl border border-white/5 text-gray-500 font-bold text-[10px] uppercase tracking-widest hover:text-white hover:bg-white/5 disabled:opacity-20 disabled:pointer-events-none transition-all italic"
+                            >
+                                Previous
+                            </button>
+                            <button
+                                onClick={() => fetchReviews(currentPage + 1)}
+                                disabled={currentPage === pagination.totalPages || loading}
+                                className="px-8 py-4 rounded-xl border border-white/5 text-gray-500 font-bold text-[10px] uppercase tracking-widest hover:text-white hover:bg-white/5 disabled:opacity-20 disabled:pointer-events-none transition-all italic"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {loading && (
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-md z-20 flex flex-col items-center justify-center scale-90 opacity-0 animate-in fade-in zoom-in duration-500 fill-mode-forwards space-y-6">
                         <div className="w-16 h-16 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin shadow-[0_0_50px_rgba(250,204,21,0.2)]"></div>
@@ -167,7 +206,7 @@ export default function ReviewsManagement() {
                     </div>
                 )}
 
-                {!loading && filteredReviews.length === 0 && (
+                {!loading && reviews.length === 0 && (
                     <div className="py-60 text-center space-y-8">
                         <div className="bg-white/[0.02] p-12 rounded-[4rem] border border-white/5 border-dashed w-fit mx-auto relative group">
                             <div className="absolute inset-0 bg-yellow-400/5 blur-[40px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>

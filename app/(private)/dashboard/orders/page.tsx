@@ -9,20 +9,20 @@ import SideDrawer from '@/components/SideDrawer';
 
 interface Order {
     id: string;
-    orderNumber: string;
-    deliveryInfo: {
-        fullName: string;
+    order_number: string;
+    delivery_info: {
+        full_name: string;
         phone: string;
         address: string;
         city: string;
         notes?: string;
     };
-    finalTotal: number;
+    total_amount: number;
     status: string;
-    orderType: string;
-    createdAt: string;
+    order_type: string;
+    created_at: string;
     cart: any[];
-    cancelMessage?: string;
+    cancel_message?: string;
 }
 
 export default function AdminOrdersPage() {
@@ -78,7 +78,7 @@ export default function AdminOrdersPage() {
             const response = await fetch(`/api/orders/${orderId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus, cancelMessage })
+                body: JSON.stringify({ status: newStatus, cancel_message: cancelMessage })
             });
 
             const data = await response.json();
@@ -141,7 +141,7 @@ export default function AdminOrdersPage() {
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
                             <label className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic">Motif de Rupture</label>
-                            <span className="text-[10px] font-black text-red-500/50 uppercase tracking-widest italic tracking-[0.2em]">Flux #{cancellingOrder.orderNumber}</span>
+                            <span className="text-[10px] font-black text-red-500/50 uppercase tracking-widest italic tracking-[0.2em]">Flux #{cancellingOrder.order_number}</span>
                         </div>
                         <textarea
                             value={cancelReason}
@@ -157,7 +157,7 @@ export default function AdminOrdersPage() {
                 isOpen={!!selectedOrder}
                 onClose={() => setSelectedOrder(null)}
                 title={selectedOrder ? (
-                    <>ORDER <span className="text-yellow-400">#{selectedOrder.orderNumber}</span></>
+                    <>ORDER <span className="text-yellow-400">#{selectedOrder.order_number}</span></>
                 ) : ''}
                 footer={selectedOrder && (
                     <>
@@ -182,10 +182,10 @@ export default function AdminOrdersPage() {
                             )}
                             {selectedOrder.status === 'preparing' && (
                                 <button
-                                    onClick={() => updateOrderStatus(selectedOrder.id, selectedOrder.orderType === 'pickup' ? 'ready' : 'out_for_delivery')}
+                                    onClick={() => updateOrderStatus(selectedOrder.id, selectedOrder.order_type === 'pickup' ? 'ready' : 'out_for_delivery')}
                                     className="flex-1 bg-yellow-400 text-black px-10 py-6 rounded-[2.5rem] font-[1000] uppercase text-xs tracking-[0.3em] italic shadow-[0_20px_40px_rgba(250,204,21,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4"
                                 >
-                                    {selectedOrder.orderType === 'pickup' ? 'MARQUER PRET [PICKUP]' : 'LANCER LOGISTIQUE [LIVRAISON]'}
+                                    {selectedOrder.order_type === 'pickup' ? 'MARQUER PRET [PICKUP]' : 'LANCER LOGISTIQUE [LIVRAISON]'}
                                     <Signal size={20} strokeWidth={3} />
                                 </button>
                             )}
@@ -224,14 +224,14 @@ export default function AdminOrdersPage() {
 
                                 <div className="flex justify-between items-start relative z-10">
                                     <div className="space-y-2">
-                                        <p className="text-3xl font-[1000] text-white uppercase tracking-tighter italic">{selectedOrder.deliveryInfo.fullName}</p>
+                                        <p className="text-3xl font-[1000] text-white uppercase tracking-tighter italic">{selectedOrder.delivery_info.full_name}</p>
                                         <div className="flex items-center gap-3 text-gray-400">
                                             <Phone size={14} className="text-yellow-400" />
-                                            <p className="font-black text-xs tracking-widest">{selectedOrder.deliveryInfo.phone}</p>
+                                            <p className="font-black text-xs tracking-widest">{selectedOrder.delivery_info.phone}</p>
                                         </div>
                                     </div>
-                                    <div className={`p-6 rounded-[2rem] border transition-colors ${selectedOrder.orderType === 'pickup' ? 'bg-pink-500/5 border-pink-500/20 text-pink-400' : 'bg-blue-500/5 border-blue-400/20 text-blue-400'}`}>
-                                        {selectedOrder.orderType === 'pickup' ? <Store size={32} /> : <Truck size={32} />}
+                                    <div className={`p-6 rounded-[2rem] border transition-colors ${selectedOrder.order_type === 'pickup' ? 'bg-pink-500/5 border-pink-500/20 text-pink-400' : 'bg-blue-500/5 border-blue-400/20 text-blue-400'}`}>
+                                        {selectedOrder.order_type === 'pickup' ? <Store size={32} /> : <Truck size={32} />}
                                     </div>
                                 </div>
 
@@ -241,17 +241,17 @@ export default function AdminOrdersPage() {
                                         <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] italic">Target Vector</p>
                                     </div>
                                     <p className="text-white font-[1000] uppercase italic tracking-widest text-sm leading-relaxed">
-                                        {selectedOrder.deliveryInfo.address}, <span className="text-yellow-400/50">{selectedOrder.deliveryInfo.city}</span>
+                                        {selectedOrder.delivery_info.address}, <span className="text-yellow-400/50">{selectedOrder.delivery_info.city}</span>
                                     </p>
                                 </div>
 
-                                {selectedOrder.deliveryInfo.notes && (
+                                {selectedOrder.delivery_info.notes && (
                                     <div className="pt-8 border-t border-white/5 relative z-10 bg-yellow-400/[0.02] -mx-10 -mb-10 p-10 mt-8 border-dashed border-yellow-400/10">
                                         <div className="flex items-center gap-3 mb-3">
                                             <MessageSquare size={14} className="text-yellow-400/50" />
                                             <p className="text-[10px] font-black text-yellow-400/50 uppercase tracking-[0.3em] italic">Tactical Briefing</p>
                                         </div>
-                                        <p className="text-gray-400 text-xs font-black uppercase italic tracking-widest leading-relaxed">"{selectedOrder.deliveryInfo.notes}"</p>
+                                        <p className="text-gray-400 text-xs font-black uppercase italic tracking-widest leading-relaxed">"{selectedOrder.delivery_info.notes}"</p>
                                     </div>
                                 )}
                             </div>
@@ -271,14 +271,14 @@ export default function AdminOrdersPage() {
                                                 {item.quantity}X
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-white font-[1000] uppercase text-base italic tracking-tight group-hover:text-yellow-400 transition-colors uppercase">{item.name || item.itemName}</p>
+                                                <p className="text-white font-[1000] uppercase text-base italic tracking-tight group-hover:text-yellow-400 transition-colors uppercase">{item.item_name}</p>
                                                 <p className="text-[10px] text-gray-600 font-black uppercase tracking-[0.2em] mt-0.5 italic">
-                                                    {item.selectedSize ? `VARIANT: ${item.selectedSize}` : (item.type === 'promotion' ? 'MENU PROMOTIONNEL' : 'STANDARD PROTOCOL')}
+                                                    {item.selected_size ? `VARIANT: ${item.selected_size}` : (item.type === 'promotion' ? 'MENU PROMOTIONNEL' : 'STANDARD PROTOCOL')}
                                                 </p>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-2xl font-[1000] text-white italic group-hover:scale-110 transition-transform tracking-tighter">{(item.price || item.itemPrice).toFixed(1)} <span className="text-[12px] opacity-40 not-italic uppercase ml-1">DT</span></p>
+                                            <p className="text-2xl font-[1000] text-white italic group-hover:scale-110 transition-transform tracking-tighter">{(item.item_price).toFixed(1)} <span className="text-[12px] opacity-40 not-italic uppercase ml-1">DT</span></p>
                                         </div>
                                     </div>
                                 ))}
@@ -291,7 +291,7 @@ export default function AdminOrdersPage() {
 
                             <div className="flex justify-between items-center text-gray-500 font-black uppercase text-[10px] tracking-[0.3em] relative z-10">
                                 <span>Base Revenue</span>
-                                <span>{selectedOrder.finalTotal.toFixed(1)} DT</span>
+                                <span>{selectedOrder.total_amount.toFixed(1)} DT</span>
                             </div>
                             <div className="flex justify-between items-center text-gray-500 font-black uppercase text-[10px] tracking-[0.3em] relative z-10">
                                 <span>Logistics Tax</span>
@@ -305,7 +305,7 @@ export default function AdminOrdersPage() {
                                     </div>
                                 </div>
                                 <p className="text-6xl font-[1000] text-white tracking-tighter italic leading-none">
-                                    {selectedOrder.finalTotal.toFixed(1)} <span className="text-2xl text-yellow-400 not-italic uppercase ml-2">DT</span>
+                                    {selectedOrder.total_amount.toFixed(1)} <span className="text-2xl text-yellow-400 not-italic uppercase ml-2">DT</span>
                                 </p>
                             </div>
                         </section>
@@ -411,9 +411,9 @@ export default function AdminOrdersPage() {
                                             <div className="space-y-2">
                                                 <div className="flex items-center gap-2">
                                                     <Hash size={10} className="text-yellow-400" />
-                                                    <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.4em] italic">{order.orderNumber}</p>
+                                                    <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.4em] italic">{order.order_number}</p>
                                                 </div>
-                                                <h3 className="text-3xl font-[1000] text-white uppercase tracking-tighter italic group-hover:text-yellow-400 transition-colors">{order.deliveryInfo.fullName}</h3>
+                                                <h3 className="text-3xl font-[1000] text-white uppercase tracking-tighter italic group-hover:text-yellow-400 transition-colors">{order.delivery_info.full_name}</h3>
                                             </div>
                                             <div className={`w-14 h-14 rounded-2xl ${config.bg} ${config.border} border flex items-center justify-center ${config.color} shadow-2xl transition-all group-hover:scale-110 duration-700`}>
                                                 <config.icon size={24} strokeWidth={3} />
@@ -425,14 +425,14 @@ export default function AdminOrdersPage() {
                                                 <p className="text-[9px] font-black text-gray-700 uppercase tracking-[0.3em] italic mb-2">Timestamp</p>
                                                 <div className="flex items-center gap-3 text-white font-[1000] italic text-xs tracking-widest bg-white/[0.03] w-fit px-4 py-2 rounded-xl border border-white/5">
                                                     <Clock size={12} className="text-yellow-400" />
-                                                    {new Date(order.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                    {new Date(order.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
                                                 <p className="text-[9px] font-black text-gray-700 uppercase tracking-[0.3em] italic mb-2">Logistical Channel</p>
-                                                <div className={`flex items-center gap-3 font-[1000] italic text-xs tracking-widest w-fit px-4 py-2 rounded-xl border border-white/5 ${order.orderType === 'pickup' ? 'bg-pink-500/5 text-pink-400 border-pink-500/20' : 'bg-blue-500/5 text-blue-400 border-blue-500/20'}`}>
-                                                    {order.orderType === 'pickup' ? <Store size={12} /> : <Truck size={12} />}
-                                                    <span className="uppercase">{order.orderType === 'pickup' ? 'Pickup' : 'Delivery'}</span>
+                                                <div className={`flex items-center gap-3 font-[1000] italic text-xs tracking-widest w-fit px-4 py-2 rounded-xl border border-white/5 ${order.order_type === 'pickup' ? 'bg-pink-500/5 text-pink-400 border-pink-500/20' : 'bg-blue-500/5 text-blue-400 border-blue-500/20'}`}>
+                                                    {order.order_type === 'pickup' ? <Store size={12} /> : <Truck size={12} />}
+                                                    <span className="uppercase">{order.order_type === 'pickup' ? 'Pickup' : 'Delivery'}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -440,7 +440,7 @@ export default function AdminOrdersPage() {
                                         <div className="flex justify-between items-end pt-2">
                                             <div className="space-y-1">
                                                 <p className="text-[9px] font-black text-gray-700 uppercase tracking-[0.4em] italic mb-1">Fiscal Output</p>
-                                                <p className="text-4xl font-[1000] text-white italic tracking-tighter">{order.finalTotal.toFixed(1)} <span className="text-[14px] text-yellow-400 not-italic uppercase ml-1">DT</span></p>
+                                                <p className="text-4xl font-[1000] text-white italic tracking-tighter">{order.total_amount.toFixed(1)} <span className="text-[14px] text-yellow-400 not-italic uppercase ml-1">DT</span></p>
                                             </div>
                                             <div className="flex items-center -space-x-3">
                                                 {order.cart.slice(0, 3).map((_, i) => (

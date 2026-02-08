@@ -1,28 +1,31 @@
 'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import UserAvatar from '@/components/UserAvatar';
-import { motion, AnimatePresence } from 'framer-motion';
-import TacticalAura from '@/components/TacticalAura';
 import {
     Send,
     ChevronLeft,
-    Clock,
-    Package,
-    User,
     Loader2,
-    AlertCircle,
     MessageSquare,
+    ShieldCheck,
+    User,
+    Package,
+    AlertTriangle,
     Paperclip,
     X,
     FileIcon,
     ImageIcon,
-    ShieldCheck,
-    ArrowLeft,
-    ChevronRight
+    Activity,
+    ShieldAlert,
+    Hash,
+    Clock,
+    Zap
 } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
+import UserAvatar from '@/components/UserAvatar';
+import TacticalAura from '@/components/TacticalAura';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Message {
     id: number;
@@ -40,18 +43,19 @@ interface Ticket {
     status: string;
     priority: string;
     created_at: string;
-    ticket_messages: Message[];
-    user?: { name: string; image: string | null; email?: string; } | null;
+    messages: Message[];
+    user: { name: string; email: string; image: string | null; } | null;
     order?: { order_number: string; total_amount: number; status: string; } | null;
 }
 
-export default function AccountTicketDetailsPage() {
+export default function AdminTicketDetailsPage() {
     const { id } = useParams();
     const router = useRouter();
     const [ticket, setTicket] = useState<Ticket | null>(null);
     const [loading, setLoading] = useState(true);
     const [newMessage, setNewMessage] = useState('');
     const [sending, setSending] = useState(false);
+    const [updatingStatus, setUpdatingStatus] = useState(false);
     const [attachments, setAttachments] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
@@ -60,9 +64,17 @@ export default function AccountTicketDetailsPage() {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
+    // Polling for real-time updates
+    useEffect(() => {
+        fetchTicket();
+        const interval = setInterval(() => {
+            fetchTicket(true);
+        }, 3000); // 3s for polling
+
+        return () => clearInterval(interval);
+    }, [id]);
+
+    useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [ticket?.messages, otheruserTyping]);
 
     const fetchTicket = async (isPolling = false) => {
         try {
@@ -72,123 +84,32 @@ export default function AccountTicketDetailsPage() {
                 const t: Ticket = {
                     ...data.ticket,
                     user: data.ticket.users,
-                    order: data.ticket.orders,
-                    ticket_messages: (data.ticket.ticket_messages || []).map((msg: any) => ({
+                    messages: (data.ticket.ticket_messages || []).map((msg: any) => ({
                         ...msg,
                         user: msg.users
-                    }))
+                    })),
+                    order: data.ticket.orders
                 };
 
-                // Typing logic
-                if (data.ticket.last_admin_typing_at) {
-                    const lastType = new Date(data.ticket.last_admin_typing_at).getTime();
+                // Init typing check
+                if (data.ticket.last_user_typing_at) {
+                    const lastType = new Date(data.ticket.last_user_typing_at).getTime();
                     const now = new Date().getTime();
                     setOtherUserTyping(now - lastType < 5000);
                 } else {
                     setOtherUserTyping(false);
                 }
 
-                setTicket((prev: Ticket | null) => {
+                setTicket(prev => {
                     if (!prev) return t;
-                    // Only update if there are new messages or status change
-                    if (JSON.stringify(prev.ticket_messages) !== JSON.stringify(t.ticket_messages) || prev.status !== t.status) {
+                    if (JSON.stringify(prev.messages) !== JSON.stringify(t.messages) || prev.status !== t.status) {
                         return t;
                     }
                     return prev;
                 });
-            } else if (!isPolling) {
-                router.push('/account/tickets');
             }
-        } catch (error) {
-            console.error('Error fetching ticket:', error);
-        } finally {
-            if (!isPolling) setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (!id) return;
-
-        fetchTicket();
-
-        let interval: NodeJS.Timeout;
-
-        // Only start polling if we don't have a ticket yet OR if it's open
-        if (!ticket || ticket.status === 'open') {
-            interval = setInterval(() => {
-                fetchTicket(true);
-            }, 3000);
-        }
-
-        return () => {
-            if (interval) clearInterval(interval);
-        };
-    }, [id, ticket?.status]);
-
-    useEffect(() => {
-        scrollToBottom();
-    }, [ticket?.ticket_messages, otheruserTyping]);
-
-    const handleTyping = () => {
-        if (!isTyping) {
-            setIsTyping(true);
-            fetch(`/api/support/${id}/typing`, { method: 'POST' });
-        }
-        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-        typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000);
-    };
-
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const newFiles = Array.from(e.target.files);
-            const validFiles = newFiles.filter(file => file.size <= 5 * 1024 * 1024);
-            setAttachments((prev: File[]) => [...prev, ...validFiles]);
-        }
-    };
-
-    const handlePaste = (e: React.ClipboardEvent) => {
-        const items = e.clipboardData.items;
-        const newFiles: File[] = [];
-        for (let i = 0; i < items.length; i++) {
-            if (items[i].type.indexOf('image') !== -1) {
-                const blob = items[i].getAsFile();
-                if (blob) newFiles.push(blob);
-            }
-        }
-        if (newFiles.length > 0) {
-            setAttachments((prev: File[]) => [...prev, ...newFiles]);
-        }
-    };
-
-    const removeAttachment = (index: number) => {
-        setAttachments((prev: File[]) => prev.filter((_, i) => i !== index));
-    };
-
-    const uploadFiles = async () => {
-        if (attachments.length === 0) return [];
-        setUploading(true);
-        const uploadedUrls = [];
-
-        for (const file of attachments) {
-            try {
-                const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
-                    method: 'POST',
-                    body: file,
-                });
-                const data = await res.json();
-                if (data.url) {
-                    uploadedUrls.push({
-                        name: file.name,
-                        type: file.type,
-                        url: data.url
-                    });
-                }
-            } catch (error) {
-                console.error("Upload failed for", file.name, error);
-            }
-        }
-        setUploading(false);
-        return uploadedUrls;
+            else if (!isPolling) router.push('/dashboard/support');
+        } catch (error) { console.error(error); } finally { if (!isPolling) setLoading(false); }
     };
 
     const handleSendMessage = async (e: React.FormEvent) => {
@@ -207,43 +128,85 @@ export default function AccountTicketDetailsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: newMessage,
+                    is_admin: true,
                     attachments: uploadedAttachments
                 })
             });
             const data = await res.json();
             if (data.success) {
+                // The polling will pick up the new message anyway, but update locally for speed
+                const newMsg = {
+                    ...data.message,
+                    user: data.message.users
+                };
+                setTicket(prev => prev ? { ...prev, messages: [...prev.messages, newMsg] } : null);
                 setNewMessage('');
                 setAttachments([]);
-                fetchTicket(true);
             }
-        } catch (error) {
-            console.error('Error sending message:', error);
-        } finally {
-            setSending(false);
+        } catch (error) { console.error(error); } finally { setSending(false); }
+    };
+
+    const uploadFiles = async () => {
+        if (attachments.length === 0) return [];
+        setUploading(true);
+        const uploadedUrls = [];
+        for (const file of attachments) {
+            try {
+                const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+                    method: 'POST',
+                    body: file,
+                });
+                const data = await res.json();
+                if (data.url) uploadedUrls.push({ name: file.name, type: file.type, url: data.url });
+            } catch (error) { console.error("Upload failed", error); }
+        }
+        setUploading(false);
+        return uploadedUrls;
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const newFiles = Array.from(e.target.files);
+            const validFiles = newFiles.filter(file => file.size <= 2 * 1024 * 1024);
+            if (validFiles.length !== newFiles.length) alert("Max 2MB per file.");
+            setAttachments(prev => [...prev, ...validFiles]);
         }
     };
 
-    if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                <Loader2 className="w-12 h-12 text-yellow-400 animate-spin" />
-                <p className="text-gray-500 font-black uppercase tracking-[0.2em] text-[10px]">Chargement de la conversation...</p>
-            </div>
-        );
-    }
+    const removeAttachment = (index: number) => {
+        setAttachments(prev => prev.filter((_, i) => i !== index));
+    };
 
-    if (!ticket) {
-        return (
-            <div className="text-center py-20 bg-gray-900/30 rounded-[3rem] border border-gray-800 backdrop-blur-xl">
-                <AlertCircle className="w-16 h-16 text-red-500/50 mx-auto mb-6" />
-                <h3 className="text-2xl font-black text-white italic uppercase mb-2">Ticket introuvable</h3>
-                <p className="text-gray-500 font-bold mb-8">Ce ticket n'existe pas ou vous n'avez pas l'autorisation d'y accéder.</p>
-                <Link href="/account/tickets" className="inline-flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest border border-gray-800 hover:border-yellow-400/50 transition-all">
-                    <ChevronLeft className="w-4 h-4" /> Retour à la liste
-                </Link>
-            </div>
-        );
-    }
+    const updateStatus = async (newStatus: string) => {
+        setUpdatingStatus(true);
+        try {
+            const res = await fetch(`/api/support/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const data = await res.json();
+            if (data.success) setTicket(prev => prev ? { ...prev, status: newStatus } : null);
+        } catch (error) { console.error(error); } finally { setUpdatingStatus(false); }
+    };
+
+    if (loading) return (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6">
+            <Loader2 className="w-16 h-16 text-yellow-400 animate-spin" strokeWidth={1} />
+            <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.5em] italic animate-pulse">Scanning Transmission Channel...</p>
+        </div>
+    );
+
+    if (!ticket) return null;
+
+    const getStatusGlow = (status: string) => {
+        switch (status) {
+            case 'open': return 'text-yellow-400 group-hover:shadow-[0_0_20px_rgba(250,204,21,0.2)]';
+            case 'resolved': return 'text-green-500';
+            case 'closed': return 'text-gray-600';
+            default: return 'text-blue-400';
+        }
+    };
 
     return (
         <div className="w-full space-y-12 pb-20 text-left">
@@ -261,21 +224,28 @@ export default function AccountTicketDetailsPage() {
                     </h1>
                     <div className="flex items-center gap-4">
                         <Link
-                            href="/account/tickets"
+                            href="/dashboard/support"
                             className="bg-white/[0.02] border border-white/5 px-6 py-3 rounded-2xl text-gray-500 hover:text-white transition-all flex items-center gap-2 text-[10px] font-[1000] uppercase tracking-widest italic"
                         >
                             <ChevronLeft size={14} />
-                            Retour à mes Tickets
+                            Retour au Centre de Crise
                         </Link>
-                        <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em]">Analyse du Signal #{ticket.id} et Protocoles d'Assistance</p>
+                        <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em]">Analyse du Signal #{ticket.id} et Protocoles d'Intervention</p>
                     </div>
                 </div>
 
-                <div className={`px-8 py-4 rounded-[1.5rem] bg-white/[0.02] border border-white/5 backdrop-blur-3xl shadow-2xl text-[10px] font-[1000] uppercase tracking-widest italic flex items-center gap-3 ${ticket.status === 'open' ? 'text-yellow-400' : 'text-green-500'
-                    }`}>
-                    <div className={`w-2 h-2 rounded-full animate-pulse ${ticket.status === 'open' ? 'bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : 'bg-green-500'
-                        }`}></div>
-                    Statut: {ticket.status === 'open' ? 'OUVERT (EN COURS)' : 'RÉSOLU / FERMÉ'}
+                <div className="flex items-center gap-4 bg-white/[0.02] p-1.5 rounded-[1.5rem] border border-white/5 backdrop-blur-3xl shadow-2xl">
+                    <select
+                        value={ticket.status}
+                        onChange={(e) => updateStatus(e.target.value)}
+                        disabled={updatingStatus}
+                        className={`bg-black border-2 border-white/5 text-white px-6 py-3 rounded-[1.2rem] font-[1000] uppercase text-[9px] tracking-widest focus:border-yellow-400/50 outline-none transition-all duration-700 disabled:opacity-50 italic ${getStatusGlow(ticket.status)}`}
+                    >
+                        <option value="open">Statut: OUVERT</option>
+                        <option value="in_progress">Statut: EN COURS</option>
+                        <option value="resolved">Statut: RÉSOLU</option>
+                        <option value="closed">Statut: FERMÉ</option>
+                    </select>
                 </div>
             </div>
 
@@ -294,41 +264,41 @@ export default function AccountTicketDetailsPage() {
                             />
                             <div className="min-w-0">
                                 <p className="text-[9px] text-gray-700 uppercase tracking-widest font-black italic mb-0.5">Origine Signal</p>
-                                <p className="text-white font-[1000] uppercase text-lg italic tracking-tighter leading-none truncate">{ticket.user?.name || 'Utilisateur'}</p>
+                                <p className="text-white font-[1000] uppercase text-lg italic tracking-tighter leading-none truncate">{ticket.user?.name || 'Inconnu'}</p>
                             </div>
                         </div>
 
                         <div className="space-y-5 pt-6 border-t border-white/5 relative z-10">
                             <div className="space-y-1.5">
-                                <p className="text-[8px] text-gray-700 uppercase tracking-[0.3em] font-black italic">Sujet de la Requête</p>
-                                <p className="text-gray-300 font-bold text-xs uppercase italic tracking-widest leading-relaxed">{ticket.subject}</p>
+                                <p className="text-[8px] text-gray-700 uppercase tracking-[0.3em] font-black italic">Canal de Transmission</p>
+                                <p className="text-yellow-400/60 text-[9px] font-black italic truncate bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">{ticket.user?.email || '-'}</p>
                             </div>
 
                             {ticket.order && (
                                 <div className="space-y-1.5">
-                                    <p className="text-[8px] text-gray-700 uppercase tracking-[0.3em] font-black italic">Commande Associée</p>
-                                    <Link
-                                        href={`/account/orders/${ticket.order.order_number}`}
-                                        className="flex items-center justify-between gap-2 text-yellow-400 font-[1000] text-[9px] italic bg-yellow-400/5 px-3 py-2 rounded-lg border border-yellow-400/10 hover:bg-yellow-400/10 transition-all"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <Package size={12} />
-                                            #{ticket.order.order_number}
-                                        </div>
-                                        <ChevronRight size={12} />
-                                    </Link>
+                                    <p className="text-[8px] text-gray-700 uppercase tracking-[0.3em] font-black italic">Vecteur Commande</p>
+                                    <div className="flex items-center gap-2 text-yellow-400 font-[1000] text-[9px] italic bg-yellow-400/5 px-3 py-2 rounded-lg border border-yellow-400/10">
+                                        <Package size={12} />
+                                        #{ticket.order.order_number}
+                                    </div>
                                 </div>
                             )}
 
-                            <div className="space-y-3 pt-4">
-                                <div className="p-4 bg-yellow-400/5 border border-yellow-400/10 rounded-2xl flex items-center gap-3">
-                                    <AlertCircle className="w-4 h-4 text-yellow-400" />
-                                    <p className="text-[8px] font-[1000] text-gray-500 uppercase tracking-widest leading-relaxed italic">
-                                        Assistance prioritaire de 12h à 23h.
-                                    </p>
+                            <div className="space-y-1.5">
+                                <p className="text-[8px] text-gray-700 uppercase tracking-[0.3em] font-black italic">Niveau d'Urgence</p>
+                                <div className={`px-4 py-2 border text-[9px] font-[1000] rounded-xl w-fit uppercase italic tracking-tighter transition-all ${ticket.priority === 'urgent'
+                                    ? 'text-red-500 border-red-500/20 bg-red-500/10 shadow-[0_0_10px_rgba(239,68,68,0.1)]'
+                                    : 'text-yellow-400 border-yellow-400/20 bg-yellow-400/10'
+                                    }`}>
+                                    {ticket.priority.replace('_', ' ')} Grade
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="bg-white/[0.02] p-8 rounded-[2.5rem] border border-white/5 backdrop-blur-3xl space-y-3 shadow-3xl">
+                        <p className="text-[8px] text-gray-700 uppercase tracking-[0.3em] font-black italic">Sujet de la Requête</p>
+                        <p className="text-gray-300 font-bold text-xs uppercase italic tracking-widest leading-relaxed">{ticket.subject}</p>
                     </div>
                 </div>
 
@@ -342,8 +312,8 @@ export default function AccountTicketDetailsPage() {
                                 <ShieldCheck size={16} />
                             </div>
                             <div>
-                                <h4 className="text-white font-[1000] uppercase text-[10px] tracking-[0.3em] italic mb-0.5">Assistance Mato's</h4>
-                                <p className="text-[8px] text-gray-700 font-black uppercase tracking-widest italic">Canal Sécurisé</p>
+                                <h4 className="text-white font-[1000] uppercase text-[10px] tracking-[0.3em] italic mb-0.5">Communication Directe</h4>
+                                <p className="text-[8px] text-gray-700 font-black uppercase tracking-widest italic">Canal Sécurisé Mato's</p>
                             </div>
                             {uploading && (
                                 <div className="ml-auto flex items-center gap-2.5 bg-yellow-400/10 px-4 py-1.5 rounded-full border border-yellow-400/20">
@@ -365,7 +335,7 @@ export default function AccountTicketDetailsPage() {
                             />
                             <div className="space-y-2 max-w-[85%]">
                                 <div className="bg-gray-900/40 p-6 rounded-[2rem] rounded-tl-none border border-white/5 text-gray-400 text-sm font-bold leading-relaxed backdrop-blur-md shadow-2xl group-hover:border-yellow-400/10 transition-all italic">
-                                    <p className="font-[1000] mb-3 text-yellow-400/40 uppercase text-[8px] tracking-[0.4em] italic border-b border-white/5 pb-2">Ma Description Initiale</p>
+                                    <p className="font-[1000] mb-3 text-yellow-400/40 uppercase text-[8px] tracking-[0.4em] italic border-b border-white/5 pb-2">Description Initiale du Client</p>
                                     {ticket.description}
                                 </div>
                                 <div className="flex items-center gap-2 ml-4 opacity-40">
@@ -378,16 +348,16 @@ export default function AccountTicketDetailsPage() {
                         </div>
 
                         {/* Conversation */}
-                        {ticket.ticket_messages && Array.isArray(ticket.ticket_messages) && ticket.ticket_messages.map((msg: Message, idx: number) => (
+                        {ticket.messages && Array.isArray(ticket.messages) && ticket.messages.map((msg, idx) => (
                             <motion.div
                                 key={msg.id}
-                                initial={{ opacity: 0, x: msg.is_admin ? -15 : 15 }}
+                                initial={{ opacity: 0, x: msg.is_admin ? 15 : -15 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.1 }}
-                                className={`flex gap-6 group items-start ${msg.is_admin ? '' : 'flex-row-reverse'}`}
+                                className={`flex gap-6 group items-start ${msg.is_admin ? 'flex-row-reverse' : ''}`}
                             >
                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 border transition-all duration-700 shadow-3xl overflow-hidden ${msg.is_admin
-                                    ? 'bg-yellow-400 border-yellow-400/50'
+                                    ? 'bg-yellow-400 border-yellow-400/50 group-hover:rotate-6'
                                     : 'bg-black border-white/5 group-hover:border-yellow-400/30'
                                     }`}>
                                     {msg.is_admin ? (
@@ -398,13 +368,13 @@ export default function AccountTicketDetailsPage() {
                                         <UserAvatar image={msg.user?.image} name={msg.user?.name} size="md" className="bg-yellow-400 text-black font-bold" />
                                     )}
                                 </div>
-                                <div className={`space-y-2 max-w-[80%] ${msg.is_admin ? '' : 'items-end flex flex-col'}`}>
+                                <div className={`space-y-2 max-w-[80%] ${msg.is_admin ? 'items-end flex flex-col' : ''}`}>
                                     <div className={`p-6 rounded-[2rem] border shadow-2xl backdrop-blur-xl space-y-4 transition-all duration-700 group-hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)] ${msg.is_admin
-                                        ? 'bg-black border-white/10 text-gray-300 rounded-tl-none group-hover:border-yellow-400/10'
-                                        : 'bg-yellow-400/10 border-yellow-400/30 text-white rounded-tr-none'
+                                        ? 'bg-yellow-400/10 border-yellow-400/30 text-white rounded-tr-none'
+                                        : 'bg-black border-white/10 text-gray-300 rounded-tl-none group-hover:border-yellow-400/10'
                                         }`}>
-                                        <p className={`font-[1000] mb-1.5 uppercase text-[8px] tracking-[0.5em] italic ${msg.is_admin ? 'text-gray-700' : 'text-yellow-400/60'}`}>
-                                            {msg.is_admin ? 'Réponse Officielle Mato\'s' : 'Mon Message'}
+                                        <p className={`font-[1000] mb-1.5 uppercase text-[8px] tracking-[0.5em] italic ${msg.is_admin ? 'text-yellow-400/60' : 'text-gray-700'}`}>
+                                            {msg.is_admin ? 'Réponse Officielle Mato\'s' : 'Message du Client'}
                                         </p>
 
                                         {msg.message && <p className="font-bold text-sm leading-relaxed uppercase italic tracking-tight">{msg.message}</p>}
@@ -414,13 +384,13 @@ export default function AccountTicketDetailsPage() {
                                             <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-white/5">
                                                 {msg.attachments.map((att: any, attIdx: number) => (
                                                     <a
-                                                        key={`${msg.id}-att-${attIdx}`}
+                                                        key={attIdx}
                                                         href={att.url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-700 transform hover:scale-[1.03] ${msg.is_admin
-                                                            ? 'bg-white/5 border-white/5 hover:border-yellow-400/20'
-                                                            : 'bg-yellow-400/5 border-yellow-400/10 hover:bg-yellow-400/10'}`}
+                                                            ? 'bg-yellow-400/5 border-yellow-400/10 hover:bg-yellow-400/10'
+                                                            : 'bg-white/5 border-white/5 hover:border-yellow-400/20'}`}
                                                     >
                                                         {att.type?.startsWith('image/') ? (
                                                             <div className="w-8 h-8 rounded-lg overflow-hidden relative shadow-lg">
@@ -433,14 +403,14 @@ export default function AccountTicketDetailsPage() {
                                                         )}
                                                         <div className="flex flex-col">
                                                             <span className="text-[9px] font-black uppercase tracking-widest truncate max-w-[120px]">{att.name}</span>
-                                                            <span className="text-[7px] opacity-40 uppercase font-black tracking-[0.1em]">Fichier</span>
+                                                            <span className="text-[7px] opacity-40 uppercase font-black tracking-[0.1em]">Scellé</span>
                                                         </div>
                                                     </a>
                                                 ))}
                                             </div>
                                         )}
                                     </div>
-                                    <div className={`flex items-center gap-1.5 opacity-30 ${msg.is_admin ? 'ml-4' : 'mr-4'}`}>
+                                    <div className={`flex items-center gap-1.5 opacity-30 ${msg.is_admin ? 'mr-4' : 'ml-4'}`}>
                                         <Clock size={8} className="text-gray-500" />
                                         <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest italic">
                                             {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -449,32 +419,11 @@ export default function AccountTicketDetailsPage() {
                                 </div>
                             </motion.div>
                         ))}
-
-                        {/* Typing Indicator */}
-                        {otheruserTyping && (
-                            <div className="flex gap-6 items-center animate-pulse">
-                                <div className="w-12 h-12 rounded-2xl bg-yellow-400/20 border border-yellow-400/50 flex items-center justify-center">
-                                    <Image src="/logo.svg" alt="Support" width={30} height={30} className="object-contain opacity-50" />
-                                </div>
-                                <span className="text-[8px] text-yellow-400 font-black uppercase tracking-widest italic">Mato's est en train d'écrire...</span>
-                            </div>
-                        )}
                         <div ref={messagesEndRef} />
                     </div>
 
                     {/* Controls */}
                     <div className="p-8 bg-black/60 border-t border-white/10 relative z-10 shadow-[0_-15px_40px_rgba(0,0,0,0.5)]">
-                        {ticket.status !== 'open' && (
-                            <div className="absolute inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-20 animate-in fade-in duration-500">
-                                <div className="flex items-center gap-4 px-10 py-5 bg-black/40 border-2 border-white/5 rounded-[2rem] shadow-3xl">
-                                    <ShieldCheck className="w-6 h-6 text-green-500" />
-                                    <p className="text-gray-500 font-black uppercase tracking-widest text-[10px] italic leading-tight max-w-[280px]">
-                                        Cette conversation est clôturée. Le ticket est marqué comme résolu.
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-
                         {/* Attachment Preview */}
                         <AnimatePresence>
                             {attachments.length > 0 && (
@@ -483,7 +432,7 @@ export default function AccountTicketDetailsPage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     className="flex flex-wrap gap-3 mb-6"
                                 >
-                                    {attachments.map((file: File, idx: number) => (
+                                    {attachments.map((file, idx) => (
                                         <div key={idx} className="relative group/att">
                                             <div className="p-3 bg-white/[0.03] rounded-xl border border-white/10 flex items-center gap-3 pr-10 group-hover/att:border-yellow-400/30 transition-all shadow-xl backdrop-blur-3xl">
                                                 <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-yellow-400 shadow-inner">
@@ -491,7 +440,7 @@ export default function AccountTicketDetailsPage() {
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="text-[9px] text-white font-black uppercase tracking-widest max-w-[100px] truncate">{file.name}</span>
-                                                    <span className="text-[7px] text-gray-700 font-bold uppercase italic">Fichier Prêt</span>
+                                                    <span className="text-[7px] text-gray-700 font-bold uppercase italic">Pre-Sync</span>
                                                 </div>
                                             </div>
                                             <button
@@ -510,10 +459,9 @@ export default function AccountTicketDetailsPage() {
                             <div className="relative flex-1 group">
                                 <input
                                     type="text"
-                                    placeholder="Écrire votre message à l'assistance..."
+                                    placeholder="Écrire une réponse officielle..."
                                     value={newMessage}
-                                    onChange={(e) => { setNewMessage(e.target.value); handleTyping(); }}
-                                    onPaste={handlePaste}
+                                    onChange={(e) => { setNewMessage(e.target.value); }}
                                     className="w-full bg-black border border-white/10 text-white pl-8 pr-24 py-7 rounded-[1.8rem] font-[1000] uppercase text-[10px] tracking-[0.2em] italic focus:outline-none focus:border-yellow-400/50 transition-all shadow-inner placeholder:text-gray-800"
                                 />
 
@@ -545,6 +493,14 @@ export default function AccountTicketDetailsPage() {
                                 {sending || uploading ? <Loader2 size={24} className="animate-spin" /> : <Send size={24} className="-mr-1" />}
                             </button>
                         </form>
+
+                        <div className="mt-6 flex items-center gap-3 justify-center bg-white/[0.01] py-3 rounded-xl border border-white/5">
+                            <div className="flex gap-1">
+                                <Zap size={10} className="text-yellow-400 animate-pulse" />
+                                <Zap size={10} className="text-yellow-400 animate-pulse opacity-50" />
+                            </div>
+                            <p className="text-[8px] text-gray-600 font-[1000] uppercase tracking-[0.2em] italic">Confirmation protocolle • Archivage instantané.</p>
+                        </div>
                     </div>
                 </div>
             </div>

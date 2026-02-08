@@ -131,18 +131,19 @@ export default function AccountDashboard() {
         <div className="w-full space-y-12 animate-in fade-in slide-in-from-bottom-10 duration-1000">
             <TacticalAura />
             {/* Mission Briefing Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
-                <div>
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-16 h-1 bg-yellow-400 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.4)]"></div>
-                        <span className="text-[10px] font-[1000] uppercase tracking-[0.4em] text-gray-500 italic">Global Perspective Unit</span>
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-12 border-b border-white/5 pb-16">
+                <div className="space-y-6">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-yellow-400/10 rounded-2xl flex items-center justify-center border border-yellow-400/20">
+                            <Target className="w-5 h-5 text-yellow-400" />
+                        </div>
+                        <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic leading-none">Global Perspective Unit</span>
                     </div>
-                    <h1 className="text-5xl md:text-6xl font-[1000] italic tracking-tighter leading-none uppercase text-white">
+                    <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none">
                         Briefing <span className="text-yellow-400">Tactique</span>
                     </h1>
-                    <p className="mt-6 text-gray-600 font-bold uppercase text-[11px] tracking-[0.5em] ml-1 max-w-xl leading-relaxed italic">
-                        Bienvenue dans votre centre de contrôle, <span className="text-white">{session?.user?.name}</span>.
-                        Supervision complète de vos protocoles et actifs Mato's.
+                    <p className="text-gray-600 font-bold uppercase text-[11px] tracking-[0.5em] ml-1 max-w-xl leading-relaxed italic">
+                        Bienvenue dans votre centre de contrôle, <span className="text-white">{session?.user?.name}</span>. supervision complète de vos protocoles.
                     </p>
                 </div>
 

@@ -5,7 +5,7 @@ import {
     LayoutDashboard, ShoppingBag, Users, Settings,
     LogOut, Menu as MenuIcon, X, Tag, Gift,
     LifeBuoy, Home, MessageSquare, ChevronRight,
-    Utensils, Trophy
+    Utensils, Trophy, Inbox, Send, Mail
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -22,18 +22,6 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, session, han
     const pathname = usePathname();
     const router = useRouter();
 
-    const navigation = [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Commandes', href: '/dashboard/orders', icon: ShoppingBag },
-        { name: 'Menu', href: '/dashboard/menu', icon: Utensils },
-        { name: 'Catégories', href: '/dashboard/categories', icon: Tag },
-        { name: 'Promotions', href: '/dashboard/promotions', icon: Gift },
-        { name: 'Loyauté', href: '/dashboard/loyalty', icon: Trophy },
-        { name: 'Avis Clients', href: '/dashboard/reviews', icon: MessageSquare },
-        { name: 'Support', href: '/dashboard/support', icon: LifeBuoy },
-        { name: 'Clients', href: '/dashboard/customers', icon: Users },
-        { name: 'Paramètres', href: '/dashboard/settings', icon: Settings },
-    ];
 
     const isActive = (href: string) => {
         if (href === '/dashboard') return pathname === '/dashboard';
@@ -69,33 +57,111 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, session, han
             </div>
 
             {/* Main Navigation */}
-            <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto custom-scrollbar relative z-10">
-                <div className="px-5 mb-4">
-                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">Système de Contrôle</p>
+            <nav className="flex-1 px-4 py-4 space-y-10 overflow-y-auto custom-scrollbar relative z-10">
+                {/* PILOTAGE OPÉRATIONNEL */}
+                <div className="space-y-1.5">
+                    <div className="px-5 mb-4">
+                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">Pilotage Opérationnel</p>
+                    </div>
+                    {[
+                        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+                        { name: 'Commandes', href: '/dashboard/orders', icon: ShoppingBag },
+                        { name: 'Menu', href: '/dashboard/menu', icon: Utensils },
+                        { name: 'Catégories', href: '/dashboard/categories', icon: Tag },
+                        { name: 'Promotions', href: '/dashboard/promotions', icon: Gift },
+                        { name: 'Loyauté', href: '/dashboard/loyalty', icon: Trophy },
+                        { name: 'Clients', href: '/dashboard/customers', icon: Users },
+                        { name: 'Paramètres', href: '/dashboard/settings', icon: Settings },
+                    ].map((item) => {
+                        const active = isActive(item.href);
+                        return (
+                            <button
+                                key={item.name}
+                                onClick={() => {
+                                    router.push(item.href);
+                                    setSidebarOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between group px-5 py-4 rounded-2xl transition-all duration-300 ${active
+                                    ? 'bg-yellow-400 text-black shadow-[0_10px_30px_rgba(250,204,21,0.15)]'
+                                    : 'hover:bg-white/5 text-gray-400 hover:text-white'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <item.icon className={`w-5 h-5 ${active ? 'text-black' : 'text-gray-500 group-hover:text-yellow-400'} transition-colors`} />
+                                    <span className="text-[11px] font-[1000] uppercase tracking-wider">{item.name}</span>
+                                </div>
+                                {active && <motion.div layoutId="nav-pill-admin" className="w-1.5 h-1.5 rounded-full bg-black" />}
+                                {!active && <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-gray-600" />}
+                            </button>
+                        );
+                    })}
                 </div>
-                {navigation.map((item) => {
-                    const active = isActive(item.href);
-                    return (
-                        <button
-                            key={item.name}
-                            onClick={() => {
-                                router.push(item.href);
-                                setSidebarOpen(false);
-                            }}
-                            className={`w-full flex items-center justify-between group px-5 py-4 rounded-2xl transition-all duration-300 ${active
-                                ? 'bg-yellow-400 text-black shadow-[0_10px_30px_rgba(250,204,21,0.15)]'
-                                : 'hover:bg-white/5 text-gray-400 hover:text-white'
-                                }`}
-                        >
-                            <div className="flex items-center gap-4">
-                                <item.icon className={`w-5 h-5 ${active ? 'text-black' : 'text-gray-500 group-hover:text-yellow-400'} transition-colors`} />
-                                <span className="text-[11px] font-[1000] uppercase tracking-wider">{item.name}</span>
-                            </div>
-                            {active && <motion.div layoutId="nav-pill-admin" className="w-1.5 h-1.5 rounded-full bg-black" />}
-                            {!active && <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-gray-600" />}
-                        </button>
-                    );
-                })}
+
+                {/* CENTRE D'INTERACTION */}
+                <div className="space-y-1.5">
+                    <div className="px-5 mb-4">
+                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">Centre d'Interaction</p>
+                    </div>
+                    {[
+                        { name: 'Tickets Support', href: '/dashboard/support', icon: LifeBuoy },
+                        { name: 'Messages Contact', href: '/dashboard/inbox', icon: Inbox },
+                        { name: 'Avis Clients', href: '/dashboard/reviews', icon: MessageSquare },
+                    ].map((item) => {
+                        const active = isActive(item.href);
+                        return (
+                            <button
+                                key={item.name}
+                                onClick={() => {
+                                    router.push(item.href);
+                                    setSidebarOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between group px-5 py-4 rounded-2xl transition-all duration-300 ${active
+                                    ? 'bg-yellow-400 text-black shadow-[0_10px_30px_rgba(250,204,21,0.15)]'
+                                    : 'hover:bg-white/5 text-gray-400 hover:text-white'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <item.icon className={`w-5 h-5 ${active ? 'text-black' : 'text-gray-500 group-hover:text-yellow-400'} transition-colors`} />
+                                    <span className="text-[11px] font-[1000] uppercase tracking-wider">{item.name}</span>
+                                </div>
+                                {active && <motion.div layoutId="nav-pill-support" className="w-1.5 h-1.5 rounded-full bg-black" />}
+                                {!active && <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-gray-600" />}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* TRANSMISSIONS */}
+                <div className="space-y-1.5">
+                    <div className="px-5 mb-4">
+                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">Transmissions</p>
+                    </div>
+                    {[
+                        { name: 'Station Email', href: '/dashboard/email', icon: Send },
+                    ].map((item) => {
+                        const active = isActive(item.href);
+                        return (
+                            <button
+                                key={item.name}
+                                onClick={() => {
+                                    router.push(item.href);
+                                    setSidebarOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between group px-5 py-4 rounded-2xl transition-all duration-300 ${active
+                                    ? 'bg-yellow-400 text-black shadow-[0_10px_30px_rgba(250,204,21,0.15)]'
+                                    : 'hover:bg-white/5 text-gray-400 hover:text-white'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <item.icon className={`w-5 h-5 ${active ? 'text-black' : 'text-gray-500 group-hover:text-yellow-400'} transition-colors`} />
+                                    <span className="text-[11px] font-[1000] uppercase tracking-wider">{item.name}</span>
+                                </div>
+                                {active && <motion.div layoutId="nav-pill-comm" className="w-1.5 h-1.5 rounded-full bg-black" />}
+                                {!active && <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-gray-600" />}
+                            </button>
+                        );
+                    })}
+                </div>
             </nav>
 
             {/* Bottom Section */}

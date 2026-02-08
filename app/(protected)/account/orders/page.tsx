@@ -69,18 +69,20 @@ export default function OrdersPage() {
     return (
         <div className="w-full space-y-12 animate-in fade-in duration-700 pb-20">
             <TacticalAura opacity={0.3} />
-            <div className="flex flex-col md:flex-row gap-8 items-end justify-between border-b border-white/5 pb-16">
+            <div className="flex flex-col xl:flex-row items-start xl:items-end justify-between gap-12 border-b border-white/5 pb-16">
                 <div className="space-y-6">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-yellow-400/20 bg-yellow-400/5 backdrop-blur-md">
-                        <ShoppingBag size={12} className="text-yellow-400" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-400">Logistique Tactique</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-yellow-400/10 rounded-2xl flex items-center justify-center border border-yellow-400/20">
+                            <ShoppingBag size={18} className="text-yellow-400" />
+                        </div>
+                        <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic leading-none">Logistique Tactique</span>
                     </div>
-                    <h1 className="text-5xl md:text-8xl font-[1000] uppercase italic tracking-tighter leading-none text-white">
-                        VOS <span className="text-yellow-400 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">COMMANDES</span>
+                    <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none">
+                        VOS <span className="text-yellow-400">COMMANDES</span>
                     </h1>
                 </div>
 
-                <form onSubmit={handleSearch} className="relative w-full md:w-96 group">
+                <form onSubmit={handleSearch} className="relative w-full xl:w-96 group">
                     <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-700 group-focus-within:text-yellow-400 transition-colors" />
                     <input
                         type="text"
@@ -134,51 +136,51 @@ export default function OrdersPage() {
             ) : (
                 <div className="space-y-6">
                     {orders.map((order) => (
-                        <Link href={`/account/orders/${order.orderNumber}`} key={order.id} className="block bg-white/[0.02] p-10 rounded-[3rem] border border-white/5 hover:border-yellow-400/30 transition-all duration-700 group relative overflow-hidden">
+                        <Link href={`/account/orders/${order.order_number}`} key={order.id} className="block bg-white/[0.02] p-10 rounded-[3rem] border border-white/5 hover:border-yellow-400/30 transition-all duration-700 group relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-yellow-400/[0.01] blur-[150px] -mr-64 -mt-64 pointer-events-none group-hover:bg-yellow-400/[0.03] transition-all duration-1000"></div>
 
                             <div className="flex flex-col lg:flex-row justify-between gap-10 relative z-10">
                                 <div className="space-y-8 flex-1">
                                     <div className="flex flex-wrap items-center gap-6">
                                         <div className="bg-yellow-400/10 text-yellow-500 px-6 py-2.5 rounded-2xl text-[12px] font-[1000] italic uppercase tracking-tighter border border-yellow-400/20">
-                                            #{order.orderNumber}
+                                            #{order.order_number}
                                         </div>
                                         <div className="flex items-center gap-2.5 text-gray-600 text-[10px] font-black uppercase tracking-[0.2em] italic">
                                             <Clock size={14} className="text-gray-800" />
-                                            {new Date(order.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                            {new Date(order.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                         </div>
-                                        <div className={`px-5 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.3em] flex items-center gap-2.5 border border-2 border-opacity-10 italic ${order.orderType === 'pickup' ? 'border-pink-500 bg-pink-500/5 text-pink-400' : 'border-blue-500 bg-blue-500/5 text-blue-400'}`}>
-                                            {order.orderType === 'pickup' ? <Store size={14} /> : <Truck size={14} />}
-                                            {order.orderType === 'pickup' ? 'A Emporter' : 'Livraison'}
+                                        <div className={`px-5 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.3em] flex items-center gap-2.5 border border-2 border-opacity-10 italic ${order.order_type === 'pickup' ? 'border-pink-500 bg-pink-500/5 text-pink-400' : 'border-blue-500 bg-blue-500/5 text-blue-400'}`}>
+                                            {order.order_type === 'pickup' ? <Store size={14} /> : <Truck size={14} />}
+                                            {order.order_type === 'pickup' ? 'A Emporter' : 'Livraison'}
                                         </div>
                                     </div>
 
                                     <div className="flex flex-wrap gap-3">
                                         {(Array.isArray(order.cart) ? order.cart : []).map((item: any, idx: number) => (
                                             <span key={idx} className="text-[10px] font-black uppercase tracking-widest bg-white/[0.03] px-5 py-3 rounded-2xl border border-white/5 text-gray-400 group-hover:text-white transition-colors italic">
-                                                <span className="text-yellow-400 mr-2">{item.quantity}×</span> {item.itemName}
+                                                <span className="text-yellow-400 mr-2">{item.quantity}×</span> {item.item_name}
                                             </span>
                                         ))}
                                     </div>
 
-                                    {order.status === 'cancelled' && order.cancelMessage && (
+                                    {order.status === 'cancelled' && order.cancel_message && (
                                         <div className="p-6 bg-red-400/[0.02] border border-red-400/10 rounded-[2rem] max-w-xl">
                                             <p className="text-[9px] font-black text-red-500 uppercase tracking-[0.4em] mb-2 flex items-center gap-2 italic">
                                                 <XCircle size={14} />
                                                 Note de Service — Annulation
                                             </p>
-                                            <p className="text-gray-600 font-bold text-[11px] italic leading-relaxed">"{order.cancelMessage}"</p>
+                                            <p className="text-gray-600 font-bold text-[11px] italic leading-relaxed">"{order.cancel_message}"</p>
                                         </div>
                                     )}
                                 </div>
 
                                 <div className="flex flex-row lg:flex-col justify-between lg:items-end gap-6 border-t lg:border-t-0 lg:border-l border-white/5 pt-8 lg:pt-0 lg:pl-12 min-w-[220px]">
                                     <div className="space-y-2 text-right">
-                                        <div className="text-4xl font-[1000] text-white italic tracking-tighter leading-none">{order.finalTotal.toFixed(1)} <span className="text-[11px] font-black uppercase not-italic text-yellow-400 opacity-40 ml-1">DT</span></div>
+                                        <div className="text-4xl font-[1000] text-white italic tracking-tighter leading-none">{order.total_amount.toFixed(1)} <span className="text-[11px] font-black uppercase not-italic text-yellow-400 opacity-40 ml-1">DT</span></div>
                                         {order.status !== 'cancelled' && (
                                             <div className="text-[9px] font-[1000] text-yellow-500 uppercase tracking-[0.3em] flex items-center justify-end gap-2 italic">
                                                 <Star size={12} className="fill-current" />
-                                                +{Math.floor(order.finalTotal)} POINTS CUMULÉS
+                                                +{Math.floor(order.total_amount)} POINTS CUMULÉS
                                             </div>
                                         )}
                                     </div>

@@ -5,8 +5,10 @@ import { LifeBuoy, ChevronRight, Loader2, Plus, MessageSquare, AlertCircle, Sear
 import Link from 'next/link';
 import TacticalAura from '@/components/TacticalAura';
 import UserAvatar from '@/components/UserAvatar';
+import { useSupportModal } from '@/hooks/useSupportModal';
 
 export default function TicketsPage() {
+    const { openSupportModal } = useSupportModal();
     const [tickets, setTickets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -60,18 +62,23 @@ export default function TicketsPage() {
             <TacticalAura opacity={0.3} />
             <div className="flex flex-col xl:flex-row items-start xl:items-end justify-between gap-12 border-b border-white/5 pb-16">
                 <div className="space-y-6">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-yellow-400/20 bg-yellow-400/5 backdrop-blur-md">
-                        <LifeBuoy className="w-3 h-3 text-yellow-400" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-400">Concierge Service Unit</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-yellow-400/10 rounded-2xl flex items-center justify-center border border-yellow-400/20">
+                            <MessageSquare className="w-5 h-5 text-yellow-400" />
+                        </div>
+                        <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic leading-none">Archive du Syndicat</span>
                     </div>
-                    <h1 className="text-5xl md:text-8xl font-[1000] uppercase italic tracking-tighter leading-none text-white">
-                        LIGNE DE <span className="text-yellow-400 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">SUPPORT</span>
+                    <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none">
+                        DOSSIER <span className="text-yellow-400">SYNDICAT</span>
                     </h1>
                 </div>
-                <Link href="/support/new" className="bg-white text-black px-12 py-6 rounded-2xl font-[1000] uppercase text-[11px] tracking-[0.3em] italic hover:bg-yellow-400 hover:scale-105 transition-all active:scale-95 shadow-2xl flex items-center gap-6 group">
+                <button
+                    onClick={() => openSupportModal()}
+                    className="bg-yellow-400 text-black px-12 py-6 rounded-2xl font-[1000] uppercase text-[11px] tracking-[0.3em] italic hover:bg-white hover:scale-105 transition-all active:scale-95 shadow-2xl flex items-center gap-6 group"
+                >
                     <Plus size={18} strokeWidth={4} className="group-hover:rotate-90 transition-transform" />
                     Ouvrir un Nouveau Ticket
-                </Link>
+                </button>
             </div>
 
             <div className="flex flex-col lg:flex-row gap-8 items-end justify-between">
@@ -136,7 +143,7 @@ export default function TicketsPage() {
                                     </div>
                                 </div>
                                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-700 italic">
-                                    {new Date(ticket.createdAt).toLocaleDateString()}
+                                    {new Date(ticket.created_at).toLocaleDateString()}
                                 </span>
                             </div>
 

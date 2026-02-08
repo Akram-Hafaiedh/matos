@@ -14,19 +14,19 @@ export default function PromotionFormPage(props: { params: Promise<{ id: string 
         name: '',
         description: '',
         price: '',
-        originalPrice: '',
+        original_price: '',
         discount: '',
-        imageUrl: '',
+        image_url: '',
         emoji: '',
-        badgeText: '',
-        badgeColor: '#EAB308', // yellow-500
-        isActive: true,
-        isHot: false,
+        badge_text: '',
+        badge_color: '#EAB308', // yellow-500
+        is_active: true,
+        is_hot: false,
         tag: '',
-        startDate: '',
-        endDate: '',
+        start_date: '',
+        end_date: '',
         conditions: '',
-        selectionRules: '[]' // JSON string for the form
+        selection_rules: '[]' // JSON string for the form
     });
 
     const [categories, setCategories] = useState<{ id: number, name: string }[]>([]);
@@ -64,19 +64,19 @@ export default function PromotionFormPage(props: { params: Promise<{ id: string 
                     name: p.name || '',
                     description: p.description || '',
                     price: p.price?.toString() || '',
-                    originalPrice: p.originalPrice?.toString() || '',
+                    original_price: p.original_price?.toString() || '',
                     discount: p.discount?.toString() || '',
-                    imageUrl: p.imageUrl || '',
+                    image_url: p.image_url || '',
                     emoji: p.emoji || '',
-                    badgeText: p.badgeText || '',
-                    badgeColor: p.badgeColor || '#EAB308',
-                    isActive: p.isActive,
-                    isHot: p.isHot || false,
+                    badge_text: p.badge_text || '',
+                    badge_color: p.badge_color || '#EAB308',
+                    is_active: p.is_active,
+                    is_hot: p.is_hot || false,
                     tag: p.tag || '',
-                    startDate: p.startDate ? new Date(p.startDate).toISOString().split('T')[0] : '',
-                    endDate: p.endDate ? new Date(p.endDate).toISOString().split('T')[0] : '',
+                    start_date: p.start_date ? new Date(p.start_date).toISOString().split('T')[0] : '',
+                    end_date: p.end_date ? new Date(p.end_date).toISOString().split('T')[0] : '',
                     conditions: p.conditions || '',
-                    selectionRules: p.selectionRules ? JSON.stringify(p.selectionRules, null, 2) : '[]'
+                    selection_rules: p.selection_rules ? JSON.stringify(p.selection_rules, null, 2) : '[]'
                 });
             } else {
                 setError('Promotion introuvable');
@@ -101,11 +101,11 @@ export default function PromotionFormPage(props: { params: Promise<{ id: string 
             const payload = {
                 ...formData,
                 price: formData.price ? parseFloat(formData.price) : null,
-                originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
+                original_price: formData.original_price ? parseFloat(formData.original_price) : null,
                 discount: formData.discount ? parseInt(formData.discount) : null,
-                startDate: formData.startDate || null,
-                endDate: formData.endDate || null,
-                selectionRules: formData.selectionRules ? JSON.parse(formData.selectionRules) : []
+                start_date: formData.start_date || null,
+                end_date: formData.end_date || null,
+                selection_rules: formData.selection_rules ? JSON.parse(formData.selection_rules) : []
             };
 
             const res = await fetch(url, {
@@ -241,23 +241,23 @@ export default function PromotionFormPage(props: { params: Promise<{ id: string 
                                 <div className="flex flex-wrap gap-4 pt-4">
                                     <button
                                         type="button"
-                                        onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
-                                        className={`flex-1 flex items-center justify-center gap-3 py-6 rounded-[2rem] font-[1000] uppercase text-[10px] tracking-[0.3em] italic transition-all border ${formData.isActive
+                                        onClick={() => setFormData({ ...formData, is_active: !formData.is_active })}
+                                        className={`flex-1 flex items-center justify-center gap-3 py-6 rounded-[2rem] font-[1000] uppercase text-[10px] tracking-[0.3em] italic transition-all border ${formData.is_active
                                             ? 'bg-green-500/10 border-green-500 text-green-400'
                                             : 'bg-black/20 border-white/5 text-gray-600'}`}
                                     >
                                         <Activity size={14} />
-                                        {formData.isActive ? 'Opérationnel' : 'Offline'}
+                                        {formData.is_active ? 'Opérationnel' : 'Offline'}
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => setFormData({ ...formData, isHot: !formData.isHot })}
-                                        className={`flex-1 flex items-center justify-center gap-3 py-6 rounded-[2rem] font-[1000] uppercase text-[10px] tracking-[0.3em] italic transition-all border ${formData.isHot
+                                        onClick={() => setFormData({ ...formData, is_hot: !formData.is_hot })}
+                                        className={`flex-1 flex items-center justify-center gap-3 py-6 rounded-[2rem] font-[1000] uppercase text-[10px] tracking-[0.3em] italic transition-all border ${formData.is_hot
                                             ? 'bg-red-500/10 border-red-500 text-red-500 shadow-[0_0_40px_rgba(239,68,68,0.1)]'
                                             : 'bg-black/20 border-white/5 text-gray-600'}`}
                                     >
                                         <Sparkles size={14} />
-                                        {formData.isHot ? 'Protocole Critique 🔥' : 'Standard'}
+                                        {formData.is_hot ? 'Protocole Critique 🔥' : 'Standard'}
                                     </button>
                                 </div>
                             </div>
@@ -300,8 +300,8 @@ export default function PromotionFormPage(props: { params: Promise<{ id: string 
                                             <span className="text-[10px] font-black text-green-500/50 uppercase tracking-[0.2em]">Code Layer Access</span>
                                         </div>
                                         <textarea
-                                            value={formData.selectionRules}
-                                            onChange={(e) => setFormData({ ...formData, selectionRules: e.target.value })}
+                                            value={formData.selection_rules}
+                                            onChange={(e) => setFormData({ ...formData, selection_rules: e.target.value })}
                                             className="w-full bg-black/60 border border-white/5 text-green-400 font-mono text-xs p-10 rounded-[3rem] focus:outline-none focus:border-green-500/50 transition-all min-h-[300px] shadow-2xl custom-scrollbar"
                                             placeholder='[ { "id": "p1", "label": "Pizza Selection", "type": "category", "categoryId": 1, "quantity": 1 } ]'
                                         />
@@ -353,8 +353,8 @@ export default function PromotionFormPage(props: { params: Promise<{ id: string 
                                         <input
                                             type="number"
                                             step="0.1"
-                                            value={formData.originalPrice}
-                                            onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
+                                            value={formData.original_price}
+                                            onChange={(e) => setFormData({ ...formData, original_price: e.target.value })}
                                             className="w-full bg-black/40 border border-white/5 text-white px-8 py-5 rounded-2xl font-[1000] focus:outline-none focus:border-red-500/50 transition-all text-center opacity-60 hover:opacity-100"
                                             placeholder="0.0"
                                         />
@@ -375,8 +375,8 @@ export default function PromotionFormPage(props: { params: Promise<{ id: string 
                                     <label className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">Source de l'Image</label>
                                     <input
                                         type="text"
-                                        value={formData.imageUrl}
-                                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                                        value={formData.image_url}
+                                        onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                                         className="w-full bg-black/40 border border-white/5 text-white px-8 py-5 rounded-2xl font-[1000] focus:outline-none focus:border-purple-500/50 transition-all text-[10px] italic placeholder:text-gray-800"
                                         placeholder="URL DE L'ACTIF..."
                                     />
@@ -386,8 +386,8 @@ export default function PromotionFormPage(props: { params: Promise<{ id: string 
                                     <label className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.3em] italic ml-4">Texte de Branding (Badge)</label>
                                     <input
                                         type="text"
-                                        value={formData.badgeText}
-                                        onChange={(e) => setFormData({ ...formData, badgeText: e.target.value })}
+                                        value={formData.badge_text}
+                                        onChange={(e) => setFormData({ ...formData, badge_text: e.target.value })}
                                         className="w-full bg-black/40 border border-white/5 text-white px-8 py-5 rounded-2xl font-[1000] focus:outline-none focus:border-purple-500/50 transition-all text-center uppercase italic"
                                         placeholder="NOUVEAU, DUO..."
                                     />
@@ -398,12 +398,12 @@ export default function PromotionFormPage(props: { params: Promise<{ id: string 
                                     <div className="flex gap-4">
                                         <div
                                             className="w-16 h-16 rounded-2xl border-2 border-white/10 shadow-xl"
-                                            style={{ backgroundColor: formData.badgeColor }}
+                                            style={{ backgroundColor: formData.badge_color }}
                                         ></div>
                                         <input
                                             type="color"
-                                            value={formData.badgeColor}
-                                            onChange={(e) => setFormData({ ...formData, badgeColor: e.target.value })}
+                                            value={formData.badge_color}
+                                            onChange={(e) => setFormData({ ...formData, badge_color: e.target.value })}
                                             className="flex-1 h-16 bg-black/40 p-2 rounded-2xl border border-white/5 cursor-pointer"
                                         />
                                     </div>

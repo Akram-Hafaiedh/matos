@@ -12,9 +12,9 @@ interface Category {
     id: number;
     name: string;
     emoji: string;
-    displayOrder: number;
+    display_order: number;
     _count?: {
-        menuItems: number;
+        menu_items: number;
     };
 }
 
@@ -187,7 +187,7 @@ export default function CategoriesPage() {
                                 <tr key={category.id} className="group/row hover:bg-yellow-400/[0.01] transition-all duration-500 relative">
                                     <td className="px-12 py-10">
                                         <div className="flex items-center gap-4">
-                                            <span className="font-[1000] text-yellow-400 italic text-2xl tracking-tighter group-hover/row:scale-125 transition-transform origin-left">#{category.displayOrder}</span>
+                                            <span className="font-[1000] text-yellow-400 italic text-2xl tracking-tighter group-hover/row:scale-125 transition-transform origin-left">#{category.display_order}</span>
                                             <Activity size={12} className="text-gray-800 group-hover/row:text-yellow-400/30 transition-colors" />
                                         </div>
                                     </td>

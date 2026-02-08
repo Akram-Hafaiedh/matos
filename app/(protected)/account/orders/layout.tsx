@@ -1,0 +1,16 @@
+import { ReactNode } from 'react';
+
+export default function OrdersLayout({
+    children,
+    modal,
+}: {
+    children: ReactNode;
+    modal: ReactNode;
+}) {
+    return (
+        <>
+            {children}
+            {modal}
+        </>
+    );
+}

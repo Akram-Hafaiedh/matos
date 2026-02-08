@@ -12,14 +12,14 @@ interface Ticket {
     description: string;
     status: string;
     priority: string;
-    createdAt: string;
+    created_at: string;
     user: {
         name: string;
         email: string;
         image?: string | null;
     } | null;
     order: {
-        orderNumber: string;
+        order_number: string;
     } | null;
 }
 
@@ -187,7 +187,7 @@ export default function AdminSupportPage() {
                                             <span className="font-[1000] text-yellow-400 text-xl italic tracking-tighter leading-none mb-1 group-hover/row:scale-110 transition-transform origin-left w-fit">#{ticket.id}</span>
                                             <div className="flex items-center gap-2 text-[9px] text-gray-700 font-[1000] uppercase tracking-widest italic leading-none">
                                                 <Clock size={10} className="text-gray-800" />
-                                                {new Date(ticket.createdAt).toLocaleDateString()}
+                                                {new Date(ticket.created_at).toLocaleDateString()}
                                             </div>
                                         </div>
                                     </td>
@@ -211,7 +211,7 @@ export default function AdminSupportPage() {
                                             {ticket.order && (
                                                 <div className="flex items-center gap-2">
                                                     <Hash size={10} className="text-yellow-400/50" />
-                                                    <span className="text-[10px] text-yellow-400/60 font-[1000] uppercase tracking-[0.2em] italic leading-none">ORDER_#{ticket.order.orderNumber}</span>
+                                                    <span className="text-[10px] text-yellow-400/60 font-[1000] uppercase tracking-[0.2em] italic leading-none">ORDER_#{ticket.order.order_number}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -231,7 +231,7 @@ export default function AdminSupportPage() {
                                             href={`/dashboard/support/${ticket.id}`}
                                             className="inline-flex items-center gap-3 bg-black/40 text-white px-8 py-4 rounded-[1.5rem] font-[1000] uppercase text-[10px] tracking-[0.3em] italic border border-white/5 hover:bg-yellow-400 hover:text-black hover:border-yellow-400 transition-all duration-700 group/btn shadow-xl active:scale-95"
                                         >
-                                            Intercept
+                                            Inspecter Signal
                                             <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                                         </Link>
                                     </td>

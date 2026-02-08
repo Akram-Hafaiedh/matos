@@ -14,9 +14,9 @@ interface MenuItem {
     name: string;
     description: string;
     price: number | any;
-    imageUrl: string;
-    isActive: boolean;
-    displayOrder: number;
+    image_url: string;
+    is_active: boolean;
+    display_order: number;
     category: {
         id: number;
         name: string;
@@ -268,32 +268,32 @@ export default function AdminMenuPage() {
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8">
                         {menuItems.map(item => (
-                            <div key={item.id} className={`group/card bg-white/[0.01] rounded-[3.5rem] p-6 border border-white/5 transition-all duration-700 hover:border-yellow-400/50 hover:bg-white/[0.03] hover:shadow-[0_40px_80px_rgba(0,0,0,0.5)] relative overflow-hidden ${!item.isActive ? 'opacity-40 grayscale' : ''}`}>
+                            <div key={item.id} className={`group/card bg-white/[0.01] rounded-[3.5rem] p-6 border border-white/5 transition-all duration-700 hover:border-yellow-400/50 hover:bg-white/[0.03] hover:shadow-[0_40px_80px_rgba(0,0,0,0.5)] relative overflow-hidden ${!item.is_active ? 'opacity-40 grayscale' : ''}`}>
                                 <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-yellow-400/[0.02] to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"></div>
 
                                 {/* Image Intelligence */}
                                 <div className="relative h-64 w-full mb-8 bg-black rounded-[2.5rem] overflow-hidden group/img ring-1 ring-white/5 shadow-2xl">
-                                    {item.imageUrl && (item.imageUrl.startsWith('/') || item.imageUrl.startsWith('http')) ? (
+                                    {item.image_url && (item.image_url.startsWith('/') || item.image_url.startsWith('http')) ? (
                                         <Image
-                                            src={item.imageUrl}
+                                            src={item.image_url}
                                             alt={item.name}
                                             fill
                                             className="object-cover group-hover/card:scale-110 transition-transform duration-[2000ms] ease-out brightness-75 group-hover/card:brightness-100"
                                         />
                                     ) : (
                                         <div className="flex items-center justify-center h-full text-8xl opacity-10 group-hover/card:opacity-30 group-hover/card:scale-125 transition-all duration-1000">
-                                            {item.imageUrl || item.category.emoji}
+                                            {item.image_url || item.category?.emoji || '🍽️'}
                                         </div>
                                     )}
 
                                     {/* Overlay Tags */}
                                     <div className="absolute top-6 right-6 flex flex-col gap-3">
-                                        <div className={`px-5 py-2 rounded-full text-[9px] font-[1000] uppercase tracking-[0.3em] italic border backdrop-blur-md ${item.isActive ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.2)]'}`}>
-                                            {item.isActive ? 'Operationnel' : 'Offline'}
+                                        <div className={`px-5 py-2 rounded-full text-[9px] font-[1000] uppercase tracking-[0.3em] italic border backdrop-blur-md ${item.is_active ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.2)]'}`}>
+                                            {item.is_active ? 'Operationnel' : 'Offline'}
                                         </div>
                                         <div className="px-5 py-2 rounded-full bg-black/60 text-white text-[9px] font-[1000] uppercase tracking-[0.3em] italic border border-white/10 backdrop-blur-md flex items-center gap-2">
                                             <Hash size={10} className="text-yellow-400" />
-                                            SEQ-{item.displayOrder}
+                                            SEQ-{item.display_order}
                                         </div>
                                     </div>
 
@@ -308,8 +308,8 @@ export default function AdminMenuPage() {
                                 <div className="space-y-6 px-3 pb-4">
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-3 text-[10px] text-gray-600 font-[1000] uppercase tracking-[0.4em] italic">
-                                            <span className="text-lg not-italic opacity-40">{item.category.emoji}</span>
-                                            {item.category.name}
+                                            <span className="text-lg not-italic opacity-40">{item.category?.emoji || '🍽️'}</span>
+                                            {item.category?.name || 'Sans Catégorie'}
                                         </div>
                                         <h3 className="text-3xl font-[1000] text-white uppercase italic tracking-tighter leading-none group-hover/card:text-yellow-400 transition-colors">{item.name}</h3>
                                     </div>

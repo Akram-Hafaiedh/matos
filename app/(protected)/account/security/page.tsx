@@ -55,14 +55,16 @@ export default function SecurityPage() {
     return (
         <div className="w-full space-y-12 animate-in fade-in duration-1000">
             <TacticalAura opacity={0.3} />
-            <div className="flex flex-col md:flex-row gap-8 items-end justify-between border-b border-white/5 pb-16">
+            <div className="flex flex-col xl:flex-row items-start xl:items-end justify-between gap-12 border-b border-white/5 pb-16">
                 <div className="space-y-6">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-yellow-400/20 bg-yellow-400/5 backdrop-blur-md">
-                        <Lock className="w-3 h-3 text-yellow-400" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-400">Security Sector</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-yellow-400/10 rounded-2xl flex items-center justify-center border border-yellow-400/20">
+                            <Lock className="w-5 h-5 text-yellow-400" />
+                        </div>
+                        <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic leading-none">Security Sector Ops</span>
                     </div>
-                    <h1 className="text-5xl md:text-8xl font-[1000] uppercase italic tracking-tighter leading-none text-white">
-                        VECTEURS DE <span className="text-yellow-400 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">SÉCURITÉ</span>
+                    <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none">
+                        VECTEURS DE <span className="text-yellow-400">SÉCURITÉ</span>
                     </h1>
                 </div>
             </div>

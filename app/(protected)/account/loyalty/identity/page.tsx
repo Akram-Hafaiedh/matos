@@ -12,10 +12,10 @@ import { getUserTier } from '@/lib/loyalty';
 interface UserQuest {
     quest: {
         title: string;
-        rewardAmount: number;
-        rewardType: string;
+        reward_amount: number;
+        reward_type: string;
     };
-    completedAt: string;
+    completed_at: string;
 }
 
 export default function IdentityPage() {
@@ -45,10 +45,10 @@ export default function IdentityPage() {
                         .map((q: any) => ({
                             quest: {
                                 title: q.title,
-                                rewardAmount: q.rewardAmount,
-                                rewardType: q.rewardType
+                                reward_amount: q.reward_amount || q.rewardAmount,
+                                reward_type: q.reward_type || q.rewardType
                             },
-                            completedAt: q.completedAt || new Date().toISOString()
+                            completed_at: q.completed_at || q.completedAt || new Date().toISOString()
                         }));
                     setCompletedQuests(completed);
                 }
@@ -70,7 +70,7 @@ export default function IdentityPage() {
         );
     }
 
-    const points = userData?.loyaltyPoints || 0;
+    const points = userData?.loyalty_points || userData?.loyaltyPoints || 0;
     const tier = getUserTier(points);
     const act = points < 1000 ? 'I' : points < 2500 ? 'II' : points < 5000 ? 'III' : 'IV';
 
@@ -90,12 +90,12 @@ export default function IdentityPage() {
             animate={{ opacity: 1, y: 0 }}
             className="w-full grid lg:grid-cols-12 gap-12 relative z-10"
         >
-            <TacticalAura color={userData?.selectedBg} opacity={0.3} />
+            <TacticalAura color={userData?.selected_bg || userData?.selectedBg} opacity={0.3} />
             <div className="lg:col-span-4 space-y-8">
                 <div className="bg-[#0a0a0a] border border-white/10 rounded-[4.5rem] p-12 space-y-12 relative overflow-hidden group shadow-[0_40px_100px_rgba(0,0,0,0.5)]">
                     <div className="absolute top-0 left-0 w-full h-2 bg-yellow-400"></div>
                     <div className="flex flex-col items-center text-center space-y-10">
-                        <div className={`w-48 h-48 rounded-[3rem] bg-white/5 border-[8px] ${userData?.selectedFrame || 'border-white/10'} flex items-center justify-center text-8xl shadow-2xl relative group-hover:scale-105 transition-transform duration-700`}>
+                        <div className={`w-48 h-48 rounded-[3rem] bg-white/5 border-[8px] ${userData?.selected_frame || userData?.selectedFrame || 'border-white/10'} flex items-center justify-center text-8xl shadow-2xl relative group-hover:scale-105 transition-transform duration-700`}>
                             {/* Handle emoji vs image URL safely */}
                             {userData?.image && userData.image.startsWith('http')
                                 ? <img src={userData.image} alt="" className="w-full h-full object-cover rounded-[3rem]" />
@@ -193,12 +193,12 @@ export default function IdentityPage() {
                                             <div>
                                                 <div className="text-sm font-[1000] uppercase italic text-white group-hover:text-yellow-400 transition-colors">{q.quest.title}</div>
                                                 <div className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mt-1">
-                                                    Classé: {new Date(q.completedAt).toLocaleDateString()}
+                                                    Classé: {new Date(q.completed_at).toLocaleDateString()}
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="text-[10px] font-black text-yellow-500 uppercase italic bg-yellow-400/10 px-4 py-2 rounded-xl border border-yellow-400/20">
-                                            +{q.quest.rewardAmount} {q.quest.rewardType === 'XP' ? 'XP' : 'JTN'}
+                                            +{q.quest.reward_amount} {q.quest.reward_type === 'XP' ? 'XP' : 'JTN'}
                                         </div>
                                     </div>
                                 ))

@@ -13,17 +13,17 @@ interface Promotion {
     name: string;
     description: string;
     price: number | null;
-    originalPrice: number | null;
+    original_price: number | null;
     discount: number | null;
-    imageUrl: string | null;
+    image_url: string | null;
     emoji: string | null;
-    badgeText: string | null;
-    badgeColor: string | null;
-    isActive: boolean;
-    isHot: boolean;
+    badge_text: string | null;
+    badge_color: string | null;
+    is_active: boolean;
+    is_hot: boolean;
     tag: string | null;
-    startDate: string | null;
-    endDate: string | null;
+    start_date: string | null;
+    end_date: string | null;
 }
 
 export default function PromotionsPage() {
@@ -186,9 +186,9 @@ export default function PromotionsPage() {
                             {promotions.map((promo) => (
                                 <tr key={promo.id} className="group/row hover:bg-yellow-400/[0.02] transition-colors duration-500 relative">
                                     <td className="px-12 py-10">
-                                        <div className={`inline-flex items-center gap-3 px-6 py-2 rounded-full text-[9px] font-[1000] uppercase tracking-[0.3em] italic border ${promo.isActive ? 'bg-green-500/5 text-green-400 border-green-500/20' : 'bg-red-500/5 text-red-500 border-red-500/20'}`}>
-                                            <div className={`w-1.5 h-1.5 rounded-full ${promo.isActive ? 'bg-green-400 animate-pulse' : 'bg-red-500'}`}></div>
-                                            {promo.isActive ? 'En Ligne' : 'Hors Tension'}
+                                        <div className={`inline-flex items-center gap-3 px-6 py-2 rounded-full text-[9px] font-[1000] uppercase tracking-[0.3em] italic border ${promo.is_active ? 'bg-green-500/5 text-green-400 border-green-500/20' : 'bg-red-500/5 text-red-500 border-red-500/20'}`}>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${promo.is_active ? 'bg-green-400 animate-pulse' : 'bg-red-500'}`}></div>
+                                            {promo.is_active ? 'En Ligne' : 'Hors Tension'}
                                         </div>
                                     </td>
                                     <td className="px-12 py-10">
@@ -202,11 +202,11 @@ export default function PromotionsPage() {
                                                 <div className="font-[1000] text-white text-2xl uppercase italic group-hover/row:text-yellow-400 transition-colors tracking-tighter leading-none">
                                                     {promo.name}
                                                 </div>
-                                                {promo.isHot && <Flame className="w-5 h-5 text-red-500 animate-pulse" />}
+                                                {promo.is_hot && <Flame className="w-5 h-5 text-red-500 animate-pulse" />}
                                             </div>
                                             <div className="flex items-center gap-3 text-[10px] text-gray-600 font-black uppercase tracking-[0.2em] italic">
                                                 <Clock size={12} className="text-yellow-400/50" />
-                                                {promo.endDate ? `EXP: ${new Date(promo.endDate).toLocaleDateString('fr-FR')}` : 'PROTOCOLE PERMANENT'}
+                                                {promo.end_date ? `EXP: ${new Date(promo.end_date).toLocaleDateString('fr-FR')}` : 'PROTOCOLE PERMANENT'}
                                                 {promo.tag && <span className="ml-2 text-yellow-400/80">// {promo.tag}</span>}
                                             </div>
                                         </div>
@@ -217,8 +217,8 @@ export default function PromotionsPage() {
                                                 <span className="text-4xl font-[1000] text-yellow-400 italic tracking-tighter leading-none">
                                                     {promo.price.toFixed(1)} <span className="text-sm not-italic uppercase opacity-40 ml-1">DT</span>
                                                 </span>
-                                                {promo.originalPrice && (
-                                                    <span className="text-gray-700 line-through text-xs font-[1000] italic tracking-widest leading-none pt-2">{promo.originalPrice.toFixed(1)} DT</span>
+                                                {promo.original_price && (
+                                                    <span className="text-gray-700 line-through text-xs font-[1000] italic tracking-widest leading-none pt-2">{promo.original_price.toFixed(1)} DT</span>
                                                 )}
                                             </div>
                                         ) : promo.discount ? (

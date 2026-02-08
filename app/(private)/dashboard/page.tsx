@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react';
 import {
     ShoppingBag, TrendingUp, DollarSign, Users,
     Clock, CheckCircle, RefreshCw, ArrowRight,
-    Sparkles, Target, Zap, Signal, Activity, ShieldAlert, ChevronRight
+    Sparkles, Target, Zap, Signal, Activity, ShieldAlert, ChevronRight,
+    Mail, Send
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -166,8 +167,8 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {[
                     { label: 'TOTAL TRANSMISSIONS', value: stats.totalOrders, icon: ShoppingBag, link: '/dashboard/orders' },
-                    { label: 'SUCCESS RATE', value: '98.5%', icon: CheckCircle, link: '/dashboard/reviews' },
-                    { label: 'FLUX ANALYSIS', value: stats.todayOrders, icon: TrendingUp, link: '/dashboard/customers' },
+                    { label: 'BOÎTE DE RÉCEPTION', value: 'ACTIVE', icon: Mail, link: '/dashboard/inbox' },
+                    { label: 'STATION EMAIL', value: 'READY', icon: Send, link: '/dashboard/email' },
                 ].map((mini, i) => (
                     <Link key={i} href={mini.link} className="bg-white/[0.01] border border-white/5 p-8 rounded-[2rem] flex items-center justify-between group hover:bg-white/[0.03] hover:border-yellow-400/20 transition-all duration-500 shadow-xl">
                         <div className="flex items-center gap-6">

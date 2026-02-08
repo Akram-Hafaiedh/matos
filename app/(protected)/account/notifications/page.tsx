@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Bell, CheckCircle, Clock, ChevronLeft, Trash2, Filter, ChevronRight, Loader2, Sparkles, AlertCircle, Signal } from 'lucide-react';
 import Link from 'next/link';
 import TacticalAura from '@/components/TacticalAura';
+import { useSupportModal } from '@/hooks/useSupportModal';
 
 interface Notification {
     id: number;
@@ -11,11 +12,12 @@ interface Notification {
     message: string;
     type: string;
     link: string | null;
-    isRead: boolean;
-    createdAt: string;
+    is_read: boolean;
+    created_at: string;
 }
 
 export default function NotificationsPage() {
+    const { openSupportModal } = useSupportModal();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'unread'>('all');
@@ -44,7 +46,7 @@ export default function NotificationsPage() {
 
     const markAsRead = async (id: number) => {
         // Optimistic update
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
         try {
             await fetch(`/api/notifications`, {
                 method: 'PATCH',
@@ -56,7 +58,7 @@ export default function NotificationsPage() {
     };
 
     const markAllAsRead = async () => {
-        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
         try {
             await fetch('/api/notifications', {
                 method: 'PATCH',
@@ -72,7 +74,7 @@ export default function NotificationsPage() {
     }, [page]);
 
     const filteredNotifications = filter === 'unread'
-        ? notifications.filter(n => !n.isRead)
+        ? notifications.filter(n => !n.is_read)
         : notifications;
 
     if (loading) {
@@ -88,22 +90,24 @@ export default function NotificationsPage() {
         <div className="w-full space-y-12 animate-in fade-in duration-1000">
             <TacticalAura />
             {/* Header */}
-            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-8 border-b border-white/5 pb-16">
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-12 border-b border-white/5 pb-16">
                 <div className="space-y-6">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-yellow-400/20 bg-yellow-400/5 backdrop-blur-md">
-                        <Signal className="w-3 h-3 text-yellow-400" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-400">Signal Intelligence Unit</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-yellow-400/10 rounded-2xl flex items-center justify-center border border-yellow-400/20">
+                            <Signal className="w-5 h-5 text-yellow-400" />
+                        </div>
+                        <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic leading-none">Signal Intelligence Unit</span>
                     </div>
-                    <h1 className="text-5xl md:text-8xl font-[1000] uppercase italic tracking-tighter leading-none text-white">
-                        FLUX DE <span className="text-yellow-400 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">SIGNAUX</span>
+                    <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none">
+                        FLUX DE <span className="text-yellow-400">SIGNAUX</span>
                     </h1>
                 </div>
-                {notifications.some(n => !n.isRead) && (
+                {notifications.some(n => !n.is_read) && (
                     <button
                         onClick={markAllAsRead}
-                        className="bg-white text-black px-10 py-4 rounded-2xl font-[1000] uppercase text-[10px] tracking-[0.2em] italic hover:scale-105 transition-transform active:scale-95 shadow-2xl flex items-center gap-4"
+                        className="bg-yellow-400 text-black px-10 py-5 rounded-2xl font-[1000] uppercase text-[10px] tracking-[0.2em] italic hover:scale-105 transition-transform active:scale-95 shadow-2xl flex items-center gap-4 group"
                     >
-                        <CheckCircle size={16} strokeWidth={3} />
+                        <CheckCircle size={16} strokeWidth={4} />
                         Tout marquer comme lu
                     </button>
                 )}
@@ -144,21 +148,21 @@ export default function NotificationsPage() {
                         {filteredNotifications.map((notif) => (
                             <div
                                 key={notif.id}
-                                className={`group p-10 rounded-[3rem] border transition-all duration-700 flex flex-col md:flex-row items-start md:items-center gap-10 relative overflow-hidden ${!notif.isRead
+                                className={`group p-10 rounded-[3rem] border transition-all duration-700 flex flex-col md:flex-row items-start md:items-center gap-10 relative overflow-hidden ${!notif.is_read
                                     ? 'bg-yellow-400/5 border-yellow-400/20 shadow-[0_0_30px_rgba(250,204,21,0.05)]'
                                     : 'bg-white/[0.01] border-white/5 hover:bg-white/[0.02] hover:border-white/10'
                                     }`}
                             >
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/[0.01] blur-[100px] -mr-32 -mt-32 pointer-events-none group-hover:bg-yellow-400/[0.03] transition-all duration-1000"></div>
 
-                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center flex-shrink-0 transition-all group-hover:scale-110 duration-700 ${!notif.isRead ? 'bg-yellow-400 text-black shadow-2xl' : 'bg-white/[0.02] text-gray-700 border border-white/5'
+                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center flex-shrink-0 transition-all group-hover:scale-110 duration-700 ${!notif.is_read ? 'bg-yellow-400 text-black shadow-2xl' : 'bg-white/[0.02] text-gray-700 border border-white/5'
                                     }`}>
-                                    <Bell size={28} strokeWidth={notif.isRead ? 2 : 3} className={!notif.isRead ? 'animate-pulse' : ''} />
+                                    <Bell size={28} strokeWidth={notif.is_read ? 2 : 3} className={!notif.is_read ? 'animate-pulse' : ''} />
                                 </div>
                                 <div className="flex-1 space-y-4 relative z-10 w-full">
                                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                         <div className="space-y-1">
-                                            {!notif.isRead && (
+                                            {!notif.is_read && (
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse shadow-[0_0_10px_rgba(250,204,21,0.5)]"></span>
                                                     <span className="text-[9px] font-black text-yellow-400 uppercase tracking-[0.3em] italic">Nouveau Signal</span>
@@ -169,7 +173,7 @@ export default function NotificationsPage() {
                                             </h3>
                                         </div>
                                         <span className="text-[10px] font-black text-gray-700 uppercase tracking-[0.2em] italic bg-white/[0.02] px-4 py-2 rounded-xl border border-white/5">
-                                            {new Date(notif.createdAt).toLocaleDateString()}
+                                            {new Date(notif.created_at).toLocaleDateString()}
                                         </span>
                                     </div>
                                     <p className="text-gray-600 text-[11px] font-black uppercase tracking-widest leading-relaxed italic opacity-80 group-hover:opacity-100 transition-opacity">
@@ -183,7 +187,7 @@ export default function NotificationsPage() {
                                                 <ChevronRight size={14} strokeWidth={3} />
                                             </Link>
                                         )}
-                                        {!notif.isRead && (
+                                        {!notif.is_read && (
                                             <button
                                                 onClick={() => markAsRead(notif.id)}
                                                 className="text-[10px] font-black text-gray-700 uppercase tracking-[0.3em] hover:text-white transition-colors italic ml-auto"
@@ -229,7 +233,15 @@ export default function NotificationsPage() {
                     </div>
                     <div>
                         <h4 className="text-2xl font-[1000] text-white uppercase italic tracking-tighter">Alerte de Proximité?</h4>
-                        <p className="text-[10px] text-gray-600 font-black uppercase tracking-[0.3em] italic">Activez les notifications push pour ne rater aucune signature.</p>
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                            <p className="text-[10px] text-gray-600 font-black uppercase tracking-[0.3em] italic">Activez les notifications push pour ne rater aucune signature.</p>
+                            <button
+                                onClick={() => openSupportModal({ module: 'notifications', subject: 'Aide avec les Notifications' })}
+                                className="text-yellow-400 font-black uppercase text-[9px] tracking-[0.2em] italic hover:text-white transition-colors"
+                            >
+                                Besoin d'aide technique ?
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <button className="bg-white text-black px-12 py-5 rounded-2xl font-[1000] uppercase text-[11px] tracking-[0.2em] italic hover:scale-105 transition-transform active:scale-95 shadow-2xl">

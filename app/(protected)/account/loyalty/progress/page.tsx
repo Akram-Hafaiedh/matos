@@ -9,8 +9,10 @@ import { ACTS, TIERS, getUserTier, getNextTier, getDetailedProgress, isItemExpir
 import TacticalAura from '@/components/TacticalAura';
 import { Coins, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useSupportModal } from '@/hooks/useSupportModal';
 
 export default function PactePage() {
+    const { openSupportModal } = useSupportModal();
     const [userData, setUserData] = useState<any>(null);
     const [quests, setQuests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -94,7 +96,7 @@ export default function PactePage() {
         );
     }
 
-    const points = userData?.loyaltyPoints || 0;
+    const points = userData?.loyalty_points || userData?.loyaltyPoints || 0;
     const currentTier = getUserTier(points);
     const { act, rank, progress, pointsToNext, goalName } = getDetailedProgress(points);
     const nextAct = getNextTier(points);
@@ -109,7 +111,35 @@ export default function PactePage() {
             animate={{ opacity: 1, y: 0 }}
             className="w-full grid lg:grid-cols-12 gap-12 relative z-10"
         >
-            <TacticalAura color={userData?.selectedBg} opacity={0.3} />
+            <TacticalAura color={userData?.selected_bg || userData?.selectedBg} opacity={0.3} />
+            <div className="lg:col-span-12 space-y-12">
+                <div className="flex flex-col xl:flex-row items-start xl:items-end justify-between gap-12 border-b border-white/5 pb-16">
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-yellow-400/10 rounded-2xl flex items-center justify-center border border-yellow-400/20">
+                                <ShieldCheck className="w-5 h-5 text-yellow-400" />
+                            </div>
+                            <span className="text-[10px] font-[1000] text-gray-500 uppercase tracking-[0.4em] italic leading-none">Pacte de Fidélité Elite</span>
+                        </div>
+                        <h1 className="text-7xl font-[1000] text-white uppercase italic tracking-tighter leading-none text-left">
+                            VOTRE <span className="text-yellow-400">PROGRESSION</span>
+                        </h1>
+                    </div>
+                    <div className="flex gap-4">
+                        <div className="px-8 py-4 bg-white/[0.02] border border-white/5 rounded-2xl backdrop-blur-md">
+                            <div className="text-[9px] font-black text-gray-600 uppercase tracking-[0.3em] mb-1 italic text-center">Crédits Rang</div>
+                            <div className="text-3xl font-[1000] text-yellow-400 italic text-center">{points.toLocaleString()}</div>
+                        </div>
+                        <button
+                            onClick={() => openSupportModal({ module: 'loyalty', subject: 'Aide avec ma Fidélité' })}
+                            className="px-8 py-4 bg-yellow-400 text-black rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-white transition-all shadow-lg active:scale-95"
+                        >
+                            Besoin d'aide ?
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div className="lg:col-span-8 space-y-12">
                 <div className="bg-[#0a0a0a] border border-white/10 rounded-[4rem] p-12 relative overflow-hidden group shadow-2xl">
                     <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-yellow-400/5 blur-[120px] rounded-full -mr-64 -mt-64 opacity-60"></div>
@@ -125,14 +155,10 @@ export default function PactePage() {
                                         {userData.selectedTitle}
                                     </div>
                                 )}
-                                <h2 className="text-6xl font-[1000] text-white uppercase italic tracking-tighter leading-none mb-2">
+                                <h2 className="text-4xl font-[1000] text-white uppercase italic tracking-tighter leading-none mb-2">
                                     {act.title}
                                 </h2>
-                                <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em] ml-1">{act.subtitle} PROJETÉ</p>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-5xl font-[1000] text-yellow-500 italic tracking-tighter leading-none">{points.toLocaleString()}</div>
-                                <div className="text-[10px] text-gray-700 font-black uppercase tracking-[0.4em] italic mt-2">Points d'Honneur (XP)</div>
+                                <p className="text-gray-700 font-bold uppercase text-[10px] tracking-[0.5em] ml-1">{act.subtitle} ACTIF</p>
                             </div>
                         </div>
 

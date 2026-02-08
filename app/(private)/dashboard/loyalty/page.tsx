@@ -58,7 +58,7 @@ export default function AdminLoyaltyPage() {
 
     const handleCreate = () => {
         setEditingItem(null);
-        setFormData(activeTab === 'quests' ? { type: 'ONE_OFF', rewardType: 'TOKEN', rewardAmount: 50, minAct: 1 } : { type: 'Auras', price: 1000, rarity: 'Common', act: 1, level: 1 });
+        setFormData(activeTab === 'quests' ? { type: 'ONE_OFF', reward_type: 'TOKEN', reward_amount: 50, min_act: 1 } : { type: 'Auras', price: 1000, rarity: 'Common', act: 1, level: 1 });
         setShowModal(true);
     };
 
@@ -95,7 +95,7 @@ export default function AdminLoyaltyPage() {
             const res = await fetch(endpoint, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isActive: !currentStatus })
+                body: JSON.stringify({ is_active: !currentStatus })
             });
             const data = await res.json();
             if (data.success) {
@@ -222,21 +222,21 @@ export default function AdminLoyaltyPage() {
                                         <td className="px-12 py-8">
                                             <div className="space-y-2">
                                                 <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">TYPE: {quest.type}</div>
-                                                <div className="text-[10px] font-black text-yellow-500/60 uppercase tracking-widest italic">ACTE MIN: {quest.minAct}</div>
+                                                <div className="text-[10px] font-black text-yellow-500/60 uppercase tracking-widest italic">ACTE MIN: {quest.min_act}</div>
                                             </div>
                                         </td>
                                         <td className="px-12 py-8">
                                             <div className="px-6 py-3 bg-yellow-400/5 border border-yellow-400/10 rounded-2xl w-fit">
-                                                <span className="text-yellow-400 font-black italic text-sm">{quest.rewardAmount} {quest.rewardType}</span>
+                                                <span className="text-yellow-400 font-black italic text-sm">{quest.reward_amount} {quest.reward_type}</span>
                                             </div>
                                         </td>
                                         <td className="px-12 py-8">
                                             <button
-                                                onClick={() => toggleStatus('quest', quest.id, quest.isActive)}
-                                                className={`flex items-center gap-2 px-6 py-2 rounded-full border text-[9px] font-black uppercase tracking-[0.2em] italic transition-all ${quest.isActive ? 'border-green-500/20 bg-green-500/5 text-green-500' : 'border-red-500/20 bg-red-500/5 text-red-500'}`}
+                                                onClick={() => toggleStatus('quest', quest.id, quest.is_active)}
+                                                className={`flex items-center gap-2 px-6 py-2 rounded-full border text-[9px] font-black uppercase tracking-[0.2em] italic transition-all ${quest.is_active ? 'border-green-500/20 bg-green-500/5 text-green-500' : 'border-red-500/20 bg-red-500/5 text-red-500'}`}
                                             >
-                                                {quest.isActive ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                                                {quest.isActive ? 'ACTIF' : 'INACTIF'}
+                                                {quest.is_active ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                                                {quest.is_active ? 'ACTIF' : 'INACTIF'}
                                             </button>
                                         </td>
                                         <td className="px-12 py-8">
@@ -284,11 +284,11 @@ export default function AdminLoyaltyPage() {
                                         </td>
                                         <td className="px-12 py-8">
                                             <button
-                                                onClick={() => toggleStatus('shop', item.id, item.isActive)}
-                                                className={`flex items-center gap-2 px-6 py-2 rounded-full border text-[9px] font-black uppercase tracking-[0.2em] italic transition-all ${item.isActive ? 'border-green-500/20 bg-green-500/5 text-green-500' : 'border-red-500/20 bg-red-500/5 text-red-500'}`}
+                                                onClick={() => toggleStatus('shop', item.id, item.is_active)}
+                                                className={`flex items-center gap-2 px-6 py-2 rounded-full border text-[9px] font-black uppercase tracking-[0.2em] italic transition-all ${item.is_active ? 'border-green-500/20 bg-green-500/5 text-green-500' : 'border-red-500/20 bg-red-500/5 text-red-500'}`}
                                             >
-                                                {item.isActive ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                                                {item.isActive ? 'DISPONIBLE' : 'ARCHIVÉ'}
+                                                {item.is_active ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                                                {item.is_active ? 'DISPONIBLE' : 'ARCHIVÉ'}
                                             </button>
                                         </td>
                                         <td className="px-12 py-8">
@@ -399,13 +399,13 @@ export default function AdminLoyaltyPage() {
                                                 <div className="flex gap-2">
                                                     <input
                                                         type="number"
-                                                        value={formData.rewardAmount || ''}
-                                                        onChange={(e) => setFormData({ ...formData, rewardAmount: e.target.value })}
+                                                        value={formData.reward_amount || ''}
+                                                        onChange={(e) => setFormData({ ...formData, reward_amount: e.target.value })}
                                                         className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 text-sm font-bold text-white focus:border-yellow-400/50 transition-all outline-none italic"
                                                     />
                                                     <select
-                                                        value={formData.rewardType || 'TOKEN'}
-                                                        onChange={(e) => setFormData({ ...formData, rewardType: e.target.value })}
+                                                        value={formData.reward_type || 'TOKEN'}
+                                                        onChange={(e) => setFormData({ ...formData, reward_type: e.target.value })}
                                                         className="w-32 bg-black border border-white/5 rounded-2xl px-4 py-4 text-[10px] font-black text-yellow-400 focus:border-yellow-400/50 transition-all outline-none"
                                                     >
                                                         <option value="TOKEN">JTN</option>

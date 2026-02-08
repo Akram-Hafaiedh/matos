@@ -25,10 +25,10 @@ export default function EditMenuItemPage() {
         name: '',
         description: '',
         price: '',
-        categoryId: '',
-        imageUrl: '',
+        category_id: '',
+        image_url: '',
         ingredients: '',
-        isActive: true,
+        is_active: true,
         popular: false,
         bestseller: false,
         hot: false,
@@ -55,10 +55,10 @@ export default function EditMenuItemPage() {
                         name: item.name,
                         description: item.description || '',
                         price: typeof item.price === 'number' ? item.price : '', // Handle object price later if needed
-                        categoryId: item.categoryId.toString(),
-                        imageUrl: item.imageUrl || '',
+                        category_id: item.category_id.toString(),
+                        image_url: item.image_url || '',
                         ingredients: item.ingredients.join(', '), // formatting
-                        isActive: item.isActive,
+                        is_active: item.is_active,
                         popular: item.popular,
                         bestseller: item.bestseller,
                         hot: item.hot,
@@ -105,7 +105,7 @@ export default function EditMenuItemPage() {
             );
             const newBlob = await response.json();
             if (newBlob.url) {
-                setFormData(prev => ({ ...prev, imageUrl: newBlob.url }));
+                setFormData(prev => ({ ...prev, image_url: newBlob.url }));
             }
         } catch (error) {
             console.error('Upload failed:', error);
@@ -123,8 +123,16 @@ export default function EditMenuItemPage() {
 
         try {
             const payload = {
-                ...formData,
+                name: formData.name,
+                description: formData.description,
                 price: parseFloat(formData.price),
+                category_id: formData.category_id,
+                image_url: formData.image_url,
+                ingredients: formData.ingredients,
+                is_active: formData.is_active,
+                popular: formData.popular,
+                bestseller: formData.bestseller,
+                hot: formData.hot,
                 discount: formData.discount ? parseInt(formData.discount) : null
             };
 
@@ -218,8 +226,8 @@ export default function EditMenuItemPage() {
                                             Classification
                                         </label>
                                         <select
-                                            name="categoryId"
-                                            value={formData.categoryId}
+                                            name="category_id"
+                                            value={formData.category_id}
                                             onChange={handleChange}
                                             required
                                             className="w-full bg-black/40 border border-white/5 text-white px-8 py-6 rounded-[2rem] font-[1000] focus:outline-none focus:border-yellow-400/50 transition-all text-xs uppercase italic tracking-widest shadow-inner appearance-none"
@@ -278,8 +286,8 @@ export default function EditMenuItemPage() {
                                             <div className="flex gap-4">
                                                 <input
                                                     type="text"
-                                                    name="imageUrl"
-                                                    value={formData.imageUrl}
+                                                    name="image_url"
+                                                    value={formData.image_url}
                                                     onChange={handleChange}
                                                     className="flex-1 bg-black/40 border border-white/5 text-white px-8 py-5 rounded-[2rem] font-[1000] focus:outline-none focus:border-purple-500/50 transition-all text-[10px] italic placeholder:text-gray-800 shadow-inner"
                                                     placeholder="URL OU EMOJI..."
@@ -313,12 +321,12 @@ export default function EditMenuItemPage() {
 
                                     <div className="relative group/preview">
                                         <div className="w-full aspect-[16/9] bg-black/40 rounded-[3rem] border border-white/5 overflow-hidden relative flex items-center justify-center shadow-2xl">
-                                            {formData.imageUrl ? (
-                                                formData.imageUrl.length < 5 ? (
-                                                    <span className="text-9xl">{formData.imageUrl}</span>
+                                            {formData.image_url ? (
+                                                formData.image_url.length < 5 ? (
+                                                    <span className="text-9xl">{formData.image_url}</span>
                                                 ) : (
                                                     <img
-                                                        src={formData.imageUrl}
+                                                        src={formData.image_url}
                                                         alt="Preview"
                                                         className="w-full h-full object-cover transition-transform duration-700 group-hover/preview:scale-110"
                                                     />
@@ -326,10 +334,10 @@ export default function EditMenuItemPage() {
                                             ) : (
                                                 <div className="text-gray-800 font-[1000] text-[10px] uppercase tracking-[0.5em] italic">Aperçu Manquant</div>
                                             )}
-                                            {formData.imageUrl && (
+                                            {formData.image_url && (
                                                 <button
                                                     type="button"
-                                                    onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
+                                                    onClick={() => setFormData(prev => ({ ...prev, image_url: '' }))}
                                                     className="absolute top-6 right-6 p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-2xl hover:bg-red-500/20 transition-all backdrop-blur-md opacity-0 group-hover/preview:opacity-100"
                                                 >
                                                     <X size={16} />
@@ -393,13 +401,13 @@ export default function EditMenuItemPage() {
                             <div className="space-y-4">
                                 <label className="flex items-center justify-between p-6 rounded-[2rem] bg-black/20 border border-white/5 cursor-pointer group transition-all hover:bg-black/30">
                                     <div className="flex items-center gap-4">
-                                        <Activity className={`w-5 h-5 transition-colors ${formData.isActive ? 'text-green-500' : 'text-gray-700'}`} />
-                                        <span className={`text-[10px] font-[1000] uppercase tracking-widest italic ${formData.isActive ? 'text-white' : 'text-gray-600'}`}>Visibilité Online</span>
+                                        <Activity className={`w-5 h-5 transition-colors ${formData.is_active ? 'text-green-500' : 'text-gray-700'}`} />
+                                        <span className={`text-[10px] font-[1000] uppercase tracking-widest italic ${formData.is_active ? 'text-white' : 'text-gray-600'}`}>Visibilité Online</span>
                                     </div>
-                                    <div className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${formData.isActive ? 'bg-green-500' : 'bg-gray-800'}`}>
-                                        <div className={`w-4 h-4 bg-white rounded-full transition-all duration-300 transform ${formData.isActive ? 'translate-x-6' : 'translate-x-0'}`} />
+                                    <div className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${formData.is_active ? 'bg-green-500' : 'bg-gray-800'}`}>
+                                        <div className={`w-4 h-4 bg-white rounded-full transition-all duration-300 transform ${formData.is_active ? 'translate-x-6' : 'translate-x-0'}`} />
                                     </div>
-                                    <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} className="hidden" />
+                                    <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleChange} className="hidden" />
                                 </label>
 
                                 <label className="flex items-center justify-between p-6 rounded-[2rem] bg-black/20 border border-white/5 cursor-pointer group transition-all hover:bg-black/30">

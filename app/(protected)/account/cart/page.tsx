@@ -7,9 +7,11 @@ import { useCart } from "@/app/cart/CartContext";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import ConfirmModal from "@/components/ConfirmModal";
+import { useSupportModal } from "@/hooks/useSupportModal";
 
 export default function AccountCartPage() {
     const router = useRouter();
+    const { openSupportModal } = useSupportModal();
     const { cart, removeFromCart, addToCart, clearCart, getTotalPrice, getTotalItems, updateQuantity } = useCart();
 
     // Modal states
@@ -230,9 +232,15 @@ export default function AccountCartPage() {
                             </Link>
                             <button
                                 onClick={() => setClearModalOpen(true)}
-                                className="w-full py-4 text-gray-700 hover:text-red-500 font-black uppercase text-[10px] tracking-widest transition-all italic"
+                                className="w-full py-4 text-gray-700 hover:text-red-500 font-black uppercase text-[10px] tracking-widest transition-all italic border-b border-white/5"
                             >
                                 VIDER LE PANIER
+                            </button>
+                            <button
+                                onClick={() => openSupportModal({ module: 'cart', subject: 'Aide avec mon Panier' })}
+                                className="w-full py-4 text-gray-500 hover:text-yellow-400 font-black uppercase text-[10px] tracking-widest transition-all italic flex items-center justify-center gap-2"
+                            >
+                                Beside d'aide ?
                             </button>
                         </div>
                     </div>
