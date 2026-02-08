@@ -115,7 +115,7 @@ export default function Navbar() {
                                         image={session.user?.image}
                                         name={session.user?.name}
                                         size="sm"
-                                        backgroundColor={session.user?.selectedBg || undefined}
+                                        backgroundColor={session.user?.selected_bg || undefined}
                                     />
                                     <span className="text-[10px] font-black text-white uppercase tracking-widest italic">{session.user?.name?.split(' ')[0]}</span>
                                 </button>
@@ -134,7 +134,7 @@ export default function Navbar() {
                                                         image={session.user?.image}
                                                         name={session.user?.name}
                                                         size="sm"
-                                                        backgroundColor={session.user?.selectedBg || undefined}
+                                                        backgroundColor={session.user?.selected_bg || undefined}
                                                     />
                                                     <div className="truncate">
                                                         <p className="text-white font-black text-[10px] uppercase italic truncate">{session.user?.name}</p>
@@ -215,7 +215,7 @@ export default function Navbar() {
                             <div className="mt-auto pt-10 border-t border-white/5">
                                 {status === 'authenticated' ? (
                                     <div className="flex items-center gap-6 p-6 bg-white/5 rounded-[2.5rem]">
-                                        <UserAvatar image={session.user?.image} name={session.user?.name} size="lg" backgroundColor={session.user?.selectedBg || undefined} />
+                                        <UserAvatar image={session.user?.image} name={session.user?.name} size="lg" backgroundColor={session.user?.selected_bg || undefined} />
                                         <div>
                                             <p className="text-white font-[1000] text-3xl italic uppercase tracking-tighter leading-none">{session.user?.name?.split(' ')[0]}</p>
                                             <button onClick={handleLogout} className="text-red-500 font-black text-[10px] uppercase tracking-widest mt-2 block">DÉCONNEXION</button>
