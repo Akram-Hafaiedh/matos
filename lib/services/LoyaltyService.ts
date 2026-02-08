@@ -52,7 +52,7 @@ export class LoyaltyService {
         const shopBoosters = await prisma.shop_items.findMany({
             where: {
                 id: { in: boosterIds },
-                isActive: true
+                is_active: true
             }
         });
 
@@ -68,13 +68,13 @@ export class LoyaltyService {
             const multiplier = shopItem.multiplier || 1.0;
             const bonus = Math.max(0, multiplier - 1); // e.g. 2.0x -> 1.0 bonus
 
-            if (shopItem.boostType === 'XP') {
+            if (shopItem.boost_type === 'XP') {
                 xpMultiplier += bonus;
                 activeBoosters.push({ name: shopItem.name, type: 'XP', multiplier });
-            } else if (shopItem.boostType === 'TOKEN') {
+            } else if (shopItem.boost_type === 'TOKEN') {
                 tokenMultiplier += bonus;
                 activeBoosters.push({ name: shopItem.name, type: 'TOKEN', multiplier });
-            } else if (shopItem.boostType === 'LOOT') {
+            } else if (shopItem.boost_type === 'LOOT') {
                 lootMultiplier += bonus;
                 activeBoosters.push({ name: shopItem.name, type: 'LOOT', multiplier });
             }

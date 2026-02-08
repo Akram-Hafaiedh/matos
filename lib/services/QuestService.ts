@@ -12,7 +12,7 @@ export class QuestService {
 
         // 1. Fetch all active global quests
         const activeQuests = await prisma.quests.findMany({
-            where: { isActive: true }
+            where: { is_active: true }
         });
 
         // Fetch User's Act/Tier for gating (Optional optimization, strictly enforce in UI for now)
@@ -29,7 +29,7 @@ export class QuestService {
                 continue;
             }
 
-            const config = (quest.validationConfig as any) || {};
+            const config = (quest.validation_config as any) || {};
             let progressMade = 0;
             let isCompleted = false;
             let currentProgress = userQuest?.progress || 0;
@@ -122,8 +122,8 @@ export class QuestService {
                 case 'ONE_OFF':
                     // e.g. First Order or Cumulative XP Milestone
                     if (config.targetXP) {
-                        const user = await prisma.user.findUnique({ where: { id: userId }, select: { loyaltyPoints: true } });
-                        currentProgress = user?.loyaltyPoints || 0;
+                        const user = await prisma.user.findUnique({ where: { id: userId }, select: { loyalty_points: true } });
+                        currentProgress = user?.loyalty_points || 0;
                         if (currentProgress >= config.targetXP) isCompleted = true;
                         progressMade = 0;
                     } else if (config.targetCount) {
