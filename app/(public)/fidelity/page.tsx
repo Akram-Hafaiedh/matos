@@ -40,8 +40,8 @@ interface RankUser {
     id: string;
     name: string | null;
     image: string | null;
-    loyaltyPoints: number;
-    selectedFrame: string | null;
+    loyalty_points: number;
+    selected_frame: string | null;
 }
 
 export default function FidelityPage() {
@@ -65,7 +65,7 @@ export default function FidelityPage() {
             });
     }, []);
 
-    const userPoints = (session?.user as any)?.loyaltyPoints || 0;
+    const userPoints = (session?.user as any)?.loyalty_points || 0;
 
     return (
         <div ref={containerRef} className="min-h-screen bg-transparent text-white font-sans selection:bg-yellow-500/30 overflow-x-hidden pb-40">
@@ -277,7 +277,7 @@ export default function FidelityPage() {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-sm font-[1000] italic text-yellow-500">{user.loyaltyPoints.toLocaleString()}</div>
+                                        <div className="text-sm font-[1000] italic text-yellow-500">{user.loyalty_points.toLocaleString()}</div>
                                         <div className="text-[7px] font-black uppercase tracking-widest opacity-20">Points d'Honneur</div>
                                     </div>
                                 </div>

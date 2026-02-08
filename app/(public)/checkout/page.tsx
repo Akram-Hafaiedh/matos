@@ -1,7 +1,7 @@
 // app/checkout/page.tsx
 'use client';
 
-import { useCart } from "../../cart/CartContext";
+import { useCart } from "@/app/cart/CartContext";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { MapPin, Phone, Clock, CreditCard, ShoppingBag, ArrowLeft, User, AlertCircle, Loader2, ArrowRight, Store, Truck, Sparkles } from "lucide-react";

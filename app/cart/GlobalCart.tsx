@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import { useCart } from "./CartContext";
+import { useCart } from "@/app/cart/CartContext";
 import { Minus, Plus, ShoppingBag, Trash2, X, Check, ArrowRight, Trash } from "lucide-react";
 import ConfirmModal from "@/components/ConfirmModal";
 import { useRouter } from "next/navigation";

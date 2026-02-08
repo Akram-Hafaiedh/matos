@@ -4,7 +4,7 @@ import { ChevronRight, ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useCart } from "../../cart/CartContext";
+import { useCart } from "@/app/cart/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
 import SectionHeader from "@/components/SectionHeader";
 import SelectionModal from "@/components/SelectionModal";

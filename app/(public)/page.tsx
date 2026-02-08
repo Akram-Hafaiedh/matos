@@ -35,9 +35,9 @@ export default async function HomePage() {
             name: true,
             role: true,
             image: true,
-            loyaltyPoints: true,
-            selectedBg: true,
-            selectedFrame: true,
+            loyalty_points: true,
+            selected_bg: true,
+            selected_frame: true,
           }
         },
         menu_items: {
@@ -69,8 +69,8 @@ export default async function HomePage() {
   const reviews = await Promise.all(rawReviews.map(async (review) => {
     const rank = await prisma.user.count({
       where: {
-        loyaltyPoints: {
-          gt: review.users.loyaltyPoints || 0
+        loyalty_points: {
+          gt: review.users.loyalty_points || 0
         }
       }
     }) + 1;

@@ -20,7 +20,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 
 import { MenuItem } from '@/types/menu';
-import { useCart } from '../../cart/CartContext';
+import { useCart } from '@/app/cart/CartContext';
 import SelectionModal from '@/components/SelectionModal';
 
 interface MenuContentProps {
@@ -417,10 +417,12 @@ function ProductCard({ item, idx, onSelect, className = "", isFeatured = false }
                 <div className={`relative bg-[#050505] overflow-hidden flex items-center justify-center p-12 ${isFeatured ? "md:w-3/5" : "aspect-square"}`}>
                     <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
 
+                    <Link href={`/menu/${item.id}`} className="absolute inset-0 z-10 cursor-pointer" />
+
                     <motion.div
                         whileHover={{ scale: 1.05, rotate: isFeatured ? 1 : 2 }}
                         transition={{ type: "spring", stiffness: 60, damping: 15 }}
-                        className="relative z-10 w-full h-full flex items-center justify-center pointer-events-none"
+                        className="relative z-0 w-full h-full flex items-center justify-center pointer-events-none"
                     >
                         {item.image && (item.image.startsWith('/') || item.image.startsWith('http')) ? (
                             <Image
@@ -466,14 +468,16 @@ function ProductCard({ item, idx, onSelect, className = "", isFeatured = false }
                                 {item.category}
                             </span>
                         </div>
-                        <h3 className={`font-[1000] uppercase italic tracking-tighter text-white group-hover:text-yellow-400 transition-colors leading-[0.85] ${isFeatured ? "text-6xl md:text-8xl" : "text-5xl"}`}>
-                            {item.name.split(' ').map((word: string, i: number) => (
-                                <span key={i} className="block pr-[0.4em] overflow-visible">{word}</span>
-                            ))}
-                        </h3>
-                        <p className="text-gray-500 font-bold text-[11px] uppercase tracking-[0.3em] leading-relaxed line-clamp-3">
-                            {item.ingredients}
-                        </p>
+                        <Link href={`/menu/${item.id}`} className="block group/link">
+                            <h3 className={`font-[1000] uppercase italic tracking-tighter text-white group-hover/link:text-yellow-400 transition-colors leading-[0.85] ${isFeatured ? "text-6xl md:text-8xl" : "text-5xl"}`}>
+                                {item.name.split(' ').map((word: string, i: number) => (
+                                    <span key={i} className="block pr-[0.4em] overflow-visible">{word}</span>
+                                ))}
+                            </h3>
+                            <p className="mt-4 text-gray-500 font-bold text-[11px] uppercase tracking-[0.3em] leading-relaxed line-clamp-3 group-hover/link:text-gray-400 transition-colors">
+                                {item.ingredients}
+                            </p>
+                        </Link>
                     </div>
 
                     <div className="pt-8 flex items-center justify-between border-t border-white/5">

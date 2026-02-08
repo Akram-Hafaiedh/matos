@@ -116,8 +116,8 @@ export default function Reviews({ reviews: initialReviews = [], currentSlide: co
                                                     name={review.user.name}
                                                     size="lg"
                                                     rank={(review.user as any).rank}
-                                                    backgroundColor={(review.user as any).selectedBg}
-                                                    className={`w-14 h-14 rounded-2xl border-2 transition-all duration-300 ${(review.user as any).selectedFrame || 'border-white/10'}`}
+                                                    backgroundColor={(review.user as any).selected_bg}
+                                                    className={`w-14 h-14 rounded-2xl border-2 transition-all duration-300 ${(review.user as any).selected_frame || 'border-white/10'}`}
                                                 />
                                             </div>
                                             <div>

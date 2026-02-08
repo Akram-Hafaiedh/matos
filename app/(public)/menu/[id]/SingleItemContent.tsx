@@ -4,11 +4,15 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronLeft, Minus, Plus, ShoppingBag, Star, Heart, Share2, MessageSquare } from 'lucide-react';
-import { useCart } from '../../../cart/CartContext';
+import { ChevronLeft, Minus, Plus, ShoppingBag, Star, Heart, Share2, MessageSquare, Check } from 'lucide-react';
+import { useCart } from '@/app/cart/CartContext';
 import { MenuItem } from '@/types/menu';
 import { useSession } from 'next-auth/react';
 import UserAvatar from '@/components/UserAvatar';
+import TacticalAura from '@/components/TacticalAura';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '@/app/context/ToastContext';
+import { submitReview } from '@/lib/actions/reviews';
 
 interface SingleItemContentProps {
     initialItem: MenuItem;
@@ -36,12 +40,14 @@ export default function SingleItemContent({
     const [isLiked, setIsLiked] = useState(initialLiked);
     const [likeCount, setLikeCount] = useState(initialLikeCount);
     const [isLiking, setIsLiking] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
+    const { toast } = useToast();
 
     const getPrice = () => {
         if (!item?.price) return 0;
         if (typeof item.price === 'number') return item.price;
         // @ts-ignore
-        return item.price[selectedSize] || item.price.xl || item.price.normal || 0;
+        return item.price[selectedSize] || Object.values(item.price)[0] || 0;
     };
 
     const handleAddToCart = () => {
@@ -49,30 +55,30 @@ export default function SingleItemContent({
         addToCart(item, 'menuItem', selectedSize, [], quantity);
     };
 
+
     const handleReviewSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!session?.user || !item) return;
 
         setIsSubmittingReview(true);
         try {
-            const res = await fetch('/api/reviews', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    menuItemId: item.id,
-                    userId: (session.user as any).id,
-                    rating: newReview.rating,
-                    comment: newReview.comment
-                })
+            const result = await submitReview({
+                menuItemId: Number(item.id),
+                userId: (session.user as any).id,
+                rating: newReview.rating,
+                comment: newReview.comment
             });
 
-            if (res.ok) {
-                const addedReview = await res.json();
-                setReviews([addedReview, ...reviews]);
+            if (result.success && result.review) {
+                setReviews([result.review, ...reviews]);
                 setNewReview({ rating: 5, comment: '' });
+                toast.success('Merci pour votre avis !');
+            } else {
+                toast.error('Erreur lors de l\'envoi de l\'avis');
             }
         } catch (error) {
             console.error("Failed to submit review", error);
+            toast.error('Erreur de connexion');
         } finally {
             setIsSubmittingReview(false);
         }
@@ -111,20 +117,45 @@ export default function SingleItemContent({
         }
     };
 
+    const handleShare = async () => {
+        const shareData = {
+            title: item.name,
+            text: item.ingredients || item.name,
+            url: window.location.href,
+        };
+
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.error("Share failed", err);
+            }
+        } else {
+            // Fallback to clipboard
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                setIsCopied(true);
+                toast.success('Lien copié dans le presse-papier');
+                setTimeout(() => setIsCopied(false), 2000);
+            } catch (err) {
+                console.error("Copy failed", err);
+            }
+        }
+    };
+
     const displayRating = reviews.length > 0
         ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
-        : (item?.rating || 4.8);
+        : 0;
 
-    const displayReviewCount = reviews.length > 0
-        ? reviews.length
-        : (item?.reviewCount || 12);
+    const displayReviewCount = reviews.length;
 
     const nameParts = item.name ? item.name.split(' ') : ['Produit'];
     const firstName = nameParts[0];
     const lastName = nameParts.slice(1).join(' ');
 
     return (
-        <main className="min-h-screen bg-black text-white pt-32 pb-24 px-6 md:px-12 selection:bg-yellow-400 selection:text-gray-900">
+        <main className="min-h-screen bg-black text-white pt-32 pb-24 px-6 md:px-12 selection:bg-yellow-400 selection:text-gray-900 relative">
+            <TacticalAura color="rgba(250, 204, 21, 0.08)" size="800px" duration={20} />
             <div className="max-w-7xl mx-auto mb-16 flex items-center justify-between">
                 <Link href="/menu" className="inline-flex items-center gap-2 text-white/50 hover:text-yellow-400 transition-colors font-bold uppercase tracking-widest text-xs group">
                     <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -138,13 +169,17 @@ export default function SingleItemContent({
                         className={`w-14 h-10 px-4 rounded-full border flex items-center justify-center gap-2 transition-all group ${isLiked
                             ? 'bg-red-500/10 border-red-500/30 text-red-500'
                             : 'border-white/10 text-white/50 hover:bg-white/5 hover:text-red-400 hover:border-red-400/30'
-                            } ${!session && 'opacity-30 cursor-not-allowed'}`}
+                            } ${!session && 'opacity-30'}`}
+                        title={!session ? 'Connectez-vous pour aimer ce produit' : ''}
                     >
                         <Heart className={`w-4 h-4 transition-transform ${isLiked ? 'fill-current scale-110' : 'group-hover:scale-110'}`} />
                         {likeCount > 0 && <span className="text-xs font-black">{likeCount}</span>}
                     </button>
-                    <button className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:bg-white/5 hover:text-yellow-400 hover:border-yellow-400/30 transition-all group">
-                        <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <button
+                        onClick={handleShare}
+                        className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:bg-white/5 hover:text-yellow-400 hover:border-yellow-400/30 transition-all group"
+                    >
+                        {isCopied ? <Check className="w-4 h-4 text-green-400" /> : <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />}
                     </button>
                 </div>
             </div>
@@ -180,9 +215,15 @@ export default function SingleItemContent({
                                 </div>
                                 <div className="h-px w-8 bg-white/10"></div>
                                 <div className="flex items-center gap-1">
-                                    <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                                    <span className="text-xs font-bold text-white">{displayRating.toFixed(1)}</span>
-                                    <span className="text-[10px] text-gray-500 font-bold">({displayReviewCount})</span>
+                                    {displayRating > 0 ? (
+                                        <>
+                                            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                                            <span className="text-xs font-bold text-white">{displayRating.toFixed(1)}</span>
+                                            <span className="text-[10px] text-gray-500 font-bold">({displayReviewCount})</span>
+                                        </>
+                                    ) : (
+                                        <span className="text-[10px] text-gray-500 font-bold tracking-widest uppercase italic font-[1000]">Aucun avis</span>
+                                    )}
                                 </div>
                             </div>
 
@@ -201,18 +242,20 @@ export default function SingleItemContent({
                         <div className="space-y-8 pt-4">
                             {typeof item.price === 'object' && item.price !== null && (
                                 <div className="flex justify-center lg:justify-start gap-4">
-                                    {(Object.keys(item.price) as Array<'normal' | 'xl'>).map((size) => (
-                                        <button
-                                            key={size}
-                                            onClick={() => setSelectedSize(size)}
-                                            className={`px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest border transition-all ${selectedSize === size
-                                                ? 'bg-white text-black border-white'
-                                                : 'bg-transparent text-gray-500 border-white/10 hover:border-white hover:text-white'
-                                                }`}
-                                        >
-                                            {size === 'xl' ? 'Grande (XL)' : 'Standard'}
-                                        </button>
-                                    ))}
+                                    {(Object.keys(item.price) as string[])
+                                        .sort((a, b) => (item.price as any)[a] - (item.price as any)[b])
+                                        .map((size) => (
+                                            <button
+                                                key={size}
+                                                onClick={() => setSelectedSize(size as any)}
+                                                className={`px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest border transition-all ${selectedSize === size
+                                                    ? 'bg-white text-black border-white'
+                                                    : 'bg-transparent text-gray-500 border-white/10 hover:border-white hover:text-white'
+                                                    }`}
+                                            >
+                                                {size === 'xl' ? 'Grande (XL)' : size === 'xxl' ? 'Géante (XXL)' : 'Standard'}
+                                            </button>
+                                        ))}
                                 </div>
                             )}
 
@@ -239,10 +282,14 @@ export default function SingleItemContent({
 
                                 <button
                                     onClick={handleAddToCart}
-                                    className="bg-yellow-400 text-gray-900 px-12 py-6 rounded-[2rem] font-black uppercase text-xs tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-yellow-400/20 flex items-center gap-4"
+                                    className="bg-yellow-400 text-black w-20 h-20 rounded-full flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-[0_0_30px_rgba(250,204,21,0.3)] relative"
                                 >
-                                    <span>Ajouter</span>
-                                    <ShoppingBag className="w-4 h-4" />
+                                    <ShoppingBag className="w-7 h-7" />
+                                    <motion.div
+                                        className="absolute inset-[-4px] border border-yellow-400/40 rounded-full"
+                                        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+                                        transition={{ duration: 2, repeat: Infinity }}
+                                    />
                                 </button>
                             </div>
                         </div>

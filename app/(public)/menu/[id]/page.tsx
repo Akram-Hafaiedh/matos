@@ -2,6 +2,24 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import SingleItemContent from './SingleItemContent';
+import { Metadata } from 'next';
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await params;
+    const item = await prisma.menu_items.findUnique({
+        where: { id: parseInt(id) },
+        select: { name: true, ingredients: true, description: true }
+    });
+
+    if (!item) return { title: 'Produit non trouvé' };
+
+    return {
+        title: item.name,
+        description: item.ingredients.length > 0
+            ? `Découvrez notre ${item.name} préparé avec : ${item.ingredients.join(', ')}.`
+            : item.description || `Découvrez le délice de notre ${item.name}.`,
+    };
+}
 
 export const revalidate = 60; // Regenerate at most once per minute
 
@@ -22,8 +40,9 @@ export async function generateStaticParams() {
     }));
 }
 
-export default async function SingleItemPage({ params }: { params: { id: string } }) {
-    const id = parseInt(params.id);
+export default async function SingleItemPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
 
     if (isNaN(id)) return notFound();
 
@@ -42,24 +61,18 @@ export default async function SingleItemPage({ params }: { params: { id: string 
 
     if (!item) return notFound();
 
-    // Calculate rating/likes logic (Sync with API/Menu for consistency)
+    // Calculate rating/likes logic - Use real data only
     const hasRealReviews = reviews.length > 0;
     const avgRating = hasRealReviews
         ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
-        : (4.6 + (item.id % 5) * 0.1);
+        : 0;
 
-    const displayReviewCount = hasRealReviews
-        ? reviews.length
-        : (8 + (item.id % 12));
+    const displayReviewCount = reviews.length;
 
     // Get real like count
-    const likeCountRaw = await prisma.menu_likes.count({
+    const displayLikeCount = await prisma.menu_likes.count({
         where: { menu_item_id: id }
     });
-
-    const displayLikeCount = likeCountRaw > 0
-        ? likeCountRaw
-        : (5 + (item.id % 10));
 
     // Format for client component
     const formattedItem = {

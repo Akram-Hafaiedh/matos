@@ -1,6 +1,13 @@
 import { prisma } from '@/lib/prisma';
 import { Suspense } from 'react';
 import MenuContent from './MenuContent';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Notre Carte",
+    description: "Découvrez notre sélection de Pizzas artisanales, Burgers gourmets, Tacos et plats signature. Ingrédients frais et saveurs authentiques.",
+    keywords: ["menu matos", "pizza tunis", "burger gourmet", "restaurant carthage", "tacos tunisie"]
+};
 
 export const revalidate = 60; // Regenerate at most once per minute
 
