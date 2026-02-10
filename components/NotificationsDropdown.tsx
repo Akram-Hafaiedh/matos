@@ -11,8 +11,8 @@ interface Notification {
     message: string;
     type: string;
     link: string | null;
-    isRead: boolean;
-    createdAt: string;
+    is_read: boolean;
+    created_at: string;
 }
 
 export default function NotificationsDropdown() {
@@ -40,7 +40,7 @@ export default function NotificationsDropdown() {
                 body: JSON.stringify({ all: true })
             });
             setUnreadNotifications(0);
-            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+            setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
         } catch (error) {
             console.error('Failed to mark notifications as read');
         }
@@ -55,7 +55,7 @@ export default function NotificationsDropdown() {
                 body: JSON.stringify({ id })
             });
             setUnreadNotifications(prev => Math.max(0, prev - 1));
-            setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
         } catch (error) {
             console.error('Failed to mark notification as read');
         }
@@ -123,7 +123,7 @@ export default function NotificationsDropdown() {
                                             <Link
                                                 href={notif.link || '/account/notifications'}
                                                 onClick={() => setIsNotifOpen(false)}
-                                                className={`flex items-start gap-4 p-4 hover:bg-white/5 transition-all rounded-2xl relative group/item ${!notif.isRead ? 'bg-yellow-400/[0.03]' : ''}`}
+                                                className={`flex items-start gap-4 p-4 hover:bg-white/5 transition-all rounded-2xl relative group/item ${!notif.is_read ? 'bg-yellow-400/[0.03]' : ''}`}
                                             >
                                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${notif.type === 'ticket_response' ? 'bg-blue-500/10 text-blue-400' : 'bg-yellow-400/10 text-yellow-400'}`}>
                                                     <Bell size={14} />
@@ -131,9 +131,11 @@ export default function NotificationsDropdown() {
                                                 <div className="space-y-1 flex-1 pr-4">
                                                     <p className="text-[11px] font-[1000] text-white italic uppercase tracking-tight leading-tight">{notif.title}</p>
                                                     <p className="text-[10px] text-gray-500 font-bold leading-relaxed line-clamp-2 italic">{notif.message}</p>
-                                                    <p className="text-[8px] text-gray-700 font-black uppercase tracking-widest pt-1">{new Date(notif.createdAt).toLocaleDateString()}</p>
+                                                    <p className="text-[8px] text-gray-700 font-black uppercase tracking-widest pt-1">
+                                                        {notif.created_at ? new Date(notif.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '---'}
+                                                    </p>
                                                 </div>
-                                                {!notif.isRead && (
+                                                {!notif.is_read && (
                                                     <button
                                                         onClick={(e) => markRead(e, notif.id)}
                                                         className="absolute right-3 top-4 w-2 h-2 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.5)] group-hover/item:scale-150 transition-transform"

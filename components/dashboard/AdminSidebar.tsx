@@ -5,7 +5,8 @@ import {
     LayoutDashboard, ShoppingBag, Users, Settings,
     LogOut, Menu as MenuIcon, X, Tag, Gift,
     LifeBuoy, Home, MessageSquare, ChevronRight,
-    Utensils, Trophy, Inbox, Send, Mail
+    Utensils, Trophy, Inbox, Send, Mail, Calendar,
+    Sparkles, Activity
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -58,20 +59,15 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, session, han
 
             {/* Main Navigation */}
             <nav className="flex-1 px-4 py-4 space-y-10 overflow-y-auto custom-scrollbar relative z-10">
-                {/* PILOTAGE OPÉRATIONNEL */}
+                {/* PILOTAGE TACTIQUE */}
                 <div className="space-y-1.5">
                     <div className="px-5 mb-4">
-                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">Pilotage Opérationnel</p>
+                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">Pilotage Tactique</p>
                     </div>
                     {[
                         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
                         { name: 'Commandes', href: '/dashboard/orders', icon: ShoppingBag },
-                        { name: 'Menu', href: '/dashboard/menu', icon: Utensils },
-                        { name: 'Catégories', href: '/dashboard/categories', icon: Tag },
-                        { name: 'Promotions', href: '/dashboard/promotions', icon: Gift },
-                        { name: 'Loyauté', href: '/dashboard/loyalty', icon: Trophy },
-                        { name: 'Clients', href: '/dashboard/customers', icon: Users },
-                        { name: 'Paramètres', href: '/dashboard/settings', icon: Settings },
+                        { name: 'Réservations', href: '/dashboard/reservations', icon: Calendar },
                     ].map((item) => {
                         const active = isActive(item.href);
                         return (
@@ -90,7 +86,74 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, session, han
                                     <item.icon className={`w-5 h-5 ${active ? 'text-black' : 'text-gray-500 group-hover:text-yellow-400'} transition-colors`} />
                                     <span className="text-[11px] font-[1000] uppercase tracking-wider">{item.name}</span>
                                 </div>
-                                {active && <motion.div layoutId="nav-pill-admin" className="w-1.5 h-1.5 rounded-full bg-black" />}
+                                {active && <motion.div layoutId="nav-pill-admin-1" className="w-1.5 h-1.5 rounded-full bg-black" />}
+                                {!active && <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-gray-600" />}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* LOGISTIQUE UNITÉS */}
+                <div className="space-y-1.5">
+                    <div className="px-5 mb-4">
+                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">Logistique Unités</p>
+                    </div>
+                    {[
+                        { name: 'Menu', href: '/dashboard/menu', icon: Utensils },
+                        { name: 'Catégories', href: '/dashboard/categories', icon: Tag },
+                        { name: 'Promotions', href: '/dashboard/promotions', icon: Gift },
+                    ].map((item) => {
+                        const active = isActive(item.href);
+                        return (
+                            <button
+                                key={item.name}
+                                onClick={() => {
+                                    router.push(item.href);
+                                    setSidebarOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between group px-5 py-4 rounded-2xl transition-all duration-300 ${active
+                                    ? 'bg-yellow-400 text-black shadow-[0_10px_30px_rgba(250,204,21,0.15)]'
+                                    : 'hover:bg-white/5 text-gray-400 hover:text-white'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <item.icon className={`w-5 h-5 ${active ? 'text-black' : 'text-gray-500 group-hover:text-yellow-400'} transition-colors`} />
+                                    <span className="text-[11px] font-[1000] uppercase tracking-wider">{item.name}</span>
+                                </div>
+                                {active && <motion.div layoutId="nav-pill-admin-2" className="w-1.5 h-1.5 rounded-full bg-black" />}
+                                {!active && <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-gray-600" />}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* BASE DE RENSEIGNEMENT */}
+                <div className="space-y-1.5">
+                    <div className="px-5 mb-4">
+                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">Base Renseignement</p>
+                    </div>
+                    {[
+                        { name: 'Clients', href: '/dashboard/customers', icon: Users },
+                        { name: 'Loyauté', href: '/dashboard/loyalty', icon: Trophy },
+                    ].map((item) => {
+                        const active = isActive(item.href);
+                        return (
+                            <button
+                                key={item.name}
+                                onClick={() => {
+                                    router.push(item.href);
+                                    setSidebarOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between group px-5 py-4 rounded-2xl transition-all duration-300 ${active
+                                    ? 'bg-yellow-400 text-black shadow-[0_10px_30px_rgba(250,204,21,0.15)]'
+                                    : 'hover:bg-white/5 text-gray-400 hover:text-white'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <item.icon className={`w-5 h-5 ${active ? 'text-black' : 'text-gray-500 group-hover:text-yellow-400'} transition-colors`} />
+                                    <span className="text-[11px] font-[1000] uppercase tracking-wider">{item.name}</span>
+                                </div>
+                                {active && <motion.div layoutId="nav-pill-admin-3" className="w-1.5 h-1.5 rounded-full bg-black" />}
                                 {!active && <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-gray-600" />}
                             </button>
                         );
@@ -106,6 +169,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, session, han
                         { name: 'Tickets Support', href: '/dashboard/support', icon: LifeBuoy },
                         { name: 'Messages Contact', href: '/dashboard/inbox', icon: Inbox },
                         { name: 'Avis Clients', href: '/dashboard/reviews', icon: MessageSquare },
+                        { name: 'Station Email', href: '/dashboard/email', icon: Mail },
                     ].map((item) => {
                         const active = isActive(item.href);
                         return (
@@ -131,13 +195,17 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, session, han
                     })}
                 </div>
 
-                {/* TRANSMISSIONS */}
+                {/* CONFIGURATION MISSION */}
                 <div className="space-y-1.5">
                     <div className="px-5 mb-4">
-                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">Transmissions</p>
+                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">Configuration Mission</p>
                     </div>
                     {[
-                        { name: 'Station Email', href: '/dashboard/email', icon: Send },
+                        { name: 'Protocoles', href: '/dashboard/settings/general', icon: Settings },
+                        { name: 'Passerelles', href: '/dashboard/settings/integrations', icon: Send },
+                        { name: 'Visuels Hero', href: '/dashboard/settings/hero', icon: Sparkles },
+                        { name: 'Contenu Statique', href: '/dashboard/settings/content', icon: ChevronRight },
+                        { name: 'Maintenance', href: '/dashboard/settings/maintenance', icon: Activity },
                     ].map((item) => {
                         const active = isActive(item.href);
                         return (
@@ -156,7 +224,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, session, han
                                     <item.icon className={`w-5 h-5 ${active ? 'text-black' : 'text-gray-500 group-hover:text-yellow-400'} transition-colors`} />
                                     <span className="text-[11px] font-[1000] uppercase tracking-wider">{item.name}</span>
                                 </div>
-                                {active && <motion.div layoutId="nav-pill-comm" className="w-1.5 h-1.5 rounded-full bg-black" />}
+                                {active && <motion.div layoutId="nav-pill-config" className="w-1.5 h-1.5 rounded-full bg-black" />}
                                 {!active && <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-gray-600" />}
                             </button>
                         );
