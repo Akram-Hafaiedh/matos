@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { encrypt, decrypt } from '@/lib/crypto';
 
 export async function GET() {
     try {
@@ -13,6 +14,14 @@ export async function GET() {
             });
         }
 
+        // Return a masked password to the UI if one exists
+        if (config.password) {
+            return NextResponse.json({
+                ...config,
+                password: '••••••••••••••••' // Masked for UI
+            });
+        }
+
         return NextResponse.json(config);
     } catch (error) {
         console.error('Error fetching email settings:', error);
@@ -23,8 +32,15 @@ export async function GET() {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        // Remove id and updated_at if they exist
         const { id, updated_at, ...data } = body;
+
+        // Encrypt password if it was provided and is not the mask
+        if (data.password && data.password !== '••••••••••••••••') {
+            data.password = encrypt(data.password);
+        } else if (data.password === '••••••••••••••••') {
+            // If they sent the mask, don't change the existing password
+            delete data.password;
+        }
 
         const updated = await prisma.email_settings.upsert({
             where: { id: 1 },
@@ -32,7 +48,10 @@ export async function POST(req: Request) {
             create: { id: 1, ...data }
         });
 
-        return NextResponse.json(updated);
+        return NextResponse.json({
+            ...updated,
+            password: '••••••••••••••••'
+        });
     } catch (error) {
         console.error('Error saving email settings:', error);
         return NextResponse.json({ error: 'Failed to save settings' }, { status: 500 });
