@@ -45,23 +45,17 @@ export default async function MenuPage() {
 
     // Format items for the UI (Replicating API logic for consistency)
     const initialItems = rawItems.map(item => {
-        const hasRealReviews = item.reviews.length > 0;
-        const avgRating = hasRealReviews
-            ? item.reviews.reduce((acc, curr) => acc + curr.rating, 0) / item.reviews.length
-            : (4.6 + (item.id % 5) * 0.1);
+        const realReviewCount = item._count.reviews;
+        const avgRating = realReviewCount > 0
+            ? item.reviews.reduce((acc, curr) => acc + curr.rating, 0) / realReviewCount
+            : 0;
 
-        const displayReviewCount = hasRealReviews
-            ? item._count.reviews
-            : (8 + (item.id % 12));
-
-        const displayLikeCount = item._count.menu_likes > 0
-            ? item._count.menu_likes
-            : (5 + (item.id % 10));
+        const displayLikeCount = item._count.menu_likes;
 
         return {
             id: item.id,
             name: item.name,
-            price: item.price as any, // Cast JsonValue
+            price: item.price as any,
             ingredients: item.ingredients.join(', ') || item.description,
             popular: item.popular,
             bestseller: item.bestseller,
@@ -72,7 +66,7 @@ export default async function MenuPage() {
             displayOrder: item.display_order,
             likeCount: displayLikeCount,
             rating: avgRating,
-            reviewCount: displayReviewCount
+            reviewCount: realReviewCount
         };
     });
 

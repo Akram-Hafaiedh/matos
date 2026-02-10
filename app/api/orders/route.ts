@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
+import { calculateCartTotal } from '@/lib/pricing';
+import { MenuItem, Promotion } from '@/types/menu';
+import { CartItem } from '@/types/cart';
 
 export async function POST(request: NextRequest) {
     try {
@@ -16,24 +19,110 @@ export async function POST(request: NextRequest) {
         const session = await getServerSession(authOptions);
         const userId = session?.user ? (session.user as any).id : null;
 
-        // Prepare order items from cart
-        const orderItems = Object.entries(cart).map(([key, cartItem]: [string, any]) => {
-            const { item, quantity, selectedSize, type, choices } = cartItem;
-            let itemPrice = 0;
+        // --- SERVER-SIDE PRICE VALIDATION ---
 
-            if (type === 'promotion') {
-                itemPrice = item.price || 0;
+        // 1. Gather all IDs to fetch from DB
+        const menuItemIds = new Set<number>();
+        const promotionIds = new Set<number>();
+
+        Object.values(cart).forEach((cartItem: any) => {
+            if (cartItem.type === 'promotion') {
+                promotionIds.add(Number(cartItem.item.id));
             } else {
-                if (typeof item.price === 'number') {
-                    itemPrice = item.price;
-                } else if (item.price && selectedSize) {
-                    itemPrice = item.price[selectedSize] || 0;
+                menuItemIds.add(Number(cartItem.item.id));
+            }
+
+            // Also check choices for menu items
+            if (cartItem.choices) {
+                Object.values(cartItem.choices).forEach((items: any) => {
+                    if (Array.isArray(items)) {
+                        items.forEach(choiceItem => {
+                            if (choiceItem.id) menuItemIds.add(Number(choiceItem.id));
+                        });
+                    }
+                });
+            }
+        });
+
+        // 2. Fetch from DB
+        const [dbMenuItems, dbPromotions] = await Promise.all([
+            prisma.menu_items.findMany({
+                where: { id: { in: Array.from(menuItemIds) }, is_active: true }
+            }),
+            prisma.promotions.findMany({
+                where: { id: { in: Array.from(promotionIds) }, is_active: true }
+            })
+        ]);
+
+        const dbMenuMap = new Map(dbMenuItems.map(m => [m.id, m]));
+        const dbPromoMap = new Map(dbPromotions.map(p => [p.id, p]));
+
+        // 3. Reconstruct cart with DB-backed data
+        const validatedCart: { [key: string]: CartItem } = {};
+
+        for (const [key, clientItem] of Object.entries(cart) as [string, any][]) {
+            const isPromo = clientItem.type === 'promotion';
+            const dbItem = isPromo
+                ? dbPromoMap.get(Number(clientItem.item.id))
+                : dbMenuMap.get(Number(clientItem.item.id));
+
+            if (!dbItem) {
+                return NextResponse.json({ success: false, error: `Article non trouvé: ${clientItem.item.name}` }, { status: 400 });
+            }
+
+            // Map DB fields to Type interfaces
+            const itemData: any = {
+                ...dbItem,
+                price: isPromo ? (dbItem as any).price : (dbItem as any).price,
+                originalPrice: isPromo ? (dbItem as any).original_price : (dbItem as any).original_price,
+            };
+
+            // Reconstruct choices with DB prices
+            let validatedChoices: any = null;
+            if (clientItem.choices) {
+                validatedChoices = {};
+                for (const [ruleId, choices] of Object.entries(clientItem.choices) as [string, any][]) {
+                    validatedChoices[ruleId] = choices.map((c: any) => {
+                        const dbChoice = dbMenuMap.get(Number(c.id));
+                        return dbChoice ? { ...c, price: dbChoice.price } : c;
+                    });
                 }
             }
 
+            validatedCart[key] = {
+                item: itemData,
+                type: clientItem.type,
+                quantity: clientItem.quantity,
+                selectedSize: clientItem.selectedSize,
+                choices: validatedChoices
+            };
+        }
+
+        // 4. Recalculate Totals
+        const serverSubtotal = calculateCartTotal(validatedCart);
+        const serverTotal = serverSubtotal + (deliveryFee || 0);
+
+        // 5. Comparison (allowing for floating point precision epsilon)
+        if (Math.abs(serverSubtotal - totalPrice) > 0.01) {
+            console.error(`Price Tampering Detected! Client: ${totalPrice}, Server: ${serverSubtotal}`);
+            return NextResponse.json({
+                success: false,
+                error: 'Le prix de votre panier a changé. Veuillez rafraîchir la page.',
+                details: { client: totalPrice, server: serverSubtotal }
+            }, { status: 422 });
+        }
+
+        // Prepare order items for DB insertion using VALIDATED prices
+        const orderItems = Object.values(validatedCart).map(cartItem => {
+            const { item, quantity, selectedSize, type, choices } = cartItem;
+
+            // Re-importing calculateItemPrice just for clarity here or use already imported
+            const { calculateItemPrice } = require('@/lib/pricing');
+            const itemPrice = calculateItemPrice(cartItem);
+
             return {
-                menu_item_id: type === 'menuItem' ? item.id : null,
-                promotion_id: type === 'promotion' ? item.id : null,
+                menu_item_id: type === 'menuItem' ? (item as any).id : null,
+                promotion_id: type === 'promotion' ? (item as any).id : null,
                 item_name: item.name,
                 item_price: itemPrice,
                 quantity,
@@ -101,11 +190,14 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // TODO: Send SMS notification to restaurant
-        // await sendSMSToRestaurant(order);
-
-        // TODO: Send SMS confirmation to customer
-        // await sendSMSToCustomer(order);
+        // Send SMS notifications
+        try {
+            const { sendSMSToRestaurant, sendSMSToCustomer } = await import('@/lib/sms');
+            await sendSMSToRestaurant(order);
+            await sendSMSToCustomer(order, 'confirmation');
+        } catch (smsError) {
+            console.error('Error in SMS integration:', smsError);
+        }
 
         // Process Quests and Loyalty
         let completedQuests: any[] = [];
@@ -209,6 +301,14 @@ export async function GET(request: NextRequest) {
             orders: orders.map(order => ({
                 ...order,
                 id: order.id.toString(),
+                delivery_info: {
+                    full_name: order.customer_name,
+                    phone: order.customer_phone,
+                    address: order.delivery_address,
+                    city: order.city,
+                    notes: order.notes,
+                    email: order.customer_email
+                },
                 // Keep the 'cart' alias if it helps, but use snake_case for items
                 cart: order.order_items.map((oi: any) => ({
                     ...oi,

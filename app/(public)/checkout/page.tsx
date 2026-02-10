@@ -226,7 +226,7 @@ export default function CheckoutPage() {
                                             type="text"
                                             value={deliveryInfo.fullName}
                                             onChange={(e) => setDeliveryInfo({ ...deliveryInfo, fullName: e.target.value })}
-                                            className={`w-full bg-black/40 border text-white px-8 py-6 rounded-[2rem] font-[1000] uppercase italic tracking-tight focus:outline-none transition-all placeholder:text-gray-900 ${errors.fullName ? 'border-red-500/50' : 'border-white/5 focus:border-yellow-400/50'
+                                            className={`w-full bg-black/40 border text-white px-8 py-6 rounded-[2rem] font-[1000] italic tracking-tight focus:outline-none transition-all placeholder:text-gray-900 ${errors.fullName ? 'border-red-500/50' : 'border-white/5 focus:border-yellow-400/50'
                                                 }`}
                                             placeholder="Agent XXX"
                                         />
@@ -244,7 +244,7 @@ export default function CheckoutPage() {
                                             type="tel"
                                             value={deliveryInfo.phone}
                                             onChange={(e) => setDeliveryInfo({ ...deliveryInfo, phone: e.target.value })}
-                                            className={`w-full bg-black/40 border text-white px-8 py-6 rounded-[2rem] font-[1000] uppercase italic tracking-tight focus:outline-none transition-all placeholder:text-gray-900 ${errors.phone ? 'border-red-500/50' : 'border-white/5 focus:border-yellow-400/50'
+                                            className={`w-full bg-black/40 border text-white px-8 py-6 rounded-[2rem] font-[1000] italic tracking-tight focus:outline-none transition-all placeholder:text-gray-900 ${errors.phone ? 'border-red-500/50' : 'border-white/5 focus:border-yellow-400/50'
                                                 }`}
                                             placeholder="XX XXX XXX"
                                         />
@@ -263,7 +263,7 @@ export default function CheckoutPage() {
                                         <textarea
                                             value={deliveryInfo.address}
                                             onChange={(e) => setDeliveryInfo({ ...deliveryInfo, address: e.target.value })}
-                                            className={`w-full bg-black/40 border text-white px-8 py-6 rounded-[2.5rem] font-[1000] uppercase italic tracking-tight focus:outline-none transition-all h-32 resize-none placeholder:text-gray-900 ${errors.address ? 'border-red-500/50' : 'border-white/5 focus:border-yellow-400/50'
+                                            className={`w-full bg-black/40 border text-white px-8 py-6 rounded-[2.5rem] font-[1000] italic tracking-tight focus:outline-none transition-all h-32 resize-none placeholder:text-gray-900 ${errors.address ? 'border-red-500/50' : 'border-white/5 focus:border-yellow-400/50'
                                                 }`}
                                             placeholder="Rue, numéro, étage, code d'entrée..."
                                         />

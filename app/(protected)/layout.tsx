@@ -7,7 +7,7 @@ import { useEffect, useState, useRef } from 'react';
 import {
     Loader2, LayoutDashboard, ShoppingBag, Trophy,
     MessageSquare, Bell, User, Shield, LogOut,
-    Menu, X, ChevronRight, Home, Sparkles
+    Menu, X, ChevronRight, Home, Sparkles, Calendar
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,6 +20,7 @@ import SupportTicketModal from '@/components/SupportTicketModal';
 
 const MENU_ITEMS = [
     { icon: LayoutDashboard, label: "Aperçu", href: '/account' },
+    { icon: Calendar, label: "Réservations", href: '/account/reservations' },
     { icon: ShoppingBag, label: "Panier", href: '/account/cart' },
     { icon: ShoppingBag, label: "Commandes", href: '/account/orders' },
     { icon: Trophy, label: "Fidélité", href: '/account/loyalty' },

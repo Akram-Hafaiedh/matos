@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import {
     ShoppingBag, Trophy, Star, ChevronRight,
-    Zap, Gem, Target, Clock, MessageSquare, Loader2
+    Zap, Gem, Target, Clock, MessageSquare, Loader2, Calendar
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -21,6 +21,7 @@ export default function AccountDashboard() {
         totalOrders: 0,
         activeTickets: 0,
         availablePoints: 0,
+        totalReservations: 0,
         rank: '-'
     });
     const [loading, setLoading] = useState(true);
@@ -28,17 +29,19 @@ export default function AccountDashboard() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [profileRes, ordersRes, ticketsRes, questsRes] = await Promise.all([
+                const [profileRes, ordersRes, ticketsRes, questsRes, reservationsRes] = await Promise.all([
                     fetch('/api/user/profile'),
                     fetch('/api/orders'),
                     fetch('/api/support/tickets'),
-                    fetch('/api/quests')
+                    fetch('/api/quests'),
+                    fetch('/api/reservations')
                 ]);
 
                 const profileData = await profileRes.json();
                 const ordersData = await ordersRes.json();
                 const ticketsData = await ticketsRes.json();
                 const questsData = await questsRes.json();
+                const reservationsData = await reservationsRes.json();
 
                 if (profileData.success) {
                     setUserData(profileData.user);
@@ -62,6 +65,13 @@ export default function AccountDashboard() {
 
                 if (questsData.success) {
                     setQuests(questsData.quests || []);
+                }
+
+                if (reservationsData.reservations) {
+                    setStats(prev => ({
+                        ...prev,
+                        totalReservations: reservationsData.reservations.length
+                    }));
                 }
             } catch (err) {
                 console.error(err);
@@ -121,6 +131,16 @@ export default function AccountDashboard() {
             href: "/account/tickets",
             color: "red-400",
             desc: "Communication directe avec la régie centrale."
+        },
+        {
+            label: "Planification Temporelle",
+            title: "Registre des Tables",
+            value: stats.totalReservations,
+            suffix: "ENTRÉES",
+            icon: Calendar,
+            href: "/account/reservations",
+            color: "yellow-400",
+            desc: "Gestion chronologique de vos sessions réservées."
         }
     ];
 
@@ -173,7 +193,7 @@ export default function AccountDashboard() {
             </div>
 
             {/* Tactical Grid Matrix */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {tacticalCards.map((card, idx) => (
                     <Link
                         key={idx}

@@ -49,18 +49,11 @@ export async function GET(request: NextRequest) {
                 const realReviewCount = await prisma.reviews.count({ where: { menu_item_id: itemId } });
                 const reviews = await prisma.reviews.findMany({ where: { menu_item_id: itemId }, select: { rating: true } });
 
-                const hasRealReviews = realReviewCount > 0;
-                const avgRating = hasRealReviews
+                const avgRating = realReviewCount > 0
                     ? reviews.reduce((acc, curr) => acc + curr.rating, 0) / realReviewCount
-                    : (4.6 + (itemId % 5) * 0.1); // Stable fake rating [4.6 - 5.0]
+                    : 0;
 
-                const displayReviewCount = hasRealReviews
-                    ? realReviewCount
-                    : (8 + (itemId % 12)); // Stable fake count [8 - 19]
-
-                const displayLikeCount = totalLikes > 0
-                    ? totalLikes
-                    : (5 + (itemId % 10)); // Stable fake likes [5 - 14]
+                const displayLikeCount = totalLikes;
 
                 // Flatten for frontend
                 const result = {
@@ -68,7 +61,7 @@ export async function GET(request: NextRequest) {
                     like_count: displayLikeCount,
                     is_liked: (menuItem as any).menu_likes?.length > 0,
                     rating: avgRating,
-                    review_count: displayReviewCount
+                    review_count: realReviewCount
                 };
                 return NextResponse.json({ success: true, menuItem: result });
             }
@@ -138,23 +131,17 @@ export async function GET(request: NextRequest) {
         ]);
 
         const formattedItems = menuItems.map(item => {
-            const hasRealReviews = item.reviews.length > 0;
-            const avgRating = hasRealReviews
+            const realReviewCount = item._count.reviews;
+            const avgRating = realReviewCount > 0
                 ? item.reviews.reduce((acc, curr) => acc + curr.rating, 0) / item.reviews.length
-                : (4.6 + (item.id % 5) * 0.1);
+                : 0;
 
-            const displayReviewCount = hasRealReviews
-                ? item._count.reviews
-                : (8 + (item.id % 12));
-
-            const displayLikeCount = item._count.menu_likes > 0
-                ? item._count.menu_likes
-                : (5 + (item.id % 10));
+            const displayLikeCount = item._count.menu_likes;
 
             return {
                 ...item,
                 like_count: displayLikeCount,
-                review_count: displayReviewCount,
+                review_count: realReviewCount,
                 rating: avgRating,
                 reviews: undefined,
                 category: item.categories // Rename categories to category for frontend consistency if needed, or just use categories.

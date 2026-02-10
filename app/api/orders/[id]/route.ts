@@ -235,6 +235,18 @@ export async function PATCH(
                     link: `/account/orders/${order.id}`,
                 }
             });
+
+            // Send Real-time SMS status updates
+            try {
+                const { sendSMSToCustomer } = await import('@/lib/sms');
+                if (status === 'ready') {
+                    await sendSMSToCustomer(order, 'ready');
+                } else if (status === 'out_for_delivery') {
+                    await sendSMSToCustomer(order, 'delivery');
+                }
+            } catch (smsError) {
+                console.error('Error in status SMS integration:', smsError);
+            }
         }
 
         return NextResponse.json({

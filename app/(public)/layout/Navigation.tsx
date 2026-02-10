@@ -30,6 +30,7 @@ export default function Navbar() {
         { href: '/', label: 'Accueil' },
         { href: '/menu', label: 'Menu' },
         { href: '/promos', label: 'Promos' },
+        { href: '/reservations', label: 'Réservation' },
         { href: '/fidelity', label: 'Fidélité' },
         { href: '/contact', label: 'Contact' },
     ];
@@ -67,15 +68,17 @@ export default function Navbar() {
                             href={link.href}
                             className="relative px-5 py-2 group overflow-hidden"
                         >
-                            <span className={`text-[9px] font-black uppercase tracking-[0.4em] italic transition-colors duration-300 ${pathname === link.href ? 'text-yellow-400' : 'text-gray-400 group-hover:text-white'
+                            <span className={`text-[9px] font-black uppercase tracking-[0.4em] italic transition-colors duration-300 ${(link.href === '/' ? pathname === '/' : pathname.startsWith(link.href))
+                                    ? 'text-yellow-400'
+                                    : 'text-gray-400 group-hover:text-white'
                                 }`}>
                                 {link.label}
                             </span>
 
                             <motion.div
                                 className="absolute bottom-0 left-5 right-5 h-0.5 bg-yellow-400 origin-left"
-                                initial={{ scaleX: pathname === link.href ? 1 : 0 }}
-                                animate={{ scaleX: pathname === link.href ? 1 : 0 }}
+                                initial={{ scaleX: (link.href === '/' ? pathname === '/' : pathname.startsWith(link.href)) ? 1 : 0 }}
+                                animate={{ scaleX: (link.href === '/' ? pathname === '/' : pathname.startsWith(link.href)) ? 1 : 0 }}
                                 whileHover={{ scaleX: 1 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             />
@@ -204,7 +207,9 @@ export default function Navbar() {
                                         <Link
                                             href={link.href}
                                             onClick={() => setIsMenuOpen(false)}
-                                            className={`text-6xl font-[1000] italic uppercase tracking-tighter block leading-none ${pathname === link.href ? 'text-yellow-400' : 'text-white/40'
+                                            className={`text-6xl font-[1000] italic uppercase tracking-tighter block leading-none ${(link.href === '/' ? pathname === '/' : pathname.startsWith(link.href))
+                                                    ? 'text-yellow-400'
+                                                    : 'text-white/40'
                                                 }`}
                                         >
                                             {link.label}

@@ -210,7 +210,7 @@ export default function ContactContent() {
                                                 required
                                                 value={formData.name}
                                                 onChange={handleChange}
-                                                className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl focus:border-yellow-400/50 focus:bg-white/10 focus:outline-none transition-all font-bold text-white uppercase tracking-widest text-xs"
+                                                className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl focus:border-yellow-400/50 focus:bg-white/10 focus:outline-none transition-all font-bold text-white tracking-widest text-xs"
                                                 placeholder="votre nom"
                                             />
                                         </div>
@@ -222,7 +222,7 @@ export default function ContactContent() {
                                                 required
                                                 value={formData.email}
                                                 onChange={handleChange}
-                                                className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl focus:border-yellow-400/50 focus:bg-white/10 focus:outline-none transition-all font-bold text-white uppercase tracking-widest text-xs"
+                                                className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl focus:border-yellow-400/50 focus:bg-white/10 focus:outline-none transition-all font-bold text-white tracking-widest text-xs"
                                                 placeholder="votre@email.com"
                                             />
                                         </div>
@@ -236,7 +236,7 @@ export default function ContactContent() {
                                                 required
                                                 value={formData.subject}
                                                 onChange={handleChange}
-                                                className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl focus:border-yellow-400/50 focus:bg-white/10 focus:outline-none transition-all font-[1000] text-white uppercase tracking-widest text-xs appearance-none cursor-pointer"
+                                                className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl focus:border-yellow-400/50 focus:bg-white/10 focus:outline-none transition-all font-[1000] text-white tracking-widest text-xs appearance-none cursor-pointer"
                                             >
                                                 <option value="" className="bg-[#0a0a0a]">Choisissez un sujet</option>
                                                 <option value="commande" className="bg-[#0a0a0a]">Suivi de commande</option>
@@ -256,7 +256,7 @@ export default function ContactContent() {
                                             rows={6}
                                             value={formData.message}
                                             onChange={handleChange}
-                                            className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl focus:border-yellow-400/50 focus:bg-white/10 focus:outline-none transition-all font-bold text-white uppercase tracking-widest text-xs resize-none"
+                                            className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl focus:border-yellow-400/50 focus:bg-white/10 focus:outline-none transition-all font-bold text-white tracking-widest text-xs resize-none"
                                             placeholder="Comment pouvons-nous vous aider ?"
                                         />
                                     </div>

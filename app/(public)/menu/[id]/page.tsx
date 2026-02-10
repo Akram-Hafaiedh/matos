@@ -91,6 +91,32 @@ export default async function SingleItemPage({ params }: { params: Promise<{ id:
         reviewCount: displayReviewCount
     };
 
+    // Enrich reviews with user data and rank (consistent with home page)
+    const formattedReviews = await Promise.all(reviews.map(async (review) => {
+        const rank = await prisma.user.count({
+            where: {
+                loyalty_points: {
+                    gt: review.users.loyalty_points || 0
+                }
+            }
+        }) + 1;
+
+        return {
+            id: review.id,
+            rating: review.rating,
+            comment: review.comment,
+            created_at: review.created_at,
+            user: {
+                name: review.users.name,
+                image: review.users.image,
+                role: review.users.role,
+                rank,
+                selectedBg: review.users.selected_bg,
+                selectedFrame: review.users.selected_frame
+            }
+        };
+    }));
+
     return (
         <Suspense fallback={
             <div className="min-h-screen bg-black flex items-center justify-center">
@@ -99,7 +125,7 @@ export default async function SingleItemPage({ params }: { params: Promise<{ id:
         }>
             <SingleItemContent
                 initialItem={formattedItem as any}
-                initialReviews={reviews}
+                initialReviews={formattedReviews}
                 initialLiked={false} // Initially false for static rendering
                 initialLikeCount={displayLikeCount}
             />
