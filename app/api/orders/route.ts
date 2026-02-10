@@ -1,7 +1,7 @@
 // app/api/orders/route.ts - Reload trigger
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { calculateCartTotal } from '@/lib/pricing';
 import { MenuItem, Promotion } from '@/types/menu';
