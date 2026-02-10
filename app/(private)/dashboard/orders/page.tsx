@@ -34,6 +34,26 @@ export default function AdminOrdersPage() {
     const [cancelReason, setCancelReason] = useState('');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [lastFetch, setLastFetch] = useState<Date>(new Date());
+    const [taxConfig, setTaxConfig] = useState<{ vat_rate: number, stamp_duty: number } | null>(null);
+
+    const fetchSettings = async () => {
+        try {
+            const res = await fetch('/api/settings');
+            const data = await res.json();
+            if (data.vat_rate !== undefined) {
+                setTaxConfig({
+                    vat_rate: data.vat_rate,
+                    stamp_duty: data.stamp_duty
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching tax settings:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchSettings();
+    }, []);
 
     const fetchOrders = async (isSilent = false) => {
         if (!isSilent) setLoading(true);
@@ -224,10 +244,10 @@ export default function AdminOrdersPage() {
 
                                 <div className="flex justify-between items-start relative z-10">
                                     <div className="space-y-2">
-                                        <p className="text-3xl font-[1000] text-white uppercase tracking-tighter italic">{selectedOrder.delivery_info.full_name}</p>
+                                        <p className="text-3xl font-[1000] text-white uppercase tracking-tighter italic">{selectedOrder.delivery_info?.full_name || 'Client Inconnu'}</p>
                                         <div className="flex items-center gap-3 text-gray-400">
                                             <Phone size={14} className="text-yellow-400" />
-                                            <p className="font-black text-xs tracking-widest">{selectedOrder.delivery_info.phone}</p>
+                                            <p className="font-black text-xs tracking-widest">{selectedOrder.delivery_info?.phone || 'Non renseigné'}</p>
                                         </div>
                                     </div>
                                     <div className={`p-6 rounded-[2rem] border transition-colors ${selectedOrder.order_type === 'pickup' ? 'bg-pink-500/5 border-pink-500/20 text-pink-400' : 'bg-blue-500/5 border-blue-400/20 text-blue-400'}`}>
@@ -241,17 +261,17 @@ export default function AdminOrdersPage() {
                                         <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] italic">Target Vector</p>
                                     </div>
                                     <p className="text-white font-[1000] uppercase italic tracking-widest text-sm leading-relaxed">
-                                        {selectedOrder.delivery_info.address}, <span className="text-yellow-400/50">{selectedOrder.delivery_info.city}</span>
+                                        {selectedOrder.delivery_info?.address || 'Adresse Inconnue'}, <span className="text-yellow-400/50">{selectedOrder.delivery_info?.city || 'Tunis'}</span>
                                     </p>
                                 </div>
 
-                                {selectedOrder.delivery_info.notes && (
+                                {selectedOrder.delivery_info?.notes && (
                                     <div className="pt-8 border-t border-white/5 relative z-10 bg-yellow-400/[0.02] -mx-10 -mb-10 p-10 mt-8 border-dashed border-yellow-400/10">
                                         <div className="flex items-center gap-3 mb-3">
                                             <MessageSquare size={14} className="text-yellow-400/50" />
                                             <p className="text-[10px] font-black text-yellow-400/50 uppercase tracking-[0.3em] italic">Tactical Briefing</p>
                                         </div>
-                                        <p className="text-gray-400 text-xs font-black uppercase italic tracking-widest leading-relaxed">"{selectedOrder.delivery_info.notes}"</p>
+                                        <p className="text-gray-400 text-xs font-black uppercase italic tracking-widest leading-relaxed">"{selectedOrder.delivery_info?.notes}"</p>
                                     </div>
                                 )}
                             </div>
@@ -285,17 +305,26 @@ export default function AdminOrdersPage() {
                             </div>
                         </section>
 
-                        {/* Fiscal Status */}
+                        {/* Fiscal Status - INTERNAL REPORTING */}
                         <section className="bg-yellow-400/5 border border-yellow-400/10 rounded-[3.5rem] p-12 space-y-6 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-full h-full bg-yellow-400/[0.02] -skew-x-12 translate-x-1/2 pointer-events-none transition-transform group-hover:translate-x-1/3 duration-1000"></div>
 
+                            <div className="flex items-center gap-3 mb-4">
+                                <Activity size={12} className="text-yellow-400" />
+                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] italic">Internal Fiscal Report</h4>
+                            </div>
+
                             <div className="flex justify-between items-center text-gray-500 font-black uppercase text-[10px] tracking-[0.3em] relative z-10">
-                                <span>Base Revenue</span>
-                                <span>{selectedOrder.total_amount.toFixed(1)} DT</span>
+                                <span>Base Revenue (HT)</span>
+                                <span>{(selectedOrder.total_amount / (1 + (taxConfig?.vat_rate || 0.19))).toFixed(1)} DT</span>
                             </div>
                             <div className="flex justify-between items-center text-gray-500 font-black uppercase text-[10px] tracking-[0.3em] relative z-10">
-                                <span>Logistics Tax</span>
-                                <span className="text-green-500 italic">SYSTEM OVERRRIDE: 0.0 DT</span>
+                                <span>TVA ({((taxConfig?.vat_rate || 0.19) * 100).toFixed(0)}%)</span>
+                                <span className="text-yellow-400/80">{(selectedOrder.total_amount - (selectedOrder.total_amount / (1 + (taxConfig?.vat_rate || 0.19)))).toFixed(1)} DT</span>
+                            </div>
+                            <div className="flex justify-between items-center text-gray-500 font-black uppercase text-[10px] tracking-[0.3em] relative z-10">
+                                <span>Droit de Timbre</span>
+                                <span className="text-yellow-400/80">{(taxConfig?.stamp_duty || 1.0).toFixed(1)} DT</span>
                             </div>
                             <div className="pt-8 border-t border-yellow-400/10 flex justify-between items-end relative z-10">
                                 <div className="space-y-1">
@@ -413,7 +442,9 @@ export default function AdminOrdersPage() {
                                                     <Hash size={10} className="text-yellow-400" />
                                                     <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.4em] italic">{order.order_number}</p>
                                                 </div>
-                                                <h3 className="text-3xl font-[1000] text-white uppercase tracking-tighter italic group-hover:text-yellow-400 transition-colors">{order.delivery_info.full_name}</h3>
+                                                <h3 className="text-3xl font-[1000] text-white uppercase tracking-tighter italic group-hover:text-yellow-400 transition-colors">
+                                                    {order.delivery_info?.full_name || 'Client Inconnu'}
+                                                </h3>
                                             </div>
                                             <div className={`w-14 h-14 rounded-2xl ${config.bg} ${config.border} border flex items-center justify-center ${config.color} shadow-2xl transition-all group-hover:scale-110 duration-700`}>
                                                 <config.icon size={24} strokeWidth={3} />
