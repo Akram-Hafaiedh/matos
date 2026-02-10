@@ -22,8 +22,31 @@ export async function submitReview(formData: {
             }
         });
 
+        const rank = await prisma.user.count({
+            where: {
+                loyalty_points: {
+                    gt: review.users.loyalty_points || 0
+                }
+            }
+        }) + 1;
+
+        const normalizedReview = {
+            id: review.id,
+            rating: review.rating,
+            comment: review.comment,
+            created_at: review.created_at,
+            user: {
+                name: review.users.name,
+                image: review.users.image,
+                role: review.users.role,
+                rank,
+                selectedBg: review.users.selected_bg,
+                selectedFrame: review.users.selected_frame
+            }
+        };
+
         revalidatePath(`/menu/${formData.menuItemId}`);
-        return { success: true, review };
+        return { success: true, review: normalizedReview };
     } catch (error) {
         console.error('Error submitting review:', error);
         return { success: false, error: 'Failed to submit review' };
