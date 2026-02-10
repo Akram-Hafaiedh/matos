@@ -69,6 +69,8 @@ export async function PUT(req: Request) {
                 tiktok: data.tiktok || null,
                 whatsapp: data.whatsapp || null,
                 google_maps_url: data.google_maps_url || null,
+                vat_rate: parseFloat(data.vat_rate) || 0.19,
+                stamp_duty: parseFloat(data.stamp_duty) || 1.0,
                 updated_at: new Date()
             },
             create: {
@@ -82,6 +84,8 @@ export async function PUT(req: Request) {
                 tiktok: data.tiktok || null,
                 whatsapp: data.whatsapp || null,
                 google_maps_url: data.google_maps_url || null,
+                vat_rate: parseFloat(data.vat_rate) || 0.19,
+                stamp_duty: parseFloat(data.stamp_duty) || 1.0,
                 updated_at: new Date()
             },
         });
