@@ -70,11 +70,25 @@
     - **Status**: Production Ready.
     - **Solution**: Implemented responsive `clip-path` geometry with aspect-ratio containers, ensuring stability across all viewports. Used in Fidelity, Home, and Legal sections.
 
+## Sprint 1: Security & Foundation [COMPLETED]
+- [x] **Server-Side Price Validation**: Recalculate and verify totals on the backend to prevent price tampering.
+- [x] **Remove Fake Review Data**: Eliminate deceptive randomizers; show real data and verified names.
+- [x] **Reservation System**: Implement database schema and core booking engine for table reservations.
+- [x] **Logistics Command Center**: Multi-view admin dashboard (Grid, List, Day/Timeline).
+- [x] **Logic Centralization**: Extract shared pricing logic into a unified utility (`lib/pricing.ts`).
+
+## Sprint 2: Logistics & User Feedback (Active)
+- [ ] **Configurable SMS Engine**: Enable/Disable and configure providers via Admin dashboard.
+- [ ] **Email SMTP Control**: Global toggle and credential management in ConfigHub.
+- [ ] **Visual Order Tracking**: Interactive progress map for customers (`/track/[id]`).
+- [ ] **Admin Settings Redesign**: Overhaul `dashboard/settings` with premium Tactical UI.
+- [x] **Tunisian Tax Module**: Implement localized VAT and Stamp duty logic.
+
 ## Pending & Future Roadmap
 - [x] **Admin Orders Page**: Redesigned with 'SideDrawer' expander for high-intensity worker usage and tactical status controls.
 - [ ] **Admin Dashboard Polish**: Further refine UI consistency and ergonomics.
 - [ ] **Quest Celebration FX**: Particle effects and cinematic overlays for quest completion.
 - [ ] **SMS Engine**: Automated notifications for order status.
 - [ ] **Tracking Page**: High-fidelity visual feedback for real-time status transitions.
-- [ ] **Tunisian Tax Module**: Localization engine for VAT and official tax calculations.
+- [x] **Tunisian Tax Module**: Localization engine for VAT and official tax calculations.
 - [ ] **Online Payments**: Integration with Stripe/Local gateways.
