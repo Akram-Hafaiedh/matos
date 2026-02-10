@@ -69,6 +69,8 @@ model global_settings {
   instagram       String?  @db.VarChar(255)
   tiktok          String?  @db.VarChar(255)
   whatsapp        String?  @db.VarChar(50)
+  vat_rate        Float    @default(0.19) // 19% standard in TN for some services, but 7% or 13% for food
+  stamp_duty      Float    @default(1.0) // 1.000 DT
   updated_at      DateTime
   google_maps_url String?
 }
@@ -199,13 +201,13 @@ model quests {
   title             String
   description       String
   type              String
-  reward_type       String
-  reward_amount     Int
+  reward_type       String        @default("tokens")
+  reward_amount     Int           @default(0)
   min_act           Int           @default(0)
   validation_config Json?
   is_active         Boolean       @default(true)
   created_at        DateTime      @default(now())
-  updated_at        DateTime
+  updated_at        DateTime      @default(now()) @updatedAt
   emoji             String?
   user_quests       user_quests[]
 }
@@ -244,7 +246,7 @@ model shop_items {
   multiplier  Float    @default(1.0)
   boost_type  String?
   created_at  DateTime @default(now())
-  updated_at  DateTime
+  updated_at  DateTime @default(now()) @updatedAt
   description String?
 }
 
@@ -333,8 +335,26 @@ model User {
   ticket_messages ticket_messages[]
   inventory       user_inventory[]
   user_quests     user_quests[]
+  reservations    reservations[]
 
   @@map("users")
+}
+
+model reservations {
+  id               Int      @id @default(autoincrement())
+  user_id          String?
+  customer_name    String   @db.VarChar(255)
+  customer_phone   String   @db.VarChar(50)
+  customer_email   String?  @db.VarChar(255)
+  reservation_date DateTime
+  party_size       Int      @default(2)
+  status           String   @default("pending") @db.VarChar(50)
+  notes            String?
+  table_number     Int?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  users User? @relation(fields: [user_id], references: [id])
 }
 
 model verification_tokens {
@@ -376,6 +396,17 @@ model email_settings {
   from_email String   @default("hello@matos.tn") @db.VarChar(255)
   from_name  String   @default("Mato's") @db.VarChar(255)
   encryption String   @default("TLS") @db.VarChar(20)
+  is_active  Boolean  @default(true)
+  updated_at DateTime @updatedAt
+}
+
+model sms_settings {
+  id         Int      @id @default(1)
+  provider   String   @default("simulator") @db.VarChar(50) // 'simulator', 'twilio', 'ooredoo', 'tt'
+  api_key    String?  @db.VarChar(255)
+  api_secret String?  @db.VarChar(255)
+  sender_id  String?  @db.VarChar(50)
+  is_active  Boolean  @default(false)
   updated_at DateTime @updatedAt
 }
 
