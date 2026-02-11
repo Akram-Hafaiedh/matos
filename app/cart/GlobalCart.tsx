@@ -7,6 +7,7 @@ import ConfirmModal from "@/components/ConfirmModal";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { calculateItemPrice, calculateOriginalTotal } from "@/lib/pricing";
+import { getItemImage } from "@/lib/cart";
 
 export default function GlobalCart() {
     const router = useRouter();
@@ -76,10 +77,7 @@ export default function GlobalCart() {
                             // Calculate price for this item using shared utility
                             const itemPrice = calculateItemPrice(cartItem as any);
                             const originalTotal = calculateOriginalTotal(cartItem as any);
-
-                            const itemImage = type === 'promotion'
-                                ? ((item as any).imageUrl || (item as any).emoji || '🎁')
-                                : ((item as any).imageUrl || (item as any).image || (item as any).emoji || '🍕');
+                            const itemImage = getItemImage(item, type);
 
                             return (
                                 <div

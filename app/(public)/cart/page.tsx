@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useCart } from "@/app/cart/CartContext";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
+import { calculateItemPrice, calculateOriginalTotal } from "@/lib/pricing";
+import { getItemImage } from "@/lib/cart";
 
 export default function CartPage() {
     const router = useRouter();
@@ -120,50 +122,9 @@ export default function CartPage() {
                         {Object.entries(cart).map(([key, cartItem], index) => {
                             const { item, quantity, selectedSize, type } = cartItem as any;
 
-                            // Calculate price
-                            let itemPrice = 0;
-                            let originalTotal = 0;
-                            if (type === 'promotion') {
-                                const promo = item as any;
-                                const choices = (cartItem as any).choices;
-
-                                if (choices) {
-                                    Object.values(choices).forEach((items: any) => {
-                                        if (Array.isArray(items)) {
-                                            items.forEach(choiceItem => {
-                                                if (choiceItem.price) {
-                                                    if (typeof choiceItem.price === 'number') {
-                                                        originalTotal += choiceItem.price;
-                                                    } else if (typeof choiceItem.price === 'object') {
-                                                        originalTotal += choiceItem.price.xl || Object.values(choiceItem.price)[0] || 0;
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    });
-                                } else if (promo.originalPrice) {
-                                    originalTotal = promo.originalPrice;
-                                }
-
-                                if (promo.price && promo.price > 0) {
-                                    itemPrice = promo.price;
-                                } else if (promo.discount && originalTotal > 0) {
-                                    itemPrice = originalTotal * (1 - promo.discount / 100);
-                                } else {
-                                    itemPrice = originalTotal;
-                                }
-                            } else {
-                                const menuItem = item as any;
-                                if (typeof menuItem.price === 'number') {
-                                    itemPrice = menuItem.price;
-                                } else if (menuItem.price && typeof menuItem.price === 'object' && selectedSize) {
-                                    itemPrice = menuItem.price[selectedSize] || 0;
-                                }
-                            }
-
-                            const itemImage = type === 'promotion'
-                                ? ((item as any).imageUrl || (item as any).emoji || '🎁')
-                                : ((item as any).imageUrl || (item as any).image || (item as any).emoji || '🍕');
+                            const itemPrice = calculateItemPrice(cartItem as any);
+                            const originalTotal = calculateOriginalTotal(cartItem as any);
+                            const itemImage = getItemImage(item, type);
 
                             return (
                                 <motion.div

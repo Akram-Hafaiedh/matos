@@ -3,13 +3,14 @@
 import { CartItem } from "@/types/cart";
 import { MenuItem, Promotion } from "@/types/menu";
 import { calculateCartTotal } from "@/lib/pricing";
+import { generateCartKey, countTotalItems } from "@/lib/cart";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 interface CartContextType {
     cart: { [key: string]: CartItem };
     addToCart: (item: MenuItem | Promotion, type: 'menuItem' | 'promotion', size?: string, choices?: any, quantity?: number) => void;
     removeFromCart: (cartKey: string) => void;
-    updateQuantity: (cartKey: string, delta: number) => void; // Added for convenience if needed
+    updateQuantity: (cartKey: string, delta: number) => void;
     clearCart: () => void;
     getTotalPrice: () => number;
     getTotalItems: () => number;
@@ -19,6 +20,9 @@ interface CartContextType {
     setCartOpen: (open: boolean) => void;
 }
 
+const CART_STORAGE_KEY = 'matos_cart';
+const ORDER_TYPE_STORAGE_KEY = 'matos_order_type';
+
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -27,39 +31,50 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [isCartOpen, setCartOpen] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Initial load
+    // Initial Load and Cross-Tab Synchronization
     useEffect(() => {
-        const savedCart = localStorage.getItem('matos_cart');
-        const savedOrderType = localStorage.getItem('matos_order_type');
+        const loadCart = () => {
+            const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+            const savedOrderType = localStorage.getItem(ORDER_TYPE_STORAGE_KEY);
 
-        if (savedCart) {
-            try {
-                setCart(JSON.parse(savedCart));
-            } catch (e) {
-                console.error("Failed to parse cart from localStorage", e);
+            if (savedCart) {
+                try {
+                    setCart(JSON.parse(savedCart));
+                } catch (e) {
+                    console.error("Failed to parse cart from localStorage", e);
+                }
             }
-        }
 
-        if (savedOrderType === 'delivery' || savedOrderType === 'pickup') {
-            setOrderType(savedOrderType);
-        }
+            if (savedOrderType === 'delivery' || savedOrderType === 'pickup') {
+                setOrderType(savedOrderType);
+            }
+        };
 
+        // Load initially
+        loadCart();
         setIsLoaded(true);
+
+        // Listen for changes from other tabs
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === CART_STORAGE_KEY || e.key === ORDER_TYPE_STORAGE_KEY) {
+                loadCart();
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
-    // Save on changes
+    // Save on local state changes
     useEffect(() => {
         if (isLoaded) {
-            localStorage.setItem('matos_cart', JSON.stringify(cart));
-            localStorage.setItem('matos_order_type', orderType);
+            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+            localStorage.setItem(ORDER_TYPE_STORAGE_KEY, orderType);
         }
     }, [cart, orderType, isLoaded]);
 
     const addToCart = (item: any, type: 'menuItem' | 'promotion', size?: string, choices?: any, quantity: number = 1) => {
-        // Create unique key
-        const cartKey = type === 'promotion'
-            ? `promo-${item.id}${choices ? `-${JSON.stringify(choices)}` : ''}`
-            : (size ? `${item.id}-${size}` : `${item.id}`);
+        const cartKey = generateCartKey(item, type, size, choices);
 
         setCart(prev => ({
             ...prev,
@@ -71,32 +86,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 choices
             }
         }));
-    }
+    };
 
-
-    // Remove one item or decrease quantity
     const removeFromCart = (cartKey: string) => {
         setCart(prev => {
             const newCart = { ...prev };
+            if (!newCart[cartKey]) return prev;
 
             if (newCart[cartKey].quantity > 1) {
-                // Decrease quantity
                 newCart[cartKey] = {
                     ...newCart[cartKey],
                     quantity: newCart[cartKey].quantity - 1
                 };
             } else {
-                // Remove item completely
                 delete newCart[cartKey];
             }
 
             return newCart;
         });
-    };
-
-    // Clear entire cart
-    const clearCart = () => {
-        setCart({});
     };
 
     const updateQuantity = (cartKey: string, delta: number) => {
@@ -117,17 +124,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
         });
     };
 
-
-    // Calculate total price
-    const getTotalPrice = () => {
-        return calculateCartTotal(cart);
+    const clearCart = () => {
+        setCart({});
     };
 
-    // Get total number of items
-    const getTotalItems = () => {
-        return Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
-    };
-
+    const getTotalPrice = () => calculateCartTotal(cart);
+    const getTotalItems = () => countTotalItems(cart);
 
     return (
         <CartContext.Provider
@@ -152,10 +154,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 export function useCart() {
     const context = useContext(CartContext);
-
     if (context === undefined) {
-        throw new Error('useCart hook must be used within a CartProvider. Please ensure your component is wrapped inside a <CartProvider>.');
+        throw new Error('useCart must be used within a CartProvider.');
     }
-
     return context;
 }

@@ -69,10 +69,10 @@ model global_settings {
   instagram       String?  @db.VarChar(255)
   tiktok          String?  @db.VarChar(255)
   whatsapp        String?  @db.VarChar(50)
-  vat_rate        Float    @default(0.19) // 19% standard in TN for some services, but 7% or 13% for food
-  stamp_duty      Float    @default(1.0) // 1.000 DT
   updated_at      DateTime
   google_maps_url String?
+  stamp_duty      Float    @default(1.0)
+  vat_rate        Float    @default(0.19)
 }
 
 model menu_items {
@@ -201,14 +201,14 @@ model quests {
   title             String
   description       String
   type              String
-  reward_type       String        @default("tokens")
-  reward_amount     Int           @default(0)
-  min_act           Int           @default(0)
-  validation_config Json?
-  is_active         Boolean       @default(true)
-  created_at        DateTime      @default(now())
-  updated_at        DateTime      @default(now()) @updatedAt
   emoji             String?
+  created_at        DateTime      @default(now())
+  is_active         Boolean       @default(true)
+  min_act           Int           @default(0)
+  reward_amount     Int           @default(0)
+  reward_type       String        @default("tokens")
+  updated_at        DateTime      @default(now()) @updatedAt
+  validation_config Json?
   user_quests       user_quests[]
 }
 
@@ -241,13 +241,13 @@ model shop_items {
   level       Int      @default(1)
   rarity      String
   emoji       String
-  is_active   Boolean  @default(true)
   metadata    Json?
+  description String?
   multiplier  Float    @default(1.0)
   boost_type  String?
   created_at  DateTime @default(now())
+  is_active   Boolean  @default(true)
   updated_at  DateTime @default(now()) @updatedAt
-  description String?
 }
 
 model support_tickets {
@@ -329,13 +329,13 @@ model User {
   menu_likes      menu_likes[]
   notifications   notifications[]
   orders          orders[]
+  reservations    reservations[]
   reviews         reviews[]
   sessions        sessions[]
   support_tickets support_tickets[]
   ticket_messages ticket_messages[]
   inventory       user_inventory[]
   user_quests     user_quests[]
-  reservations    reservations[]
 
   @@map("users")
 }
@@ -353,8 +353,7 @@ model reservations {
   table_number     Int?
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
-
-  users User? @relation(fields: [user_id], references: [id])
+  users            User?    @relation(fields: [user_id], references: [id])
 }
 
 model verification_tokens {
@@ -380,10 +379,10 @@ model hero_slides {
 
 model content_pages {
   id         Int      @id @default(autoincrement())
-  slug       String   @unique @db.VarChar(100) // 'terms', 'policy', etc.
+  slug       String   @unique @db.VarChar(100)
   title      String   @db.VarChar(255)
   subtitle   String?
-  content    Json // Array of sections { icon, title, content }
+  content    Json
   updated_at DateTime @updatedAt
 }
 
@@ -396,13 +395,13 @@ model email_settings {
   from_email String   @default("hello@matos.tn") @db.VarChar(255)
   from_name  String   @default("Mato's") @db.VarChar(255)
   encryption String   @default("TLS") @db.VarChar(20)
-  is_active  Boolean  @default(true)
   updated_at DateTime @updatedAt
+  is_active  Boolean  @default(true)
 }
 
 model sms_settings {
   id         Int      @id @default(1)
-  provider   String   @default("simulator") @db.VarChar(50) // 'simulator', 'twilio', 'ooredoo', 'tt'
+  provider   String   @default("simulator") @db.VarChar(50)
   api_key    String?  @db.VarChar(255)
   api_secret String?  @db.VarChar(255)
   sender_id  String?  @db.VarChar(50)
@@ -414,7 +413,7 @@ model sent_emails {
   id         Int      @id @default(autoincrement())
   to         String   @db.VarChar(255)
   subject    String   @db.VarChar(255)
-  content    String   @db.Text
+  content    String
   status     String   @default("sent") @db.VarChar(50)
   created_at DateTime @default(now())
 }

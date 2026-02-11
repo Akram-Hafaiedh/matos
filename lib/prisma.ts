@@ -12,6 +12,7 @@ const globalForPrisma = globalThis as unknown as {
 // For Prisma Postgres, we limit the pool size to avoid overwhelming the proxy
 // Trigger reload after schema update
 const connectionString = process.env.DATABASE_URL;
+console.log('[Prisma] Initializing with connection string ending in:', connectionString?.split('@')[1]?.split('?')[0]);
 const finalConnectionString = connectionString?.includes('?')
     ? `${connectionString}&uselibpqcompat=true`
     : `${connectionString}?uselibpqcompat=true`;
@@ -23,16 +24,25 @@ export const pool = globalForPrisma.pool ?? new Pool({
     connectionTimeoutMillis: 10000,
 });
 
+pool.on('error', (err) => {
+    console.error('[Prisma Pool] Unexpected error on idle client', err);
+});
+
 // Create the Prisma adapter with the pool
 const adapter = new PrismaPg(pool);
 
 // Initialize or reuse the PrismaClient with the adapter
-let prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
+let prisma = globalForPrisma.prisma ?? new PrismaClient({
+    adapter,
+    log: ['query', 'error', 'warn']
+});
+
+console.log('[Prisma] Client instantiated', globalForPrisma.prisma ? '(reused)' : '(new)');
 
 // Handle stale global instance in development (after schema changes)
 if (process.env.NODE_ENV !== 'production' && prisma && (!(prisma as any).content_pages || !(prisma as any).hero_slides || !(prisma as any).email_settings || !(prisma as any).sent_emails)) {
     console.log('[Prisma] Stale instance detected (missing models). Re-instantiating...');
-    prisma = new PrismaClient({ adapter });
+    prisma = new PrismaClient({ adapter, log: ['query', 'error', 'warn'] });
     globalForPrisma.prisma = prisma;
 }
 
