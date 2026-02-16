@@ -15,8 +15,8 @@ Mato's is a high-end, modern food ordering web application built with a focus on
 - **Premium Menu**: Dynamic category filtering, search, and pagination with smooth URL synchronization.
 - **Transparent Cart**: Advanced promotion engine with real-time price breakdowns, strike-through original prices, and "badge-ified" bundle details.
 - **Fidelity Program**: Automated point awarding, global rank flairs (King/Challenger), and exclusive tiers.
-- **Real-time Engine**: Live typing indicators in support, instant notifications, and order status polling.
-- **Legal Protocols**: Premium, glassmorphism redesign of Terms and Policy pages with kinetic typography and animated brand cards.
+- **Tactical Tracking & ETA**: High-fidelity `/track` engine with real-time status animation, geocoding-based distance calculation, and weather-aware delivery estimations.
+- **Multi-Template Invoice System**: Support for 'Tactical' (Cargo Manifest) and 'Classique Pro' (A4 Legal) templates with realistic admin previews.
 - **Admin Command Center**: Visual stats dashboard, live order management with 'SideDrawer' tactical controls, and global settings control.
 
 ## 🛠️ Getting Started
@@ -43,11 +43,11 @@ Open [http://localhost:3000](http://localhost:3000) to see the result.
 - [x] **Logic Consolidation**: Unified pricing engine for consistency between context and UI.
 - [x] **Tactical Dashboard**: Multi-view (Grid, List, Timeline) admin command center for reservations.
 
-### 📡 Sprint 2: Logistics & User Feedback (Active)
-- [ ] **Configurable Integrations**: Unified "Mission Control" for SMS (Ooredoo, TT, Twilio) and Email SMTP.
-- [ ] **Visual Tracking**: High-fidelity `/track` page with real-time status animation.
-- [ ] **Settings Overhaul**: Complete redesign of the Admin ConfigHub for centralized system control.
-- [ ] **Tunisian Tax Engine**: Localized fiscal module (VAT/Stamp duty) following Tunisian standards.
+- [x] **Configurable Integrations**: Unified "Mission Control" for geocoding (OpenStreetMap) and weather-aware logistics.
+- [x] **Visual Tracking**: High-fidelity `/track` page with real-time status animation and Tactical ETA engine.
+- [x] **Multi-Template Invoices**: Dual-mode invoice system with A4-optimized 'Tactical' and 'Classique Pro' designs.
+- [x] **Settings Overhaul**: Complete redesign of the Admin ConfigHub for centralized system control and template selection.
+- [x] **Tunisian Tax Engine**: Localized fiscal module (VAT/Stamp duty) following Tunisian standards.
 
 ### 🏆 Phase 3: Identity & Loyalty (Active)
 - [x] **Quest System Engine**: Transitioned to a fully database-driven system with advanced validation (streaks, cumulative spend, temporal constraints).

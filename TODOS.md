@@ -80,9 +80,9 @@
 ## Sprint 2: Logistics & User Feedback (Active)
 - [ ] **Configurable SMS Engine**: Enable/Disable and configure providers via Admin dashboard.
 - [ ] **Email SMTP Control**: Global toggle and credential management in ConfigHub.
-- [ ] **Visual Order Tracking**: Interactive progress map for customers (`/track/[id]`).
-- [ ] **Admin Settings Redesign**: Overhaul `dashboard/settings` with premium Tactical UI.
-- [x] **Tunisian Tax Module**: Implement localized VAT and Stamp duty logic.
+- [x] **Visual Order Tracking**: Interactive progress map and tactical ETA engine (`/track/[id]`).
+- [x] **Admin Settings Redesign**: Overhaul `dashboard/settings` with premium Tactical UI and template selector.
+- [x] **Tunisian Tax Module**: Implement localized VAT and Stamp duty logic in invoices.
 
 ## Pending & Future Roadmap
 - [x] **Admin Orders Page**: Redesigned with 'SideDrawer' expander for high-intensity worker usage and tactical status controls.
