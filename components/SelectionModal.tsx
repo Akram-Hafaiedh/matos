@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ShoppingBag, Loader2, ArrowLeft, ArrowRight, Check } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useMemo } from "react";
+import { getItemImage } from "@/lib/cart";
 
 interface SelectionModalProps {
     isOpen: boolean;
@@ -196,17 +197,22 @@ export default function SelectionModal({ isOpen, onClose, item, onConfirm }: Sel
                                         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                                         className="relative z-10"
                                     >
-                                        {(item.image || item.imageUrl) && ((item.image || item.imageUrl).startsWith('/') || (item.image || item.imageUrl).startsWith('http')) ? (
-                                            <Image
-                                                src={item.image || item.imageUrl}
-                                                alt={item.name}
-                                                width={128}
-                                                height={128}
-                                                className="object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
-                                            />
-                                        ) : (
-                                            <span className="text-7xl filter drop-shadow-[0_10px_20px_rgba(250,204,21,0.2)]">{item.image || item.emoji || '🍽️'}</span>
-                                        )}
+                                        {(() => {
+                                            const itemImage = getItemImage(item, hasSelectionRules ? 'promotion' : 'menuItem');
+                                            const isPath = itemImage.startsWith('/') || itemImage.startsWith('http');
+
+                                            return isPath ? (
+                                                <Image
+                                                    src={itemImage}
+                                                    alt={item.name}
+                                                    width={128}
+                                                    height={128}
+                                                    className="object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
+                                                />
+                                            ) : (
+                                                <span className="text-7xl filter drop-shadow-[0_10px_20px_rgba(250,204,21,0.2)]">{itemImage}</span>
+                                            );
+                                        })()}
                                     </motion.div>
                                 </div>
                             )}
@@ -265,10 +271,10 @@ export default function SelectionModal({ isOpen, onClose, item, onConfirm }: Sel
                                                                 transition={{ type: "spring", stiffness: 200, damping: 15 }}
                                                             >
                                                                 {(() => {
-                                                                    const itemImage = stepItem.image || stepItem.imageUrl;
-                                                                    const hasImageProtocol = itemImage && (itemImage.startsWith('/') || itemImage.startsWith('http'));
+                                                                    const itemImage = getItemImage(stepItem, 'menuItem');
+                                                                    const isPath = itemImage.startsWith('/') || itemImage.startsWith('http');
 
-                                                                    return hasImageProtocol ? (
+                                                                    return isPath ? (
                                                                         <div className="relative w-32 h-32 filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)]">
                                                                             <Image
                                                                                 src={itemImage}
@@ -279,7 +285,7 @@ export default function SelectionModal({ isOpen, onClose, item, onConfirm }: Sel
                                                                         </div>
                                                                     ) : (
                                                                         <span className="text-7xl filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
-                                                                            {itemImage || '🍽️'}
+                                                                            {itemImage}
                                                                         </span>
                                                                     );
                                                                 })()}

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import SubFooter from "@/components/SubFooter";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 const TikTokIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -30,7 +31,12 @@ const TikTokIcon = ({ className }: { className?: string }) => (
 
 export default function Footer() {
     const { data: session, status } = useSession();
+    const pathname = usePathname();
     const [settings, setSettings] = useState<any>(null);
+
+    // Hide footer on invoice pages to prevent overlapping
+    const isInvoicePage = pathname?.includes('/invoice');
+    if (isInvoicePage) return null;
 
     useEffect(() => {
         const fetchSettings = async () => {

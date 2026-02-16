@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { getItemImage } from '../../lib/cart';
 import Hero from "./home/Hero";
 import Favorites from "./home/Favorites";
 import Promotions from "./home/Promotions";
@@ -95,7 +96,7 @@ export default async function HomePage() {
   // Format menu items and identify favorites/popular
   const realItems = menuItems.map((item: any) => ({
     ...item,
-    image: item.image_url || '🍴',
+    image: getItemImage(item, 'menuItem'),
     ingredients: item.description,
     price: item.price
   }));

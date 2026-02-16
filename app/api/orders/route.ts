@@ -6,6 +6,8 @@ import { prisma } from '@/lib/prisma';
 import { calculateCartTotal } from '@/lib/pricing';
 import { MenuItem, Promotion } from '@/types/menu';
 import { CartItem } from '@/types/cart';
+import { geocodeAddress } from '@/lib/geocoding';
+import { estimateDeliveryTime, getCurrentWeather, HQ_LAT, HQ_LNG } from '@/lib/delivery-estimation';
 
 export async function POST(request: NextRequest) {
     try {
@@ -132,6 +134,50 @@ export async function POST(request: NextRequest) {
             };
         });
 
+        // 6. Geocoding & Delivery Estimation (Tactical Signal Acquisition)
+        let lat = null;
+        let lng = null;
+        let estimates = null;
+
+        if (orderType === 'pickup') {
+            estimates = await estimateDeliveryTime({
+                restaurantLat: HQ_LAT,
+                restaurantLng: HQ_LNG,
+                customerLat: HQ_LAT,
+                customerLng: HQ_LNG,
+                orderType: 'pickup',
+                cartItems: Object.keys(validatedCart).length,
+                timeOfDay: new Date(),
+                dayOfWeek: new Date().getDay()
+            });
+        } else if (orderType === 'delivery' && deliveryInfo.address) {
+            try {
+                const geo = await geocodeAddress(deliveryInfo.address, deliveryInfo.city);
+                if (geo) {
+                    lat = geo.lat;
+                    lng = geo.lng;
+
+                    // Get weather for the customer location
+                    const weather = await getCurrentWeather(lat, lng);
+
+                    // Calculate detailed estimates
+                    estimates = await estimateDeliveryTime({
+                        restaurantLat: HQ_LAT,
+                        restaurantLng: HQ_LNG,
+                        customerLat: lat,
+                        customerLng: lng,
+                        orderType: 'delivery',
+                        cartItems: Object.keys(validatedCart).length,
+                        timeOfDay: new Date(),
+                        dayOfWeek: new Date().getDay(),
+                        weatherCondition: weather as any
+                    });
+                }
+            } catch (err) {
+                console.error('Estimation failed during order creation:', err);
+            }
+        }
+
         // Create order in database
         const order = await prisma.orders.create({
             data: {
@@ -158,6 +204,12 @@ export async function POST(request: NextRequest) {
                 total_amount: finalTotal,
                 status: 'pending',
                 updated_at: new Date(),
+                lat,
+                lng,
+                estimated_delivery_confidence: estimates?.confidence || null,
+                estimated_total_time: estimates?.totalTime || null,
+                estimated_travel_time: estimates?.travelTime || null,
+                estimated_prep_time: estimates?.prepTime || null,
                 order_items: {
                     create: orderItems
                 }

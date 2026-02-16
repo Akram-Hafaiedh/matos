@@ -3,8 +3,9 @@
 
 import { useCart } from "@/app/cart/CartContext";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useState, useEffect } from "react";
-import { MapPin, Phone, Clock, CreditCard, ShoppingBag, ArrowLeft, User, AlertCircle, Loader2, ArrowRight, Store, Truck, Sparkles } from "lucide-react";
+import { MapPin, Phone, Clock, CreditCard, ShoppingBag, ArrowLeft, User, AlertCircle, Loader2, ArrowRight, Store, Truck, Sparkles, CheckCircle2 } from "lucide-react";
 import TacticalAura from "@/components/TacticalAura";
 import { motion } from "framer-motion";
 
@@ -47,6 +48,8 @@ export default function CheckoutPage() {
 
     const [paymentMethod, setPaymentMethod] = useState<'cash' | 'd17'>('cash');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [lastOrderNumber, setLastOrderNumber] = useState<string | null>(null);
     const [errors, setErrors] = useState<Partial<DeliveryInfo>>({});
 
     const totalItems = getTotalItems();
@@ -54,14 +57,24 @@ export default function CheckoutPage() {
     const deliveryFee = orderType === 'pickup' ? 0 : (totalPrice > 30 ? 0 : 3); // Free if pickup or > 30 DT
     const finalTotal = totalPrice + deliveryFee;
 
-    // Redirect if cart is empty
+    // Redirect if cart is empty - FIXED: Prevent redirect if order was just successful
     useEffect(() => {
-        if (totalItems === 0 && !isSubmitting) {
+        if (totalItems === 0 && !isSubmitting && !isSuccess) {
             router.push('/menu');
         }
-    }, [totalItems, router, isSubmitting]);
+    }, [totalItems, router, isSubmitting, isSuccess]);
 
-    if (totalItems === 0) {
+    // Cleanup Cart and Redirect to Tracking after delay
+    useEffect(() => {
+        if (isSuccess && lastOrderNumber) {
+            const timer = setTimeout(() => {
+                router.push(`/track/${lastOrderNumber}`);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [isSuccess, lastOrderNumber, router]);
+
+    if (totalItems === 0 && !isSuccess) {
         return null; // Don't render anything while redirecting
     }
 
@@ -130,27 +143,76 @@ export default function CheckoutPage() {
                 throw new Error(result.error || 'Erreur lors de la commande');
             }
 
-            // For now, just store in localStorage and redirect
-            localStorage.setItem('lastOrder', JSON.stringify({ ...orderData, orderNumber: result.order.orderNumber }));
+            // Store last order for easy access
+            localStorage.setItem('lastOrder', JSON.stringify(result.order));
+            setLastOrderNumber(result.order.order_number || result.order.orderNumber);
+
+            // Important: Set success state BEFORE clearing cart to prevent redirect
+            setIsSuccess(true);
 
             // Clear cart
             clearCart();
 
             // Show success toast
-            toast.success('Commande validée avec succès !');
-
-            // Store last order for easy access
-            localStorage.setItem('lastOrder', JSON.stringify(result.order));
-
-            router.push(`/track/${result.order.orderNumber}`);
+            toast.success('Mission Validée : Signal transmis au radar !');
 
         } catch (error) {
             console.error('Error submitting order:', error);
-            toast.error('Une erreur est survenue. Veuillez réessayer.');
+            toast.error('Échec du signal. Veuillez vérifier votre connexion.');
         } finally {
             setIsSubmitting(false);
         }
     };
+
+    // --- SUCCESS VIEW ---
+    if (isSuccess) {
+        return (
+            <div className="min-h-screen bg-black flex flex-col items-center justify-center p-10 relative overflow-hidden">
+                <TacticalAura opacity={0.5} />
+
+                <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="relative z-10 text-center space-y-12 max-w-2xl"
+                >
+                    <div className="relative inline-block">
+                        <motion.div
+                            animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
+                            transition={{ repeat: Infinity, duration: 2 }}
+                            className="absolute inset-0 bg-yellow-400 rounded-full blur-[60px]"
+                        />
+                        <div className="relative w-32 h-32 bg-yellow-400 rounded-[2.5rem] flex items-center justify-center shadow-[0_0_50px_rgba(250,204,21,0.3)] mx-auto transform -rotate-6">
+                            <CheckCircle2 size={64} className="text-black" strokeWidth={3} />
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <h2 className="text-6xl md:text-8xl font-[1000] text-white uppercase italic tracking-tighter leading-none">
+                            MISSION <span className="text-yellow-400">VALIDÉE</span>
+                        </h2>
+                        <p className="text-gray-500 font-black uppercase text-xs tracking-[0.4em] italic max-w-sm mx-auto leading-relaxed">
+                            Le signal de votre commande <span className="text-white">#{lastOrderNumber}</span> a été intercepté par Mato's HQ.
+                        </p>
+                    </div>
+
+                    <div className="flex flex-col gap-6 items-center">
+                        <Link
+                            href={`/track/${lastOrderNumber}`}
+                            className="bg-yellow-400 text-black px-12 py-6 rounded-2xl font-[1000] uppercase text-xs tracking-[0.4em] transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center gap-4 group"
+                        >
+                            ACCÉDER AU RADAR
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" strokeWidth={3} />
+                        </Link>
+
+                        <div className="flex items-center gap-3">
+                            <div className="w-1 h-1 rounded-full bg-yellow-400 animate-ping" />
+                            <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest italic">Transfert automatique dans 5 secondes...</p>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-black py-24 pb-48 relative overflow-hidden">

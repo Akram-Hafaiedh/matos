@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Package, Clock, CheckCircle, Truck, XCircle, RefreshCw, Store, Users, ChevronRight, Hash, Activity, MapPin, Phone, MessageSquare, ArrowRight, Loader2, Signal } from 'lucide-react';
+import { Package, Clock, CheckCircle, Truck, XCircle, RefreshCw, Store, Users, ChevronRight, Hash, Activity, MapPin, Phone, MessageSquare, ArrowRight, Loader2, Signal, Printer } from 'lucide-react';
 import { useToast } from '@/app/context/ToastContext';
 import ConfirmModal from '@/components/ConfirmModal';
 import SideDrawer from '@/components/SideDrawer';
@@ -180,7 +180,15 @@ export default function AdminOrdersPage() {
                     <>ORDER <span className="text-yellow-400">#{selectedOrder.order_number}</span></>
                 ) : ''}
                 footer={selectedOrder && (
-                    <>
+                    <div className="space-y-4 w-full">
+                        <button
+                            onClick={() => window.open(`/track/${selectedOrder.order_number}/invoice`, '_blank')}
+                            className="w-full bg-white/[0.05] border border-white/10 text-white px-10 py-5 rounded-[2rem] font-[1000] uppercase text-[10px] tracking-[0.3em] italic hover:bg-white/10 transition-all flex items-center justify-center gap-4"
+                        >
+                            Générer la Facture
+                            <Printer size={18} className="text-zinc-500" />
+                        </button>
+
                         <div className="flex gap-6">
                             {selectedOrder.status === 'pending' && (
                                 <button
@@ -228,7 +236,7 @@ export default function AdminOrdersPage() {
                         >
                             ABORT MISSION / ANNULER
                         </button>
-                    </>
+                    </div>
                 )}
             >
                 {selectedOrder && (

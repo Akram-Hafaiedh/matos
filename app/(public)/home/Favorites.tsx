@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { MenuItem } from "@/types/menu";
+import { getItemImage } from "@/lib/cart";
 
 interface FavoritesProps {
     items: MenuItem[];
@@ -64,19 +65,24 @@ export default function Favorites({ items }: FavoritesProps) {
                             {/* Large Image Reveal */}
                             <div className="absolute inset-0 flex items-center justify-center p-8 md:p-20">
                                 <div key={activeItem?.id} className="relative w-full h-full animate-in fade-in zoom-in duration-1000">
-                                    {activeItem?.image && (activeItem.image.startsWith('/') || activeItem.image.startsWith('http')) ? (
-                                        <Image
-                                            src={activeItem.image}
-                                            alt={activeItem.name || 'Product'}
-                                            fill
-                                            className="object-contain filter drop-shadow-[0_40px_100px_rgba(0,0,0,0.8)] transition-all duration-[2s] group-hover:scale-110 group-hover:rotate-1"
-                                            priority
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-[10rem] md:text-[15rem] filter drop-shadow-2xl animate-float select-none">
-                                            {activeItem?.image || '✨'}
-                                        </div>
-                                    )}
+                                    {(() => {
+                                        const itemImage = getItemImage(activeItem, 'menuItem');
+                                        const isPath = itemImage.startsWith('/') || itemImage.startsWith('http');
+
+                                        return isPath ? (
+                                            <Image
+                                                src={itemImage}
+                                                alt={activeItem.name || 'Product'}
+                                                fill
+                                                className="object-contain filter drop-shadow-[0_40px_100px_rgba(0,0,0,0.8)] transition-all duration-[2s] group-hover:scale-110 group-hover:rotate-1"
+                                                priority
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-[10rem] md:text-[15rem] filter drop-shadow-2xl animate-float select-none">
+                                                {itemImage}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             </div>
 
@@ -143,11 +149,16 @@ export default function Favorites({ items }: FavoritesProps) {
                             >
                                 <div className={`relative w-20 h-16 md:w-24 md:h-20 rounded-2xl overflow-hidden transition-all duration-700 ${activeIndex === idx ? 'scale-110 rotate-2' : 'grayscale group-hover:grayscale-0'
                                     }`}>
-                                    {item.image?.startsWith('/') ? (
-                                        <Image src={item.image} alt={item.name || 'Product'} fill className="object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-4xl">{item.image}</div>
-                                    )}
+                                    {(() => {
+                                        const itemImage = getItemImage(item, 'menuItem');
+                                        const isPath = itemImage.startsWith('/') || itemImage.startsWith('http');
+
+                                        return isPath ? (
+                                            <Image src={itemImage} alt={item.name || 'Product'} fill className="object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-4xl">{itemImage}</div>
+                                        );
+                                    })()}
                                 </div>
 
                                 <div className="flex-1 min-w-0">

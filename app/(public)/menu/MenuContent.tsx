@@ -22,6 +22,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { MenuItem } from '@/types/menu';
 import { useCart } from '@/app/cart/CartContext';
 import SelectionModal from '@/components/SelectionModal';
+import { getItemImage } from '@/lib/cart';
 
 interface MenuContentProps {
     initialCategories: any[];
@@ -149,20 +150,10 @@ export default function MenuContent({ initialCategories, initialItems, initialTo
 
                     if (data.success) {
                         items = data.menuItems.map((item: any) => ({
-                            id: item.id,
-                            name: item.name,
-                            price: item.price,
+                            ...item,
                             ingredients: item.ingredients?.join(', '),
-                            popular: item.popular,
-                            bestseller: item.bestseller,
-                            hot: item.hot,
-                            image: item.imageUrl || item.emoji || '🍽️',
                             category: item.category?.name || 'Général',
-                            discount: item.discount,
-                            displayOrder: item.displayOrder,
-                            likeCount: item.likeCount,
-                            rating: item.rating,
-                            reviewCount: item.reviewCount
+                            image: getItemImage(item, 'menuItem')
                         }));
                         total = data.pagination.totalItems;
                     }
@@ -424,17 +415,22 @@ function ProductCard({ item, idx, onSelect, className = "", isFeatured = false }
                         transition={{ type: "spring", stiffness: 60, damping: 15 }}
                         className="relative z-0 w-full h-full flex items-center justify-center pointer-events-none"
                     >
-                        {item.image && (item.image.startsWith('/') || item.image.startsWith('http')) ? (
-                            <Image
-                                src={item.image}
-                                alt={item.name}
-                                width={800}
-                                height={800}
-                                className="object-contain filter drop-shadow-[0_40px_80px_rgba(0,0,0,0.8)]"
-                            />
-                        ) : (
-                            <span className="text-9xl md:text-[12rem] filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]">{item.image || '🍽️'}</span>
-                        )}
+                        {(() => {
+                            const itemImage = getItemImage(item, 'menuItem');
+                            const isPath = itemImage.startsWith('/') || itemImage.startsWith('http');
+
+                            return isPath ? (
+                                <Image
+                                    src={itemImage}
+                                    alt={item.name}
+                                    width={isFeatured ? 800 : 400}
+                                    height={isFeatured ? 800 : 400}
+                                    className="object-contain filter drop-shadow-[0_40px_80px_rgba(0,0,0,0.8)]"
+                                />
+                            ) : (
+                                <span className="text-9xl md:text-[12rem] filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]">{itemImage}</span>
+                            );
+                        })()}
                     </motion.div>
 
                     {/* Status Badges */}

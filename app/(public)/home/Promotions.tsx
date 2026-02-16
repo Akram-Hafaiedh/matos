@@ -8,6 +8,7 @@ import { useCart } from "@/app/cart/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
 import SectionHeader from "@/components/SectionHeader";
 import SelectionModal from "@/components/SelectionModal";
+import { getItemImage } from "@/lib/cart";
 
 interface PromotionsProps {
     promos: any[];
@@ -101,20 +102,25 @@ export default function Promotions({ promos, promoSlide: controlledSlide, onSlid
                                     animate={{ scale: 1, rotate: 0 }}
                                     transition={{ duration: 0.5, ease: "backOut" }}
                                 >
-                                    {currentPromo.imageUrl && (currentPromo.imageUrl.startsWith('http') || currentPromo.imageUrl.startsWith('/')) ? (
-                                        <div className="relative w-[300px] h-[300px] md:w-[450px] md:h-[450px]">
-                                            <Image
-                                                src={currentPromo.imageUrl}
-                                                alt={currentPromo.name}
-                                                fill
-                                                className="object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)]"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="text-[12rem] md:text-[18rem] filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] leading-none select-none">
-                                            {currentPromo.emoji || '🍕'}
-                                        </div>
-                                    )}
+                                    {(() => {
+                                        const itemImage = getItemImage(currentPromo, 'promotion');
+                                        const isPath = itemImage.startsWith('/') || itemImage.startsWith('http');
+
+                                        return isPath ? (
+                                            <div className="relative w-[300px] h-[300px] md:w-[450px] md:h-[450px]">
+                                                <Image
+                                                    src={itemImage}
+                                                    alt={currentPromo.name}
+                                                    fill
+                                                    className="object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)]"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="text-[12rem] md:text-[18rem] filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] leading-none select-none">
+                                                {itemImage}
+                                            </div>
+                                        );
+                                    })()}
                                 </motion.div>
                             </div>
 

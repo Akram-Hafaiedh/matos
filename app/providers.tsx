@@ -8,14 +8,14 @@ import { ConfirmProvider } from "./context/ConfirmContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
-        <SessionProvider>
-            <ToastProvider>
-                <ConfirmProvider>
-                    <CartProvider>
+        <CartProvider>
+            <SessionProvider>
+                <ToastProvider>
+                    <ConfirmProvider>
                         {children}
-                    </CartProvider>
-                </ConfirmProvider>
-            </ToastProvider>
-        </SessionProvider>
+                    </ConfirmProvider>
+                </ToastProvider>
+            </SessionProvider>
+        </CartProvider>
     );
 }

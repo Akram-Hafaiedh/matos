@@ -39,6 +39,10 @@ export default function Navbar() {
         await signOut({ callbackUrl: '/' });
     };
 
+    const isInvoicePage = pathname?.includes('/invoice');
+
+    if (isInvoicePage) return null;
+
     return (
         <nav className={`fixed top-0 inset-x-0 z-[100] transition-all duration-700 ${scrolled ? 'h-20 bg-black/80 backdrop-blur-3xl border-b border-white/5' : 'h-24 bg-transparent'
             }`}>
@@ -69,8 +73,8 @@ export default function Navbar() {
                             className="relative px-5 py-2 group overflow-hidden"
                         >
                             <span className={`text-[9px] font-black uppercase tracking-[0.4em] italic transition-colors duration-300 ${(link.href === '/' ? pathname === '/' : pathname.startsWith(link.href))
-                                    ? 'text-yellow-400'
-                                    : 'text-gray-400 group-hover:text-white'
+                                ? 'text-yellow-400'
+                                : 'text-gray-400 group-hover:text-white'
                                 }`}>
                                 {link.label}
                             </span>
@@ -208,8 +212,8 @@ export default function Navbar() {
                                             href={link.href}
                                             onClick={() => setIsMenuOpen(false)}
                                             className={`text-6xl font-[1000] italic uppercase tracking-tighter block leading-none ${(link.href === '/' ? pathname === '/' : pathname.startsWith(link.href))
-                                                    ? 'text-yellow-400'
-                                                    : 'text-white/40'
+                                                ? 'text-yellow-400'
+                                                : 'text-white/40'
                                                 }`}
                                         >
                                             {link.label}
