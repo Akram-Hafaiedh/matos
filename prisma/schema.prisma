@@ -60,19 +60,20 @@ model contact_messages {
 }
 
 model global_settings {
-  id              Int      @id @default(1)
-  address         String   @default("2015, 1 Rue Abderrazak Karabaka, Carthage") @db.VarChar(255)
-  phone           String   @default("99 956 608") @db.VarChar(50)
-  lat             Float    @default(36.8391)
-  lng             Float    @default(10.3200)
-  facebook        String?  @db.VarChar(255)
-  instagram       String?  @db.VarChar(255)
-  tiktok          String?  @db.VarChar(255)
-  whatsapp        String?  @db.VarChar(50)
-  updated_at      DateTime
-  google_maps_url String?
-  stamp_duty      Float    @default(1.0)
-  vat_rate        Float    @default(0.19)
+  id               Int      @id @default(1)
+  address          String   @default("2015, 1 Rue Abderrazak Karabaka, Carthage") @db.VarChar(255)
+  phone            String   @default("99 956 608") @db.VarChar(50)
+  lat              Float    @default(36.8391)
+  lng              Float    @default(10.3200)
+  facebook         String?  @db.VarChar(255)
+  instagram        String?  @db.VarChar(255)
+  tiktok           String?  @db.VarChar(255)
+  whatsapp         String?  @db.VarChar(50)
+  updated_at       DateTime
+  google_maps_url  String?
+  stamp_duty       Float    @default(1.0)
+  vat_rate         Float    @default(0.19)
+  invoice_template String   @default("standard") @db.VarChar(50)
 }
 
 model menu_items {
@@ -141,37 +142,44 @@ model order_items {
 }
 
 model orders {
-  id                  Int               @id @default(autoincrement())
-  order_number        String            @unique @db.VarChar(50)
-  user_id             String?
-  customer_name       String            @db.VarChar(255)
-  customer_phone      String            @db.VarChar(20)
-  customer_email      String?           @db.VarChar(255)
-  delivery_address    String
-  city                String            @default("Tunis") @db.VarChar(100)
-  notes               String?
-  delivery_time       String            @default("asap") @db.VarChar(50)
-  scheduled_time      DateTime?
-  payment_method      String            @default("cash") @db.VarChar(50)
-  subtotal            Float
-  delivery_fee        Float             @default(0)
-  total_amount        Float
-  status              String            @default("pending") @db.VarChar(50)
-  order_date          DateTime          @default(now())
-  delivered_at        DateTime?
-  created_at          DateTime          @default(now())
-  updated_at          DateTime
-  cancelled_at        DateTime?
-  confirmed_at        DateTime?
-  out_for_delivery_at DateTime?
-  preparing_at        DateTime?
-  ready_at            DateTime?
-  order_type          String            @default("delivery") @db.VarChar(50)
-  cancel_message      String?
-  points_awarded      Boolean           @default(false)
-  order_items         order_items[]
-  users               User?             @relation(fields: [user_id], references: [id])
-  support_tickets     support_tickets[]
+  id                            Int               @id @default(autoincrement())
+  order_number                  String            @unique @db.VarChar(50)
+  user_id                       String?
+  customer_name                 String            @db.VarChar(255)
+  customer_phone                String            @db.VarChar(20)
+  customer_email                String?           @db.VarChar(255)
+  delivery_address              String
+  city                          String            @default("Tunis") @db.VarChar(100)
+  notes                         String?
+  delivery_time                 String            @default("asap") @db.VarChar(50)
+  scheduled_time                DateTime?
+  payment_method                String            @default("cash") @db.VarChar(50)
+  subtotal                      Float
+  delivery_fee                  Float             @default(0)
+  total_amount                  Float
+  status                        String            @default("pending") @db.VarChar(50)
+  order_date                    DateTime          @default(now())
+  delivered_at                  DateTime?
+  created_at                    DateTime          @default(now())
+  updated_at                    DateTime
+  cancelled_at                  DateTime?
+  confirmed_at                  DateTime?
+  out_for_delivery_at           DateTime?
+  preparing_at                  DateTime?
+  ready_at                      DateTime?
+  order_type                    String            @default("delivery") @db.VarChar(50)
+  cancel_message                String?
+  points_awarded                Boolean           @default(false)
+  lat                           Float?
+  lng                           Float?
+  estimated_delivery_confidence String?           @db.VarChar(50)
+  estimated_total_time          Int?
+  estimated_travel_time         Int?
+  estimated_prep_time           Int?
+  actual_delivery_time          DateTime?
+  order_items                   order_items[]
+  users                         User?             @relation(fields: [user_id], references: [id])
+  support_tickets               support_tickets[]
 }
 
 model promotions {
@@ -416,4 +424,13 @@ model sent_emails {
   content    String
   status     String   @default("sent") @db.VarChar(50)
   created_at DateTime @default(now())
+}
+
+model geocoding_stats {
+  id       Int      @id @default(autoincrement())
+  provider String   @db.VarChar(50)
+  date     DateTime @default(now()) @db.Date
+  count    Int      @default(0)
+
+  @@unique([provider, date])
 }

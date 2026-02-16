@@ -19,7 +19,8 @@ export async function GET() {
                 instagram: "",
                 tiktok: "",
                 whatsapp: "",
-                google_maps_url: ""
+                google_maps_url: "",
+                invoice_template: "standard"
             });
         }
 
@@ -71,6 +72,7 @@ export async function PUT(req: Request) {
                 google_maps_url: data.google_maps_url || null,
                 vat_rate: parseFloat(data.vat_rate) || 0.19,
                 stamp_duty: parseFloat(data.stamp_duty) || 1.0,
+                invoice_template: data.invoice_template || "standard",
                 updated_at: new Date()
             },
             create: {
@@ -86,6 +88,7 @@ export async function PUT(req: Request) {
                 google_maps_url: data.google_maps_url || null,
                 vat_rate: parseFloat(data.vat_rate) || 0.19,
                 stamp_duty: parseFloat(data.stamp_duty) || 1.0,
+                invoice_template: data.invoice_template || "standard",
                 updated_at: new Date()
             },
         });

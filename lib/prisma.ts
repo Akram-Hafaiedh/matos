@@ -1,3 +1,4 @@
+// lib/prisma.ts - Tactical Reload Trigger (v1.1)
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from '../app/generated/prisma';
 import { Pool } from "pg";
@@ -34,16 +35,23 @@ const adapter = new PrismaPg(pool);
 // Initialize or reuse the PrismaClient with the adapter
 let prisma = globalForPrisma.prisma ?? new PrismaClient({
     adapter,
-    log: ['query', 'error', 'warn']
+    log: ['error', 'warn']
 });
 
 console.log('[Prisma] Client instantiated', globalForPrisma.prisma ? '(reused)' : '(new)');
 
 // Handle stale global instance in development (after schema changes)
-if (process.env.NODE_ENV !== 'production' && prisma && (!(prisma as any).content_pages || !(prisma as any).hero_slides || !(prisma as any).email_settings || !(prisma as any).sent_emails)) {
-    console.log('[Prisma] Stale instance detected (missing models). Re-instantiating...');
-    prisma = new PrismaClient({ adapter, log: ['query', 'error', 'warn'] });
-    globalForPrisma.prisma = prisma;
+// Check both for missing models AND missing recently added fields to force reload
+if (process.env.NODE_ENV !== 'production' && prisma) {
+    const isStale = !(prisma as any).geocoding_stats ||
+        !(prisma as any).global_settings?.fields?.invoice_template ||
+        !(prisma as any).orders?.fields?.estimated_delivery_confidence;
+
+    if (isStale) {
+        console.log('[Prisma] Stale instance detected (missing models or new fields). Re-instantiating...');
+        prisma = new PrismaClient({ adapter, log: ['error', 'warn'] });
+        globalForPrisma.prisma = prisma;
+    }
 }
 
 export { prisma };
