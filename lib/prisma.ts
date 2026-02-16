@@ -17,14 +17,14 @@ const finalConnectionString = connectionString?.includes('?')
     ? `${connectionString}&uselibpqcompat=true`
     : `${connectionString}?uselibpqcompat=true`;
 
-console.log('[Prisma] Initializing with protocol:', connectionString?.split(':')[0]);
+console.log('[Prisma] Initializing connection to proxy...');
 
 export const pool = globalForPrisma.pool ?? new Pool({
     connectionString: finalConnectionString,
-    max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
-    ssl: { rejectUnauthorized: false } // Required for Prisma Postgres
+    max: 2, // Low pool size for serverless/build environments
+    idleTimeoutMillis: 10000,
+    connectionTimeoutMillis: 15000,
+    ssl: { rejectUnauthorized: false }
 });
 
 pool.on('error', (err) => {
