@@ -205,7 +205,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, session, han
                         { name: 'Passerelles', href: '/dashboard/settings/integrations', icon: Send },
                         { name: 'Visuels Hero', href: '/dashboard/settings/hero', icon: Sparkles },
                         { name: 'Contenu Statique', href: '/dashboard/settings/content', icon: ChevronRight },
-                        { name: 'Maintenance', href: '/dashboard/settings/maintenance', icon: Activity },
+                        { name: 'Système', href: '/dashboard/settings/system', icon: Activity },
                     ].map((item) => {
                         const active = isActive(item.href);
                         return (

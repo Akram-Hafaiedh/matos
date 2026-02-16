@@ -25,7 +25,8 @@ export default function GeneralSettingsPage() {
         whatsapp: '',
         google_maps_url: '',
         vat_rate: 0.19,
-        stamp_duty: 1.0
+        stamp_duty: 1.0,
+        invoice_template: 'standard'
     });
 
     useEffect(() => {
@@ -48,7 +49,8 @@ export default function GeneralSettingsPage() {
                     whatsapp: data.whatsapp || '',
                     google_maps_url: data.google_maps_url || '',
                     vat_rate: data.vat_rate || 0.19,
-                    stamp_duty: data.stamp_duty || 1.0
+                    stamp_duty: data.stamp_duty || 1.0,
+                    invoice_template: data.invoice_template || 'standard'
                 });
             }
         } catch (error) {
@@ -127,7 +129,16 @@ export default function GeneralSettingsPage() {
                             <div className="lg:col-span-2 space-y-8">
                                 <div className="flex items-center gap-6 px-4">
                                     <div className="w-10 h-1 bg-yellow-400 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.3)]"></div>
-                                    <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">Identité & Déploiement</h2>
+                                    <div className="flex flex-1 items-center justify-between">
+                                        <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">Identité & Déploiement</h2>
+                                        <button
+                                            type="button"
+                                            onClick={handleSubmit}
+                                            className="text-[9px] font-black text-yellow-500 uppercase tracking-widest hover:text-white transition-colors flex items-center gap-2"
+                                        >
+                                            <Save size={10} /> Enregistrer ce module
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-10 space-y-8 backdrop-blur-3xl relative overflow-hidden group">
@@ -180,7 +191,16 @@ export default function GeneralSettingsPage() {
                                 {/* TUNISIAN TAX MODULE */}
                                 <div className="flex items-center gap-6 px-4 pt-4">
                                     <div className="w-10 h-1 bg-yellow-400 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.3)]"></div>
-                                    <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">Module Fiscal Tunisien</h2>
+                                    <div className="flex flex-1 items-center justify-between">
+                                        <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">Module Fiscal Tunisien</h2>
+                                        <button
+                                            type="button"
+                                            onClick={handleSubmit}
+                                            className="text-[9px] font-black text-yellow-500 uppercase tracking-widest hover:text-white transition-colors flex items-center gap-2"
+                                        >
+                                            <Save size={10} /> Enregistrer ce module
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-10 backdrop-blur-3xl relative overflow-hidden group">
@@ -214,6 +234,172 @@ export default function GeneralSettingsPage() {
                                                     className="w-full bg-black/40 border border-white/5 text-white pl-14 pr-6 py-5 rounded-2xl font-bold focus:outline-none focus:border-blue-500/50 transition-all text-sm"
                                                     placeholder="1.0"
                                                 />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-6 md:col-span-2">
+                                            <div className="flex items-center justify-between px-4">
+                                                <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest italic">Modèle de Facture & Prévisualisation</label>
+                                            </div>
+
+                                            <div className="grid md:grid-cols-2 gap-6">
+                                                {/* Standard Template Preview */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData(prev => ({ ...prev, invoice_template: 'standard' }))}
+                                                    className={`group relative overflow-hidden rounded-[2rem] border-2 transition-all p-4 text-left ${formData.invoice_template === 'standard' ? 'border-yellow-400 bg-yellow-400/5' : 'border-white/5 bg-white/[0.02] hover:border-white/20'}`}
+                                                >
+                                                    <div className="aspect-[4/5] bg-white rounded-xl mb-4 overflow-hidden border border-zinc-200 p-2 shadow-inner group-hover:shadow-md transition-shadow">
+                                                        <div className="w-full h-full border border-zinc-100 flex flex-col p-3 space-y-1.5 bg-white">
+                                                            {/* Header */}
+                                                            <div className="flex justify-between items-start mb-2 border-b-2 border-zinc-50 pb-2">
+                                                                <div className="space-y-1">
+                                                                    <div className="h-2.5 w-12 bg-zinc-900 rounded-sm"></div>
+                                                                    <div className="h-1 w-8 bg-zinc-200 rounded-sm"></div>
+                                                                </div>
+                                                                <div className="text-right space-y-1">
+                                                                    <div className="h-1.5 w-10 bg-zinc-800 rounded-sm ml-auto"></div>
+                                                                    <div className="h-1 w-14 bg-zinc-100 rounded-sm"></div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Customer Row */}
+                                                            <div className="flex justify-between mb-4">
+                                                                <div className="space-y-0.5">
+                                                                    <div className="h-1 w-6 bg-zinc-300 rounded-sm"></div>
+                                                                    <div className="h-1.5 w-14 bg-zinc-800 rounded-sm"></div>
+                                                                </div>
+                                                                <div className="space-y-0.5 text-right">
+                                                                    <div className="h-1 w-6 bg-zinc-300 rounded-sm ml-auto"></div>
+                                                                    <div className="h-1.5 w-10 bg-zinc-400 rounded-sm"></div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Item Manifest */}
+                                                            <div className="flex-1 space-y-2">
+                                                                <div className="border-b border-zinc-50 pb-1">
+                                                                    <div className="flex justify-between items-center px-1">
+                                                                        <div className="h-1.5 w-1/3 bg-zinc-100 rounded-sm"></div>
+                                                                        <div className="h-1.5 w-1/4 bg-zinc-100 rounded-sm"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="space-y-1.5">
+                                                                    {[1, 2].map(i => (
+                                                                        <div key={i} className="flex justify-between items-center px-1">
+                                                                            <div className="h-1.5 w-1/2 bg-zinc-50 rounded-sm"></div>
+                                                                            <div className="h-1.5 w-4 bg-zinc-900 rounded-sm"></div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Summary & Brand Grid */}
+                                                            <div className="grid grid-cols-2 gap-1 pt-2 border-t border-zinc-100 mb-1">
+                                                                <div className="flex flex-col justify-end">
+                                                                    <div className="h-4 w-full bg-zinc-50 rounded-sm border border-zinc-100/50"></div>
+                                                                    <div className="h-2 w-2/3 border-zinc-200 border rounded-full mt-1 mx-auto"></div>
+                                                                </div>
+                                                                <div className="space-y-1 pt-1">
+                                                                    <div className="flex justify-between"><div className="h-1 w-4 bg-zinc-100 rounded-sm"></div><div className="h-1 w-4 bg-zinc-800 rounded-sm"></div></div>
+                                                                    <div className="flex justify-between"><div className="h-1 w-4 bg-zinc-100 rounded-sm"></div><div className="h-1 w-4 bg-zinc-800 rounded-sm"></div></div>
+                                                                    <div className="flex justify-between bg-zinc-900 p-0.5 rounded-sm"><div className="h-1 w-3 bg-zinc-500 rounded-sm"></div><div className="h-1.5 w-4 bg-white rounded-sm"></div></div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Technical Footer */}
+                                                            <div className="mt-auto border-t border-zinc-50 pt-1 flex justify-between items-center opacity-30">
+                                                                <div className="h-1 w-1/3 bg-zinc-300 rounded-sm"></div>
+                                                                <div className="h-1 w-4 bg-zinc-200 rounded-sm"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="text-[10px] font-black uppercase tracking-widest block">CLASSIQUE PRO</span>
+                                                        <span className="text-[8px] font-black text-zinc-500 italic">80.000 DT</span>
+                                                    </div>
+                                                    <span className="text-[8px] text-gray-500 font-bold uppercase tracking-tighter block leading-tight">Structure fiscale légale, haute lisibilité (A4/Thermique)</span>
+                                                    {formData.invoice_template === 'standard' && (
+                                                        <div className="absolute top-4 right-4 animate-in fade-in zoom-in duration-300">
+                                                            <div className="w-5 h-5 rounded-full bg-yellow-400 flex items-center justify-center shadow-lg shadow-yellow-400/20">
+                                                                <Save size={10} className="text-black" />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </button>
+
+                                                {/* Tactical Template Preview */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData(prev => ({ ...prev, invoice_template: 'tactical' }))}
+                                                    className={`group relative overflow-hidden rounded-[2rem] border-2 transition-all p-4 text-left ${formData.invoice_template === 'tactical' ? 'border-yellow-400 bg-yellow-400/5' : 'border-white/5 bg-white/[0.02] hover:border-white/20'}`}
+                                                >
+                                                    <div className="aspect-[4/5] bg-[#050505] rounded-xl mb-4 overflow-hidden border border-white/10 p-3 shadow-2xl group-hover:border-white/20 transition-all">
+                                                        <div className="w-full h-full border border-white/5 flex flex-col p-3 space-y-2 bg-[url('/grid.png')] bg-repeat relative">
+                                                            {/* Watermark Simulation */}
+                                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] rotate-[-25deg] pointer-events-none">
+                                                                <div className="border-[3px] border-white p-2 text-white font-black text-[12px] whitespace-nowrap">INVOICE VALID</div>
+                                                            </div>
+
+                                                            {/* Header */}
+                                                            <div className="flex justify-between items-end mb-1 border-b border-white/10 pb-2 relative z-10">
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <div className="w-3 h-3 bg-yellow-400 rounded-sm"></div>
+                                                                    <div className="h-2 w-12 bg-white rounded-sm opacity-80"></div>
+                                                                </div>
+                                                                <div className="h-3 w-8 bg-zinc-800 rounded-sm border border-white/10"></div>
+                                                            </div>
+
+                                                            {/* Intel Section Miniature */}
+                                                            <div className="grid grid-cols-2 gap-2 mb-2 relative z-10">
+                                                                <div className="h-10 bg-white/5 border border-white/5 rounded-md p-1.5">
+                                                                    <div className="h-0.5 w-4 bg-yellow-400 mb-1"></div>
+                                                                    <div className="h-1.5 w-full bg-white/40 rounded-sm mb-1"></div>
+                                                                    <div className="h-1 w-2/3 bg-white/10 rounded-sm"></div>
+                                                                </div>
+                                                                <div className="space-y-1.5 pl-1.5 border-l border-white/5">
+                                                                    <div className="h-1 w-full bg-white/5 rounded-sm"></div>
+                                                                    <div className="h-1 w-3/4 bg-white/5 rounded-sm"></div>
+                                                                    <div className="h-1 w-1/2 bg-white/5 rounded-sm"></div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Manifest Area */}
+                                                            <div className="flex-1 space-y-1.5 relative z-10 bg-white/[0.02] border border-white/5 rounded p-1.5">
+                                                                <div className="flex justify-between items-center opacity-20"><div className="h-0.5 w-6 bg-white"></div><div className="h-0.5 w-2 bg-white"></div></div>
+                                                                {[1, 2, 3].map(i => (
+                                                                    <div key={i} className="flex justify-between items-center"><div className="h-1 w-1/3 bg-white/30 rounded-sm"></div><div className="h-1 w-4 bg-white/60 rounded-sm"></div></div>
+                                                                ))}
+                                                            </div>
+
+                                                            {/* Tactical Summary */}
+                                                            <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-white/10 relative z-10">
+                                                                <div className="h-5 w-full bg-white/5 rounded border border-white/5"></div>
+                                                                <div className="space-y-1">
+                                                                    <div className="h-0.5 w-full bg-white/10 rounded-sm"></div>
+                                                                    <div className="h-2 w-full bg-yellow-400 rounded-sm"></div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Master Footer Technical */}
+                                                            <div className="mt-auto border-t border-white/5 pt-1 flex justify-between items-center opacity-20 relative z-10">
+                                                                <div className="h-0.5 w-1/3 bg-white rounded-sm"></div>
+                                                                <div className="h-0.5 w-4 bg-white rounded-sm"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="text-[10px] font-black uppercase tracking-widest block">MANIFESTE TACTIQUE</span>
+                                                        <span className="text-[8px] font-black text-yellow-400 italic">UNIT: MOB-1</span>
+                                                    </div>
+                                                    <span className="text-[8px] text-gray-500 font-bold uppercase tracking-tighter block leading-tight">Design Mission Matrix, esthétique "Cargo Manifest"</span>
+                                                    {formData.invoice_template === 'tactical' && (
+                                                        <div className="absolute top-4 right-4 animate-in fade-in zoom-in duration-300">
+                                                            <div className="w-5 h-5 rounded-full bg-yellow-400 flex items-center justify-center shadow-lg shadow-yellow-400/20">
+                                                                <Save size={10} className="text-black" />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
